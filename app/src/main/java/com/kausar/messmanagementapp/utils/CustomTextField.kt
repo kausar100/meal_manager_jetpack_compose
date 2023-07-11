@@ -14,6 +14,7 @@ fun CustomTextField(
     input: String,
     onInputChange: (String) -> Unit,
     placeholder: @Composable() (() -> Unit)?,
+    prefixIcon: @Composable() (() -> Unit)? = null,
     label: @Composable() (() -> Unit)?,
     keyboardOptions: KeyboardOptions,
     onComplete: () -> Unit
@@ -23,6 +24,7 @@ fun CustomTextField(
         value = input,
         onValueChange = onInputChange,
         placeholder = placeholder,
+        leadingIcon = prefixIcon,
         singleLine = true,
         maxLines = 1,
         label = label,
