@@ -6,15 +6,15 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.kausar.messmanagementapp.ui.screens.AboutScreen
-import com.kausar.messmanagementapp.ui.screens.HomeScreen
-import com.kausar.messmanagementapp.ui.screens.LoginScreen
-import com.kausar.messmanagementapp.ui.screens.SignUpScreen
+import com.kausar.messmanagementapp.presentation.AboutScreen
+import com.kausar.messmanagementapp.presentation.home_screen.HomeScreen
+import com.kausar.messmanagementapp.presentation.login_screen.LoginScreen
+import com.kausar.messmanagementapp.presentation.signup_screen.SignUpScreen
 
 @Composable
 fun SetupNavGraph(navController: NavHostController, startDestination: String) {
 
-    NavHost(navController = navController, startDestination = Screen.Login.route) {
+    NavHost(navController = navController, startDestination = Screen.About.route) {
         composable(route = Screen.SignUp.route) {
             SignUpScreen(gotoLoginScreen = {
                 navController.navigate(Screen.Login.route) {

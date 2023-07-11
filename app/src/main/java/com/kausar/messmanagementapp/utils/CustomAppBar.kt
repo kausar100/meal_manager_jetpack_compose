@@ -1,4 +1,4 @@
-package com.kausar.messmanagementapp.ui.utils
+package com.kausar.messmanagementapp.utils
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack

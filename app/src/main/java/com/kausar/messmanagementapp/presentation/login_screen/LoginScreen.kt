@@ -1,4 +1,4 @@
-package com.kausar.messmanagementapp.ui.screens
+package com.kausar.messmanagementapp.presentation.login_screen
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -35,62 +35,43 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.kausar.messmanagementapp.ui.utils.CustomTextField
-import com.kausar.messmanagementapp.ui.utils.CustomTopAppBar
+import com.kausar.messmanagementapp.utils.CustomTextField
+import com.kausar.messmanagementapp.utils.CustomTopAppBar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SignUpScreen(gotoLoginScreen: () -> Unit) {
+fun LoginScreen(gotoSignupScreen: () -> Unit, onLogin: (String)->Unit) {
 
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
     Scaffold(
         topBar = {
             CustomTopAppBar(
-                title = "Sign up",
+                title = "Log in",
                 canNavigateBack = false,
                 scrollBehavior = scrollBehavior
             )
         }
     ) {
-        SignUpScreenContent(
+        LoginScreenContent(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(it),
-            navigateToLogin = gotoLoginScreen
+            navigateToSignup = gotoSignupScreen,
+            onPressLogin = onLogin
         )
     }
 
 }
 
 @Composable
-fun SignUpScreenContent(modifier: Modifier = Modifier, navigateToLogin: () -> Unit) {
+fun LoginScreenContent(modifier: Modifier = Modifier, navigateToSignup: () -> Unit, onPressLogin: (String) -> Unit) {
     val focusManager = LocalFocusManager.current
     Column(
         modifier = modifier.padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        var name by remember {
-            mutableStateOf("")
-        }
-
-        CustomTextField(
-            modifier = Modifier.fillMaxWidth(),
-            input = name,
-            onInputChange = {
-                name = it
-            },
-            placeholder = { Text(text = "Enter your name") },
-            label = { Text(text = "Name") },
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Text,
-                imeAction = ImeAction.Next
-            )
-        ) {
-            focusManager.moveFocus(FocusDirection.Next)
-        }
-
         var contactNo by remember {
             mutableStateOf("")
         }
@@ -125,26 +106,6 @@ fun SignUpScreenContent(modifier: Modifier = Modifier, navigateToLogin: () -> Un
             label = { Text(text = "Password") },
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Password,
-                imeAction = ImeAction.Next
-            )
-        ) {
-            focusManager.moveFocus(FocusDirection.Next)
-        }
-
-        var confirmPassword by remember {
-            mutableStateOf("")
-        }
-
-        CustomTextField(
-            modifier = Modifier.fillMaxWidth(),
-            input = confirmPassword,
-            onInputChange = {
-                confirmPassword = it
-            },
-            placeholder = { Text(text = "Retype your password") },
-            label = { Text(text = "Confirm Password") },
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Password,
                 imeAction = ImeAction.Done
             )
         ) {
@@ -154,7 +115,7 @@ fun SignUpScreenContent(modifier: Modifier = Modifier, navigateToLogin: () -> Un
         Spacer(modifier = Modifier.height(16.dp))
 
         ElevatedButton(
-            onClick = { /*TODO*/ },
+            onClick = { onPressLogin("Kausar") },
             shape = RoundedCornerShape(4.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color(0xFF3F51B5)
@@ -162,19 +123,19 @@ fun SignUpScreenContent(modifier: Modifier = Modifier, navigateToLogin: () -> Un
             modifier = Modifier.fillMaxWidth(),
             contentPadding = PaddingValues(vertical = 16.dp)
         ) {
-            Text(text = "Sign up".uppercase())
+            Text(text = "Log in".uppercase())
         }
 
-        TextButton(onClick = navigateToLogin) {
+        TextButton(onClick = navigateToSignup) {
             Text(text = buildAnnotatedString {
-                append("Already Have an Account! ")
+                append("Don't Have an Account! ")
                 withStyle(
                     style = SpanStyle(
                         color = Color(0xFF3F51B5),
                         fontSize = 16.sp
                     )
                 ) {
-                    append("Login here...")
+                    append("Create here...")
                 }
             }, color = Color.Black, fontSize = 16.sp)
         }
@@ -185,8 +146,6 @@ fun SignUpScreenContent(modifier: Modifier = Modifier, navigateToLogin: () -> Un
 
 @Preview(showBackground = true)
 @Composable
-fun PreviewSignUpScreen() {
-    SignUpScreen {
-
-    }
+fun PreviewLoginScreen() {
+    LoginScreen(gotoSignupScreen = { /*TODO*/ }, onLogin = {})
 }
