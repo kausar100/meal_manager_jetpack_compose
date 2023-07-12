@@ -8,10 +8,10 @@ sealed class Screen(val route: String, val argKey: List<String> = emptyList(), v
             return this.route+"/$name/$phone"
         }
     }
-    object Home: Screen(route = "home_screen/", argKey = listOf("user"), path = "/{user}"){
+    object Home: Screen(route = "home_screen/", argKey = listOf("user"), path = "/{user}", title = "Home"){
         fun passName(name: String): String{
             return this.route+"/$name"
         }
     }
-    object About: Screen(route = "about_screen")
+    object About: Screen(route = "about_screen", title = "About")
 }
