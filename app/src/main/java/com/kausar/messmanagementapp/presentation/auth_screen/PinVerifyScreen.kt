@@ -26,60 +26,65 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.ColorMatrix
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.kausar.messmanagementapp.R
 import com.kausar.messmanagementapp.navigation.Screen
 import com.kausar.messmanagementapp.utils.CustomTextField
 import com.kausar.messmanagementapp.utils.CustomTopAppBar
+import com.kausar.messmanagementapp.utils.WelcomeText
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PinVerifyScreen(onSubmit: (String) -> Unit) {
+fun OtpVerifyScreen(userName: String, phoneNumber: String, onSubmit: (String) -> Unit) {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
-    var screenTitle by rememberSaveable {
-        mutableStateOf(Screen.PinVerify.title)
-    }
+
     var otp by rememberSaveable {
         mutableStateOf("")
     }
 
-    Scaffold(
-        topBar = {
-            CustomTopAppBar(
-                title = screenTitle.toString(),
-                canNavigateBack = false,
-                scrollBehavior = scrollBehavior
-            )
-        }
-    ) { padding ->
-        VerifyPinContent(
+    Scaffold(topBar = {
+        CustomTopAppBar(
+            canNavigateBack = false, scrollBehavior = scrollBehavior
+        )
+    }) { padding ->
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding),
-            otp = otp,
-            onCodeEnter = {
+            verticalArrangement = Arrangement.Top,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            WelcomeText(name = userName)
+            Spacer(modifier = Modifier.height(40.dp))
+            Text(
+                text = "Please enter otp that will be sent to $phoneNumber",
+                textAlign = TextAlign.Center,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.Black,
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            VerifyPinContent(modifier = Modifier.fillMaxSize(), otp = otp, onCodeEnter = {
                 onSubmit(it)
 
             }, onChange = {
                 otp = it
-            }
-        )
+            })
+        }
     }
 
 }
 
 @Composable
 fun VerifyPinContent(
-    modifier: Modifier,
-    onCodeEnter: (String) -> Unit,
-    otp: String = "",
-    onChange: (String) -> Unit
+    modifier: Modifier, onCodeEnter: (String) -> Unit, otp: String = "", onChange: (String) -> Unit
 ) {
     val focusManager = LocalFocusManager.current
     Column(
@@ -87,25 +92,17 @@ fun VerifyPinContent(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        CustomTextField(
-            modifier = Modifier.fillMaxWidth(),
-            input = otp,
-            onInputChange = {
-                onChange(it)
-            },
-            placeholder = { Text(text = "Enter otp send to your number") },
-            prefixIcon = {
-                Image(
-                    painter = painterResource(id = R.drawable.ic_pin),
-                    contentDescription = "otp",
-                    modifier = Modifier.background(color = Color.White)
-                )
-            },
-            label = { Text(text = "OTP") },
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Number,
-                imeAction = ImeAction.Done
+        CustomTextField(modifier = Modifier.fillMaxWidth(), input = otp, onInputChange = {
+            onChange(it)
+        }, placeholder = { Text(text = "Enter otp send to your number") }, prefixIcon = {
+            Image(
+                painter = painterResource(id = R.drawable.ic_pin),
+                contentDescription = "otp",
+                modifier = Modifier.background(color = Color.White)
             )
+        }, label = { Text(text = "OTP") }, keyboardOptions = KeyboardOptions(
+            keyboardType = KeyboardType.Number, imeAction = ImeAction.Done
+        )
         ) {
             focusManager.clearFocus(true)
         }
@@ -114,15 +111,11 @@ fun VerifyPinContent(
         ElevatedButton(
             onClick = {
                 onCodeEnter(otp)
-            },
-            shape = RoundedCornerShape(4.dp),
-            colors = ButtonDefaults.buttonColors(
+            }, shape = RoundedCornerShape(4.dp), colors = ButtonDefaults.buttonColors(
                 containerColor = Color(0xFF3F51B5)
-            ),
-            modifier = Modifier.fillMaxWidth(),
-            contentPadding = PaddingValues(vertical = 16.dp)
+            ), modifier = Modifier.fillMaxWidth(), contentPadding = PaddingValues(vertical = 16.dp)
         ) {
-            Text(text = "Verify Pin".uppercase())
+            Text(text = "Verify OTP", fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
         }
     }
 
