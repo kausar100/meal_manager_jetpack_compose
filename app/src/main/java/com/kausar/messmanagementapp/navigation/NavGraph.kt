@@ -65,61 +65,9 @@ fun SetupNavGraph(navController: NavHostController, startDestination: String) {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MealManagementApp(
     navController: NavHostController = rememberNavController(),
-    drawerState: DrawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
 ) {
-    val scope = rememberCoroutineScope()
-    var currentScreen by rememberSaveable {
-        mutableStateOf(Screen.Home.title)
-    }
-
-    ModalNavigationDrawer(
-        drawerState = drawerState,
-        drawerContent = {
-            AppDrawerContent(
-                menuItems = DrawerParams.drawerButtons,
-                currentScreenName = currentScreen!!,
-                toggleDrawer = {
-                    scope.launch {
-                        if (drawerState.isOpen) {
-                            drawerState.close()
-                        } else if (drawerState.isClosed) {
-                            drawerState.open()
-                        }
-                    }
-                }
-            ) { onUserPickedOption ->
-                when (onUserPickedOption) {
-                    Screen.Home -> {
-                        currentScreen = Screen.Home.title
-                        navController.navigate(Screen.Home.passName("Kausar")) {
-                            popUpTo(navController.graph.id) {
-                                if (navController.previousBackStackEntry != null) {
-                                    inclusive = true
-                                }
-                            }
-                        }
-                    }
-                    Screen.About -> {
-                        currentScreen = Screen.About.title
-                        navController.navigate(Screen.About.route) {
-                            popUpTo(navController.graph.id) {
-                                if (navController.previousBackStackEntry != null) {
-                                    inclusive = true
-                                }
-
-                            }
-
-                        }
-                    }
-                    else -> {
-                    }
-                }
-            }
-        }) {
-        SetupNavGraph(navController = navController, startDestination = Screen.Login.route)
-    }
+    SetupNavGraph(navController = navController, startDestination = Screen.Login.route)
 }

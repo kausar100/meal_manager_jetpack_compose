@@ -11,7 +11,6 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.kausar.messmanagementapp.navigation.MealManagementApp
-import com.kausar.messmanagementapp.navigation.SetupNavGraph
 import com.kausar.messmanagementapp.ui.theme.MessManagementAppTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -34,5 +33,14 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    override fun onRestart() {
+        super.onRestart()
+
+    }
+
+    override fun onResume() {
+        super.onResume()
     }
 }
