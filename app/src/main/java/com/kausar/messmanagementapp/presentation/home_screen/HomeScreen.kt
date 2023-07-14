@@ -16,8 +16,6 @@ import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.DrawerState
-import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -26,7 +24,6 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -45,7 +42,10 @@ import java.util.Calendar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(userName: String, drawerState: DrawerState = rememberDrawerState(initialValue = DrawerValue.Closed)) {
+fun HomeScreen(
+    userName: String,
+    toggleDrawerState: () -> Unit
+) {
 
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val calendar = Calendar.getInstance()
@@ -56,11 +56,13 @@ fun HomeScreen(userName: String, drawerState: DrawerState = rememberDrawerState(
     Scaffold(topBar = {
         CustomTopAppBar(
             canNavigateBack = false,
+            canShowDrawer = true,
             showAction = true,
             actionIcon = Icons.Default.Person,
             onClickAction = {
             },
-            scrollBehavior = scrollBehavior
+            scrollBehavior = scrollBehavior,
+            onClickDrawerMenu = toggleDrawerState
         )
     }) {
         Column(
@@ -260,5 +262,7 @@ fun DateInfo(
 @Preview
 @Composable
 fun PreviewHome() {
-    HomeScreen(userName = "")
+    HomeScreen(userName = "") {
+
+    }
 }

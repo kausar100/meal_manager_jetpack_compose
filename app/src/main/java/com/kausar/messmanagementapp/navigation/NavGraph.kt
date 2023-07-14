@@ -3,7 +3,6 @@ package com.kausar.messmanagementapp.navigation
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -17,16 +16,23 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.kausar.messmanagementapp.data.DrawerParams
 import com.kausar.messmanagementapp.presentation.AboutScreen
 import com.kausar.messmanagementapp.presentation.auth_screen.AuthScreen
 import com.kausar.messmanagementapp.presentation.auth_screen.OtpVerifyScreen
 import com.kausar.messmanagementapp.presentation.home_screen.HomeScreen
-import com.kausar.messmanagementapp.utils.AppDrawerContent
+import com.kausar.messmanagementapp.utils.NavigationDrawer
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SetupNavGraph(navController: NavHostController, startDestination: String) {
+
+    val coroutineScope = rememberCoroutineScope()
+    val drawerState: DrawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    var toggle by rememberSaveable {
+        mutableStateOf(false)
+    }
 
     NavHost(navController = navController, startDestination = startDestination) {
         composable(route = Screen.Login.route) {
@@ -40,7 +46,18 @@ fun SetupNavGraph(navController: NavHostController, startDestination: String) {
             }
         )) {
             val username = it.arguments?.getString(Screen.Home.argKey[0]) ?: ""
-            HomeScreen(userName = username)
+
+            NavigationDrawer(navController = navController,
+                drawerState = drawerState,
+                currentScreen = Screen.Home.title!!,
+                needToggle = toggle,
+                toggleDrawerState = {
+                    toggle = !toggle
+                    changeDrawerState(drawerState = drawerState, scope = coroutineScope)
+                }) {
+                HomeScreen(userName = username, toggleDrawerState = { toggle = true })
+
+            }
         }
 
         composable(route = Screen.PinVerify.route.plus(Screen.PinVerify.path), arguments = listOf(
@@ -60,7 +77,20 @@ fun SetupNavGraph(navController: NavHostController, startDestination: String) {
         }
 
         composable(route = Screen.About.route) {
-            AboutScreen()
+            NavigationDrawer(navController = navController,
+                drawerState = drawerState,
+                currentScreen = Screen.About.title!!,
+                needToggle = toggle,
+                toggleDrawerState = {
+                    toggle = !toggle
+                    changeDrawerState(drawerState = drawerState, scope = coroutineScope)
+                }) {
+                AboutScreen {
+                    toggle = true
+                }
+
+            }
+
         }
     }
 }
@@ -70,4 +100,16 @@ fun MealManagementApp(
     navController: NavHostController = rememberNavController(),
 ) {
     SetupNavGraph(navController = navController, startDestination = Screen.Login.route)
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+fun changeDrawerState(drawerState: DrawerState, scope: CoroutineScope) {
+    scope.launch {
+        if (drawerState.isOpen) {
+            drawerState.close()
+        } else if (drawerState.isClosed) {
+            drawerState.open()
+        }
+    }
+
 }

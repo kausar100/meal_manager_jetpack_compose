@@ -35,7 +35,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kausar.messmanagementapp.R
-import com.kausar.messmanagementapp.navigation.Screen
 import com.kausar.messmanagementapp.utils.CustomTextField
 import com.kausar.messmanagementapp.utils.CustomTopAppBar
 import com.kausar.messmanagementapp.utils.WelcomeText
@@ -52,7 +51,7 @@ fun OtpVerifyScreen(userName: String, phoneNumber: String, onSubmit: (String) ->
     Scaffold(topBar = {
         CustomTopAppBar(
             canNavigateBack = false, scrollBehavior = scrollBehavior
-        )
+        ) {}
     }) { padding ->
         Column(
             modifier = Modifier
