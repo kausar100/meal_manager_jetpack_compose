@@ -43,7 +43,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kausar.messmanagementapp.navigation.Screen
-import com.kausar.messmanagementapp.utils.CustomTextField
+import com.kausar.messmanagementapp.utils.CustomOutlinedTextField
 import com.kausar.messmanagementapp.utils.CustomTopAppBar
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -122,7 +122,7 @@ fun AuthScreenContent(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
 //            AnimatedVisibility(visible = !isLoginScreen) {
-            CustomTextField(
+            CustomOutlinedTextField(
                 modifier = Modifier.fillMaxWidth(),
                 input = user,
                 onInputChange = {
@@ -144,7 +144,7 @@ fun AuthScreenContent(
                 focusManager.moveFocus(FocusDirection.Next)
             }
 //            }
-            CustomTextField(
+            CustomOutlinedTextField(
                 modifier = Modifier.fillMaxWidth(),
                 input = contactNo,
                 onInputChange = {

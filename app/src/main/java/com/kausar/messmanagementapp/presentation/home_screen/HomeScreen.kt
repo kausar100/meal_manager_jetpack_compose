@@ -32,11 +32,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.kausar.messmanagementapp.navigation.Screen
 import com.kausar.messmanagementapp.utils.CustomTopAppBar
 import java.util.Calendar
 
@@ -44,6 +47,7 @@ import java.util.Calendar
 @Composable
 fun HomeScreen(
     userName: String,
+    navigateToProfileScreen: ()->Unit,
     toggleDrawerState: () -> Unit
 ) {
 
@@ -55,12 +59,12 @@ fun HomeScreen(
 
     Scaffold(topBar = {
         CustomTopAppBar(
+            title = Screen.Home.title,
             canNavigateBack = false,
             canShowDrawer = true,
             showAction = true,
             actionIcon = Icons.Default.Person,
-            onClickAction = {
-            },
+            onClickAction = navigateToProfileScreen,
             scrollBehavior = scrollBehavior,
             onClickDrawerMenu = toggleDrawerState
         )
@@ -233,8 +237,11 @@ fun DateInfo(
             text = "Meal Information",
             textAlign = TextAlign.Center,
             fontSize = 20.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color.Black,
+            style= TextStyle(
+                fontWeight = FontWeight.Bold,
+                color = Color.Black,
+                fontFamily = FontFamily.Cursive
+            )
         )
 
         Row(
@@ -262,7 +269,7 @@ fun DateInfo(
 @Preview
 @Composable
 fun PreviewHome() {
-    HomeScreen(userName = "") {
+    HomeScreen(userName = "", navigateToProfileScreen = { /*TODO*/ }) {
 
     }
 }

@@ -14,6 +14,7 @@ sealed class Screen(val route: String, val argKey: List<String> = emptyList(), v
         }
     }
     object About: Screen(route = "about_screen", title = "About")
+    object Profile: Screen(route = "profile_screen", title = "Profile")
     object DefaultMealSetup: Screen(route = "default_meal_setup_screen", title = "Default Meal Setup")
     object MealList: Screen(route = "meal_list_screen", title = "Meal List")
 }

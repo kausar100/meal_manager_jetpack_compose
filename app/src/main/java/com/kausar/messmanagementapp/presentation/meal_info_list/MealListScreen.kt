@@ -24,6 +24,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -32,6 +34,7 @@ import androidx.compose.ui.unit.sp
 import com.kausar.messmanagementapp.data.Meal
 import com.kausar.messmanagementapp.data.MealStatus
 import com.kausar.messmanagementapp.data.mealListTitle
+import com.kausar.messmanagementapp.navigation.Screen
 import com.kausar.messmanagementapp.utils.CustomTopAppBar
 
 val mealList = (1..30).map {
@@ -56,6 +59,7 @@ fun MealListScreen(toggleDrawerState: () -> Unit) {
 
     Scaffold(topBar = {
         CustomTopAppBar(
+            title = Screen.MealList.title,
             canNavigateBack = false,
             canShowDrawer = true,
             scrollBehavior = scrollBehavior,
@@ -71,10 +75,13 @@ fun MealListScreen(toggleDrawerState: () -> Unit) {
         ) {
             Text(
                 text = "Your Meal Information",
-                textAlign = TextAlign.Center,
                 fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.Black,
+                textAlign = TextAlign.Center,
+                style= TextStyle(
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black,
+                    fontFamily = FontFamily.Cursive
+                )
             )
             Spacer(modifier = Modifier.height(16.dp))
             Column(

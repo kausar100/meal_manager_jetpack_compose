@@ -22,6 +22,7 @@ import com.kausar.messmanagementapp.presentation.auth_screen.OtpVerifyScreen
 import com.kausar.messmanagementapp.presentation.default_meal_setup_screen.DefaultMealInfo
 import com.kausar.messmanagementapp.presentation.home_screen.HomeScreen
 import com.kausar.messmanagementapp.presentation.meal_info_list.MealListScreen
+import com.kausar.messmanagementapp.presentation.profile_screen.ProfileScreen
 import com.kausar.messmanagementapp.utils.NavigationDrawer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -57,10 +58,15 @@ fun SetupNavGraph(navController: NavHostController, startDestination: String) {
                     toggle = !toggle
                     changeDrawerState(drawerState = drawerState, scope = coroutineScope)
                 }) {
-                HomeScreen(userName = username, toggleDrawerState = { toggle = true })
+                HomeScreen(userName = username, navigateToProfileScreen = {
+                    navController.navigate(Screen.Profile.route)
+                }) {
+                    toggle = true
+                }
 
             }
         }
+
 
         composable(route = Screen.PinVerify.route.plus(Screen.PinVerify.path), arguments = listOf(
             navArgument(Screen.PinVerify.argKey[0]) {
@@ -127,6 +133,12 @@ fun SetupNavGraph(navController: NavHostController, startDestination: String) {
 
             }
 
+        }
+
+        composable(route = Screen.Profile.route) {
+            ProfileScreen(onSubmit = {}) {
+                navController.navigateUp()
+            }
         }
     }
 }

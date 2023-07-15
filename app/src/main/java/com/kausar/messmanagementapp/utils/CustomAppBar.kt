@@ -40,7 +40,7 @@ fun CustomTopAppBar(
                 title,
                 fontWeight = FontWeight.Bold,
                 color = Color.Black,
-                letterSpacing = 2.sp
+                letterSpacing = 1.sp
             )
         }
 

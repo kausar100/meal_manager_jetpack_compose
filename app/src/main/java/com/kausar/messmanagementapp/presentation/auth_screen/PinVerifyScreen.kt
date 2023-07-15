@@ -35,7 +35,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kausar.messmanagementapp.R
-import com.kausar.messmanagementapp.utils.CustomTextField
+import com.kausar.messmanagementapp.utils.CustomOutlinedTextField
 import com.kausar.messmanagementapp.utils.CustomTopAppBar
 import com.kausar.messmanagementapp.utils.WelcomeText
 
@@ -91,7 +91,7 @@ fun VerifyPinContent(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        CustomTextField(modifier = Modifier.fillMaxWidth(), input = otp, onInputChange = {
+        CustomOutlinedTextField(modifier = Modifier.fillMaxWidth(), input = otp, onInputChange = {
             onChange(it)
         }, placeholder = { Text(text = "Enter otp send to your number") }, prefixIcon = {
             Image(

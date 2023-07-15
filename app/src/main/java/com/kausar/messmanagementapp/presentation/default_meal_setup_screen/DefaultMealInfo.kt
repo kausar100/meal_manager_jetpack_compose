@@ -15,21 +15,25 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.kausar.messmanagementapp.navigation.Screen
 import com.kausar.messmanagementapp.presentation.home_screen.MealInfo
 import com.kausar.messmanagementapp.utils.CustomTopAppBar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DefaultMealInfo( toggleDrawerState: () -> Unit) {
+fun DefaultMealInfo(toggleDrawerState: () -> Unit) {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
     Scaffold(topBar = {
         CustomTopAppBar(
+            title = Screen.DefaultMealSetup.title,
             canNavigateBack = false,
             canShowDrawer = true,
             scrollBehavior = scrollBehavior,
@@ -44,11 +48,14 @@ fun DefaultMealInfo( toggleDrawerState: () -> Unit) {
             verticalArrangement = Arrangement.Top
         ) {
             Text(
-                text = "Setup your default meal",
-                textAlign = TextAlign.Center,
+                text = "Setup your default meal info",
                 fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.Black,
+                textAlign = TextAlign.Center,
+                style = TextStyle(
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black,
+                    fontFamily = FontFamily.Cursive
+                )
             )
             Spacer(modifier = Modifier.height(16.dp))
             MealInfo(
@@ -62,10 +69,9 @@ fun DefaultMealInfo( toggleDrawerState: () -> Unit) {
 }
 
 
-
 @Preview(showBackground = true)
 @Composable
-fun PreviewDefaultMealInfo(){
+fun PreviewDefaultMealInfo() {
     DefaultMealInfo {
 
     }
