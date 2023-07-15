@@ -66,7 +66,7 @@ fun AboutScreen(toggleDrawerState: () -> Unit) {
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
-                    text = "1. Mess member can set their daily meal information.\n2.They can update their meal information and \n3.Finally they can see list of meal information for a month",
+                    text = "1. Mess member can set their daily meal information.\n\n2.They can update their meal information and \n\n3.Finally they can see list of meal information for a month",
                     fontSize = 16.sp,
                     textAlign = TextAlign.Justify,
                     fontWeight = FontWeight.Normal,

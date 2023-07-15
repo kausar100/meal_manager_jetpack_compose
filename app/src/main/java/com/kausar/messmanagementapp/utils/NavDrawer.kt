@@ -33,24 +33,20 @@ fun NavigationDrawer(
             ) { onUserPickedOption ->
                 when (onUserPickedOption) {
                     Screen.Home -> {
-                        navController.navigate(Screen.Home.passName("Kausar")) {
-                            popUpTo(navController.graph.id) {
-                                if (navController.previousBackStackEntry != null) {
-                                    inclusive = true
-                                }
-                            }
-                        }
+                        navigateToDrawerItem(Screen.Home.passName("kausar"), navController)
                     }
                     Screen.About -> {
-                        navController.navigate(Screen.About.route) {
-                            popUpTo(navController.graph.id) {
-                                if (navController.previousBackStackEntry != null) {
-                                    inclusive = true
-                                }
+                        navigateToDrawerItem(Screen.About.route, navController)
 
-                            }
+                    }
 
-                        }
+                    Screen.DefaultMealSetup -> {
+                        navigateToDrawerItem(Screen.DefaultMealSetup.route, navController)
+
+                    }
+
+                    Screen.MealList -> {
+                        navigateToDrawerItem(Screen.MealList.route, navController)
                     }
 
                     else -> {
@@ -59,5 +55,15 @@ fun NavigationDrawer(
             }
         }) {
         content()
+    }
+}
+
+fun navigateToDrawerItem(screen: String, navController: NavController){
+    navController.navigate(screen) {
+        popUpTo(navController.graph.id) {
+            if (navController.previousBackStackEntry != null) {
+                inclusive = true
+            }
+        }
     }
 }

@@ -19,7 +19,9 @@ import androidx.navigation.navArgument
 import com.kausar.messmanagementapp.presentation.AboutScreen
 import com.kausar.messmanagementapp.presentation.auth_screen.AuthScreen
 import com.kausar.messmanagementapp.presentation.auth_screen.OtpVerifyScreen
+import com.kausar.messmanagementapp.presentation.default_meal_setup_screen.DefaultMealInfo
 import com.kausar.messmanagementapp.presentation.home_screen.HomeScreen
+import com.kausar.messmanagementapp.presentation.meal_info_list.MealListScreen
 import com.kausar.messmanagementapp.utils.NavigationDrawer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -86,6 +88,40 @@ fun SetupNavGraph(navController: NavHostController, startDestination: String) {
                     changeDrawerState(drawerState = drawerState, scope = coroutineScope)
                 }) {
                 AboutScreen {
+                    toggle = true
+                }
+
+            }
+
+        }
+
+        composable(route = Screen.DefaultMealSetup.route) {
+            NavigationDrawer(navController = navController,
+                drawerState = drawerState,
+                currentScreen = Screen.DefaultMealSetup.title!!,
+                needToggle = toggle,
+                toggleDrawerState = {
+                    toggle = !toggle
+                    changeDrawerState(drawerState = drawerState, scope = coroutineScope)
+                }) {
+                DefaultMealInfo {
+                    toggle = true
+                }
+
+            }
+
+        }
+
+        composable(route = Screen.MealList.route) {
+            NavigationDrawer(navController = navController,
+                drawerState = drawerState,
+                currentScreen = Screen.MealList.title!!,
+                needToggle = toggle,
+                toggleDrawerState = {
+                    toggle = !toggle
+                    changeDrawerState(drawerState = drawerState, scope = coroutineScope)
+                }) {
+                MealListScreen {
                     toggle = true
                 }
 
