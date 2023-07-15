@@ -73,6 +73,7 @@ fun MealListScreen(toggleDrawerState: () -> Unit) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top
         ) {
+            Spacer(modifier = Modifier.fillMaxHeight(.1f))
             Text(
                 text = "Your Meal Information",
                 fontSize = 20.sp,
@@ -129,7 +130,7 @@ fun ShowInfo(modifier: Modifier, item: Meal) {
     ) {
         Text(
             text = item.date,
-            fontSize = 12.sp,
+            fontSize = 10.sp,
             textAlign = TextAlign.Center,
             modifier = Modifier.weight(2f)
         )
@@ -144,7 +145,7 @@ fun ShowInfo(modifier: Modifier, item: Meal) {
         Checkbox(checked = item.dinner, onCheckedChange = {}, modifier = Modifier.weight(1f))
         Text(
             text = item.status.name,
-            fontSize = 4.sp,
+            fontSize = 6.sp,
             color = Color.White,
             textAlign = TextAlign.Center,
             fontWeight = FontWeight.ExtraBold,
@@ -176,8 +177,8 @@ fun ShowTitle(modifier: Modifier, items: List<String>) {
                 text = items[it],
                 fontWeight = FontWeight.W800,
                 textAlign = TextAlign.Center,
-                fontSize = 10.sp,
-                modifier = Modifier.weight(if (it == 0 || it == 1) 2f else if (it == items.lastIndex) 1.3f else 1f)
+                fontSize = 12.sp,
+                modifier = Modifier.weight(if (it == 0 || it == 1) 2f else if (it == items.lastIndex) 1.5f else 1f)
             )
         }
 

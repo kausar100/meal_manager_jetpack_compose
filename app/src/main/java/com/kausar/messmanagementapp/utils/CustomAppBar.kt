@@ -83,7 +83,7 @@ fun CustomTopAppBar(
 @Composable
 fun WelcomeText(name: String) {
     Text(
-        text = "Welcome To Meal Management App\n${name.uppercase()}",
+        text = "Welcome To Meal Management App\n\n\n${name.uppercase()}",
         textAlign = TextAlign.Center,
         fontSize = 20.sp,
         fontWeight = FontWeight.Bold,

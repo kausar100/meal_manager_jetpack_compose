@@ -56,6 +56,7 @@ fun OtpVerifyScreen(userName: String, phoneNumber: String, onSubmit: (String) ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .padding(16.dp)
                 .padding(padding),
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally

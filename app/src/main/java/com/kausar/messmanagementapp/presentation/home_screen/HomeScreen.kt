@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -47,7 +48,7 @@ import java.util.Calendar
 @Composable
 fun HomeScreen(
     userName: String,
-    navigateToProfileScreen: ()->Unit,
+    navigateToProfileScreen: () -> Unit,
     toggleDrawerState: () -> Unit
 ) {
 
@@ -75,6 +76,7 @@ fun HomeScreen(
                 .padding(it),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            Spacer(modifier = Modifier.fillMaxHeight(.1f))
             DateInfo(modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
@@ -119,7 +121,8 @@ fun MealInfo(modifier: Modifier = Modifier) {
             .border(
                 width = 1.dp, color = Color.Gray, shape = RoundedCornerShape(4.dp)
             )
-            .padding(8.dp),
+            .padding(horizontal = 8.dp)
+            .padding(top = 8.dp, bottom = 0.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
@@ -169,6 +172,8 @@ fun MealInfo(modifier: Modifier = Modifier) {
             })
 
         }
+
+        Spacer(modifier = Modifier.fillMaxHeight(.1f))
 
         OutlinedButton(
             onClick = {
@@ -237,7 +242,7 @@ fun DateInfo(
             text = "Meal Information",
             textAlign = TextAlign.Center,
             fontSize = 20.sp,
-            style= TextStyle(
+            style = TextStyle(
                 fontWeight = FontWeight.Bold,
                 color = Color.Black,
                 fontFamily = FontFamily.Cursive
@@ -253,7 +258,7 @@ fun DateInfo(
                 Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "previous_day")
 
             }
-            Text(text = date, modifier = Modifier.weight(3f), textAlign = TextAlign.Center)
+            Text(text = date, modifier = Modifier.weight(5f), textAlign = TextAlign.Center)
             IconButton(onClick = onNextDay, modifier = Modifier.weight(1f)) {
                 Icon(
                     imageVector = Icons.Default.ArrowForward, contentDescription = "next_day"

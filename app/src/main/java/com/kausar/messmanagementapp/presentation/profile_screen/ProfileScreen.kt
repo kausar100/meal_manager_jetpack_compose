@@ -132,6 +132,7 @@ fun UserInfo(
         )
         Spacer(modifier = Modifier.height(8.dp))
         CustomBasicTextField(
+            readOnly = true,
             input = info,
             onInputChange = onInputChange,
             keyboardOptions = keyboardOptions,

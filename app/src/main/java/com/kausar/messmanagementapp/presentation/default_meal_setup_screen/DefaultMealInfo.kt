@@ -3,6 +3,7 @@ package com.kausar.messmanagementapp.presentation.default_meal_setup_screen
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -47,6 +48,7 @@ fun DefaultMealInfo(toggleDrawerState: () -> Unit) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top
         ) {
+            Spacer(modifier = Modifier.fillMaxHeight(.1f))
             Text(
                 text = "Setup your default meal info",
                 fontSize = 20.sp,
