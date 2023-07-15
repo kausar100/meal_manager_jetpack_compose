@@ -3,7 +3,7 @@ package com.kausar.messmanagementapp.presentation.auth_screen
 import android.app.Activity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.kausar.messmanagementapp.data.AuthRepository
+import com.kausar.messmanagementapp.data.firebase_auth.AuthRepository
 import com.kausar.messmanagementapp.utils.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel

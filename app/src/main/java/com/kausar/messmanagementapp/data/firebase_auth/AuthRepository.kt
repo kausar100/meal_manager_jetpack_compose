@@ -1,4 +1,4 @@
-package com.kausar.messmanagementapp.data
+package com.kausar.messmanagementapp.data.firebase_auth
 
 import android.app.Activity
 import com.google.firebase.auth.AuthResult

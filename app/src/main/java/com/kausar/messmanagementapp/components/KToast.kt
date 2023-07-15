@@ -1,4 +1,4 @@
-package com.kausar.messmanagementapp.utils
+package com.kausar.messmanagementapp.components
 
 
 import androidx.compose.animation.AnimatedVisibility

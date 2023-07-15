@@ -3,6 +3,7 @@ package com.kausar.messmanagementapp.presentation.meal_info_list
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -12,9 +13,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -31,31 +33,38 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.kausar.messmanagementapp.data.Meal
-import com.kausar.messmanagementapp.data.MealStatus
-import com.kausar.messmanagementapp.data.mealListTitle
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.kausar.messmanagementapp.components.CustomProgressBar
+import com.kausar.messmanagementapp.data.model.Meal
+import com.kausar.messmanagementapp.data.model.MealStatus
+import com.kausar.messmanagementapp.data.model.mealListTitle
 import com.kausar.messmanagementapp.navigation.Screen
-import com.kausar.messmanagementapp.utils.CustomTopAppBar
+import com.kausar.messmanagementapp.components.CustomTopAppBar
+import com.kausar.messmanagementapp.presentation.viewmodels.RealtimeDbViewModel
 
-val mealList = (1..30).map {
-    Meal(
-        date = "$it/7/23",
-        dayName = "Wednesday",
-        breakfast = true,
-        lunch = true,
-        dinner = true,
-        status = when {
-            it % 2 == 0 -> MealStatus.Pending
-            it % 3 == 0 -> MealStatus.Completed
-            else -> MealStatus.Running
-        }
-    )
-}.toList()
+//val mealList = (1..30).map {
+//    Meal(
+//        date = "$it/7/23",
+//        dayName = "Wednesday",
+//        breakfast = true,
+//        lunch = true,
+//        dinner = true,
+//        status = when {
+//            it % 2 == 0 -> MealStatus.Pending
+//            it % 3 == 0 -> MealStatus.Completed
+//            else -> MealStatus.Running
+//        }
+//    )
+//}.toList()
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MealListScreen(toggleDrawerState: () -> Unit) {
+fun MealListScreen(
+    toggleDrawerState: () -> Unit,
+    viewModel: RealtimeDbViewModel = hiltViewModel()
+) {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    val itemState = viewModel.response.value
 
     Scaffold(topBar = {
         CustomTopAppBar(
@@ -78,7 +87,7 @@ fun MealListScreen(toggleDrawerState: () -> Unit) {
                 text = "Your Meal Information",
                 fontSize = 20.sp,
                 textAlign = TextAlign.Center,
-                style= TextStyle(
+                style = TextStyle(
                     fontWeight = FontWeight.Bold,
                     color = Color.Black,
                     fontFamily = FontFamily.Cursive
@@ -90,30 +99,60 @@ fun MealListScreen(toggleDrawerState: () -> Unit) {
                     .fillMaxHeight(.8f)
                     .border(1.dp, Color.Gray, RoundedCornerShape(4.dp))
             ) {
-                ShowTitle(
-                    modifier = Modifier
-                        .fillMaxWidth(.9f)
-                        .shadow(
-                            elevation = 1.dp,
-                            clip = true
-                        ),
-                    mealListTitle
-                )
-                LazyColumn(
-                    content = {
-                        itemsIndexed(mealList) { _, meal ->
-                            ShowInfo(
-                                modifier = Modifier
-                                    .fillMaxWidth(.9f)
-                                    .shadow(
-                                        elevation = 1.dp,
-                                        clip = true
-                                    ),
-                                meal
-                            )
+
+                if (itemState.item.isNotEmpty()) {
+                    val mealResponseList = itemState.item
+
+                    ShowTitle(
+                        modifier = Modifier
+                            .fillMaxWidth(.9f)
+                            .shadow(
+                                elevation = 1.dp,
+                                clip = true
+                            ),
+                        mealListTitle
+                    )
+                    LazyColumn(
+                        content = {
+                            items(
+                                mealResponseList,
+                                key = { firebase_db ->
+                                    firebase_db.key!!
+                                }
+
+                            ) { item ->
+                                ShowInfo(
+                                    modifier = Modifier
+                                        .fillMaxWidth(.9f)
+                                        .shadow(
+                                            elevation = 1.dp,
+                                            clip = true
+                                        ),
+                                    item = item.meal!!
+                                )
+                            }
                         }
+                    )
+                } else {
+                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text(text = "Not found any meal history!")
                     }
-                )
+
+                }
+
+                if (itemState.isLoading) {
+                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator()
+                    }
+                }
+
+                if (itemState.error.isNotEmpty()) {
+                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text(itemState.error)
+                    }
+                }
+
+
             }
         }
     }
@@ -129,29 +168,29 @@ fun ShowInfo(modifier: Modifier, item: Meal) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            text = item.date,
+            text = item.date!!,
             fontSize = 10.sp,
             textAlign = TextAlign.Center,
             modifier = Modifier.weight(2f)
         )
         Text(
-            text = item.dayName,
+            text = item.dayName!!,
             fontSize = 10.sp,
             textAlign = TextAlign.Center,
             modifier = Modifier.weight(2f)
         )
-        Checkbox(checked = item.breakfast, onCheckedChange = {}, modifier = Modifier.weight(1f))
-        Checkbox(checked = item.lunch, onCheckedChange = {}, modifier = Modifier.weight(1f))
-        Checkbox(checked = item.dinner, onCheckedChange = {}, modifier = Modifier.weight(1f))
+        Checkbox(checked = item.breakfast!!, onCheckedChange = {}, modifier = Modifier.weight(1f))
+        Checkbox(checked = item.lunch!!, onCheckedChange = {}, modifier = Modifier.weight(1f))
+        Checkbox(checked = item.dinner!!, onCheckedChange = {}, modifier = Modifier.weight(1f))
         Text(
-            text = item.status.name,
+            text = item.status!!.name,
             fontSize = 6.sp,
             color = Color.White,
             textAlign = TextAlign.Center,
             fontWeight = FontWeight.ExtraBold,
             modifier = Modifier
                 .background(
-                    when (item.status) {
+                    when (item.status!!) {
                         MealStatus.Pending -> Color.Gray
                         MealStatus.Running -> Color.Blue
                         MealStatus.Completed -> Color.Green
@@ -190,7 +229,5 @@ fun ShowTitle(modifier: Modifier, items: List<String>) {
 @Preview(showBackground = true)
 @Composable
 fun PreviewMealListScreen() {
-    MealListScreen {
-
-    }
+    MealListScreen(toggleDrawerState = { /*TODO*/ })
 }

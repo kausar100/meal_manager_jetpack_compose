@@ -1,4 +1,4 @@
-package com.kausar.messmanagementapp.data
+package com.kausar.messmanagementapp.data.shared
 
 import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons

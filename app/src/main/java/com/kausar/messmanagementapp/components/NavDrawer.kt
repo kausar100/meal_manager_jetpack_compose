@@ -1,11 +1,11 @@
-package com.kausar.messmanagementapp.utils
+package com.kausar.messmanagementapp.components
 
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavController
-import com.kausar.messmanagementapp.data.DrawerParams
+import com.kausar.messmanagementapp.data.shared.DrawerParams
 import com.kausar.messmanagementapp.navigation.Screen
 
 

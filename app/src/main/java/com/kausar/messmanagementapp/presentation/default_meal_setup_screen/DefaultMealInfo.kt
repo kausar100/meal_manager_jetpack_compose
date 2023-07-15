@@ -13,6 +13,10 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -25,12 +29,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kausar.messmanagementapp.navigation.Screen
 import com.kausar.messmanagementapp.presentation.home_screen.MealInfo
-import com.kausar.messmanagementapp.utils.CustomTopAppBar
+import com.kausar.messmanagementapp.components.CustomTopAppBar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DefaultMealInfo(toggleDrawerState: () -> Unit) {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+
+    var isInsert by remember{
+        mutableStateOf(false)
+    }
 
     Scaffold(topBar = {
         CustomTopAppBar(
@@ -63,7 +71,11 @@ fun DefaultMealInfo(toggleDrawerState: () -> Unit) {
             MealInfo(
                 modifier = Modifier
                     .fillMaxWidth(.9f)
-                    .padding(16.dp)
+                    .padding(16.dp),
+                updateMeal = { breakfast, lunch, dinner ->
+
+
+                }
             )
         }
     }

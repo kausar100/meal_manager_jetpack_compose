@@ -36,9 +36,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kausar.messmanagementapp.R
-import com.kausar.messmanagementapp.utils.CustomOutlinedTextField
-import com.kausar.messmanagementapp.utils.CustomTopAppBar
-import com.kausar.messmanagementapp.utils.WelcomeText
+import com.kausar.messmanagementapp.components.CustomOutlinedTextField
+import com.kausar.messmanagementapp.components.CustomTopAppBar
+import com.kausar.messmanagementapp.components.WelcomeText
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

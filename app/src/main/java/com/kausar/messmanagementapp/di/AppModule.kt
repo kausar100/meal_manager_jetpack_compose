@@ -1,8 +1,8 @@
 package com.kausar.messmanagementapp.di
 
 import com.google.firebase.auth.FirebaseAuth
-import com.kausar.messmanagementapp.data.AuthRepository
-import com.kausar.messmanagementapp.data.AuthRepositoryImpl
+import com.kausar.messmanagementapp.data.firebase_auth.AuthRepository
+import com.kausar.messmanagementapp.data.firebase_auth.AuthRepositoryImpl
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

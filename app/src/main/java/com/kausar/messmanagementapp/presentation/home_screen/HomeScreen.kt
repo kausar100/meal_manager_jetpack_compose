@@ -2,6 +2,7 @@ package com.kausar.messmanagementapp.presentation.home_screen
 
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -28,11 +29,13 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -40,14 +43,24 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.kausar.messmanagementapp.data.model.Meal
+import com.kausar.messmanagementapp.data.model.MealStatus
 import com.kausar.messmanagementapp.navigation.Screen
-import com.kausar.messmanagementapp.utils.CustomTopAppBar
+import com.kausar.messmanagementapp.presentation.viewmodels.RealtimeDbViewModel
+import com.kausar.messmanagementapp.components.CustomProgressBar
+import com.kausar.messmanagementapp.components.CustomTopAppBar
+import com.kausar.messmanagementapp.utils.ResultState
+import com.kausar.messmanagementapp.utils.showToast
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import java.util.Calendar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     userName: String,
+    viewModel: RealtimeDbViewModel = hiltViewModel(),
     navigateToProfileScreen: () -> Unit,
     toggleDrawerState: () -> Unit
 ) {
@@ -57,6 +70,13 @@ fun HomeScreen(
     var currentDate by rememberSaveable {
         mutableStateOf(fetchDateAsString(calendar))
     }
+    var showProgress by rememberSaveable {
+        mutableStateOf(false)
+    }
+
+
+    val scope = rememberCoroutineScope()
+    val context = LocalContext.current
 
     Scaffold(topBar = {
         CustomTopAppBar(
@@ -95,17 +115,53 @@ fun HomeScreen(
             MealInfo(
                 modifier = Modifier
                     .fillMaxWidth(.9f)
-                    .padding(16.dp)
+                    .padding(16.dp),
+                updateMeal = { breakfast, lunch, dinner ->
+                    scope.launch {
+                        viewModel.insert(
+                            Meal(
+                                currentDate,
+                                getDayName(calendar),
+                                breakfast,
+                                lunch,
+                                dinner,
+                                MealStatus.Pending
+                            )
+                        ).collectLatest { result ->
+                            when (result) {
+                                is ResultState.Success -> {
+                                    context.showToast(result.data)
+                                    showProgress = false
+                                }
+
+                                is ResultState.Failure -> {
+                                    context.showToast(result.message.toString())
+                                    showProgress = false
+                                }
+
+                                is ResultState.Loading -> {
+                                    showProgress = true
+                                }
+                            }
+                        }
+                    }
+                }
             )
+
+            if (showProgress) {
+                CustomProgressBar()
+            }
 
         }
 
     }
-
 }
 
 @Composable
-fun MealInfo(modifier: Modifier = Modifier) {
+fun MealInfo(
+    modifier: Modifier = Modifier,
+    updateMeal: (Boolean, Boolean, Boolean) -> Unit
+) {
     var breakFast by rememberSaveable { mutableStateOf(true) }
     var lunch by rememberSaveable { mutableStateOf(true) }
     var dinner by rememberSaveable { mutableStateOf(true) }
@@ -178,8 +234,8 @@ fun MealInfo(modifier: Modifier = Modifier) {
         OutlinedButton(
             onClick = {
                 updateMealInfo = !updateMealInfo
-                if (updateMealInfo) {
-                    //update info
+                if (!updateMealInfo) {
+                    updateMeal(breakFast, lunch, dinner)
                 }
             }, shape = RoundedCornerShape(4.dp), colors = ButtonDefaults.buttonColors(
                 containerColor = if (updateMealInfo) Color(0xFF222B83) else Color.DarkGray,
@@ -213,7 +269,12 @@ private fun fetchDateAsString(calendar: Calendar): String {
     val year = calendar[Calendar.YEAR]
     val month = calendar[Calendar.MONTH]
     val dayOfMonth = calendar[Calendar.DAY_OF_MONTH]
-    val dayName = when (calendar[Calendar.DAY_OF_WEEK]) {
+    val dayName = getDayName(calendar)
+    return "$dayName, $dayOfMonth/${month + 1}/$year"
+}
+
+private fun getDayName(calendar: Calendar): String {
+    val day = when (calendar[Calendar.DAY_OF_WEEK]) {
         1 -> "SUNDAY"
         2 -> "MONDAY"
         3 -> "TUESDAY"
@@ -223,7 +284,7 @@ private fun fetchDateAsString(calendar: Calendar): String {
         7 -> "SATURDAY"
         else -> ""
     }
-    return "$dayName, $dayOfMonth/${month + 1}/$year"
+    return day
 }
 
 @Composable

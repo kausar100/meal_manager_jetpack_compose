@@ -1,4 +1,4 @@
-package com.kausar.messmanagementapp.utils
+package com.kausar.messmanagementapp.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -36,8 +36,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kausar.messmanagementapp.R
-import com.kausar.messmanagementapp.data.AppDrawerItemInfo
-import com.kausar.messmanagementapp.data.DrawerParams
+import com.kausar.messmanagementapp.data.shared.AppDrawerItemInfo
+import com.kausar.messmanagementapp.data.shared.DrawerParams
 import com.kausar.messmanagementapp.navigation.Screen
 
 @Composable

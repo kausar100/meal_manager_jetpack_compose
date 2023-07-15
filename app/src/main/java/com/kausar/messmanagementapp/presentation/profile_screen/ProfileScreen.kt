@@ -34,8 +34,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kausar.messmanagementapp.R
-import com.kausar.messmanagementapp.utils.CustomBasicTextField
-import com.kausar.messmanagementapp.utils.CustomTopAppBar
+import com.kausar.messmanagementapp.components.CustomBasicTextField
+import com.kausar.messmanagementapp.components.CustomTopAppBar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
