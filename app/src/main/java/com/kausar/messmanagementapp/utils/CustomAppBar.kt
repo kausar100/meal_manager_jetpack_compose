@@ -14,6 +14,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -38,9 +40,14 @@ fun CustomTopAppBar(
         title?.let {
             Text(
                 title,
-                fontWeight = FontWeight.Bold,
-                color = Color.Black,
-                letterSpacing = 1.sp
+                letterSpacing = 1.sp,
+                textAlign = TextAlign.Center,
+                fontSize = 20.sp,
+                style = TextStyle(
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black,
+                    fontFamily = FontFamily.Cursive
+                )
             )
         }
 
@@ -83,7 +90,7 @@ fun CustomTopAppBar(
 @Composable
 fun WelcomeText(name: String) {
     Text(
-        text = "Welcome To Meal Management App\n\n\n${name.uppercase()}",
+        text = "Welcome To Meal Management App\n\n${name.uppercase()}",
         textAlign = TextAlign.Center,
         fontSize = 20.sp,
         fontWeight = FontWeight.Bold,

@@ -40,6 +40,7 @@ fun AboutScreen(toggleDrawerState: () -> Unit) {
     Scaffold(
         topBar = {
             CustomTopAppBar(
+                title = "Meal Management App",
                 canNavigateBack = false,
                 canShowDrawer = true,
                 showAction = false,

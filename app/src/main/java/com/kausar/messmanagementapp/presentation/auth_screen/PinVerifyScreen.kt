@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -62,7 +63,7 @@ fun OtpVerifyScreen(userName: String, phoneNumber: String, onSubmit: (String) ->
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             WelcomeText(name = userName)
-            Spacer(modifier = Modifier.height(40.dp))
+            Spacer(modifier = Modifier.fillMaxHeight(.1f))
             Text(
                 text = "Please enter otp that will be sent to $phoneNumber",
                 textAlign = TextAlign.Center,
@@ -70,8 +71,8 @@ fun OtpVerifyScreen(userName: String, phoneNumber: String, onSubmit: (String) ->
                 fontWeight = FontWeight.Bold,
                 color = Color.Black,
             )
-            Spacer(modifier = Modifier.height(8.dp))
-            VerifyPinContent(modifier = Modifier.fillMaxSize(), otp = otp, onCodeEnter = {
+            Spacer(modifier = Modifier.height(16.dp))
+            VerifyPinContent(otp = otp, onCodeEnter = {
                 onSubmit(it)
 
             }, onChange = {
@@ -83,18 +84,17 @@ fun OtpVerifyScreen(userName: String, phoneNumber: String, onSubmit: (String) ->
 }
 
 @Composable
-fun VerifyPinContent(
-    modifier: Modifier, onCodeEnter: (String) -> Unit, otp: String = "", onChange: (String) -> Unit
+fun VerifyPinContent(onCodeEnter: (String) -> Unit, otp: String = "", onChange: (String) -> Unit
 ) {
     val focusManager = LocalFocusManager.current
     Column(
-        modifier = modifier.padding(16.dp),
+        modifier = Modifier.padding(horizontal = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         CustomOutlinedTextField(modifier = Modifier.fillMaxWidth(), input = otp, onInputChange = {
             onChange(it)
-        }, placeholder = { Text(text = "Enter otp send to your number") }, prefixIcon = {
+        }, placeholder = { Text(text = "Enter otp") }, prefixIcon = {
             Image(
                 painter = painterResource(id = R.drawable.ic_pin),
                 contentDescription = "otp",
