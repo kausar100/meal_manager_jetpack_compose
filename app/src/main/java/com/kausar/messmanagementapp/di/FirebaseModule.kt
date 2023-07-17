@@ -16,5 +16,5 @@ object FirebaseModule {
 
     @Provides
     @Singleton
-    fun providesRealTimeDb() : DatabaseReference = Firebase.database.reference.child("meal")
+    fun providesRealTimeDb() : DatabaseReference = Firebase.database.reference.child("meal_info")
 }

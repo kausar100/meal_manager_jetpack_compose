@@ -2,7 +2,6 @@ package com.kausar.messmanagementapp.presentation.home_screen
 
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -44,12 +43,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.kausar.messmanagementapp.components.CustomProgressBar
+import com.kausar.messmanagementapp.components.CustomTopAppBar
 import com.kausar.messmanagementapp.data.model.Meal
 import com.kausar.messmanagementapp.data.model.MealStatus
 import com.kausar.messmanagementapp.navigation.Screen
 import com.kausar.messmanagementapp.presentation.viewmodels.RealtimeDbViewModel
-import com.kausar.messmanagementapp.components.CustomProgressBar
-import com.kausar.messmanagementapp.components.CustomTopAppBar
 import com.kausar.messmanagementapp.utils.ResultState
 import com.kausar.messmanagementapp.utils.showToast
 import kotlinx.coroutines.flow.collectLatest
@@ -120,7 +119,7 @@ fun HomeScreen(
                     scope.launch {
                         viewModel.insert(
                             Meal(
-                                currentDate,
+                                getDate(calendar),
                                 getDayName(calendar),
                                 breakfast,
                                 lunch,
@@ -128,19 +127,19 @@ fun HomeScreen(
                                 MealStatus.Pending
                             )
                         ).collectLatest { result ->
-                            when (result) {
+                            showProgress = when (result) {
                                 is ResultState.Success -> {
                                     context.showToast(result.data)
-                                    showProgress = false
+                                    false
                                 }
 
                                 is ResultState.Failure -> {
                                     context.showToast(result.message.toString())
-                                    showProgress = false
+                                    false
                                 }
 
                                 is ResultState.Loading -> {
-                                    showProgress = true
+                                    true
                                 }
                             }
                         }
@@ -149,7 +148,7 @@ fun HomeScreen(
             )
 
             if (showProgress) {
-                CustomProgressBar()
+                CustomProgressBar(msg = "Loading...")
             }
 
         }
@@ -271,6 +270,15 @@ private fun fetchDateAsString(calendar: Calendar): String {
     val dayOfMonth = calendar[Calendar.DAY_OF_MONTH]
     val dayName = getDayName(calendar)
     return "$dayName, $dayOfMonth/${month + 1}/$year"
+}
+
+private fun getDate(calendar: Calendar): String {
+    val year = calendar[Calendar.YEAR]
+    val month = calendar[Calendar.MONTH]
+    val dayOfMonth = calendar[Calendar.DAY_OF_MONTH]
+    val prefixDayOfMonth = if (dayOfMonth < 10) "0" else ""
+    val prefixMonth = if (month < 9) "0" else ""
+    return "$prefixDayOfMonth$dayOfMonth/$prefixMonth${month + 1}/$year"
 }
 
 private fun getDayName(calendar: Calendar): String {

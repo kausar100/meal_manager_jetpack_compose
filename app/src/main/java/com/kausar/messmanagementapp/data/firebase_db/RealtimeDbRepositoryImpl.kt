@@ -1,5 +1,7 @@
 package com.kausar.messmanagementapp.data.firebase_db
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
@@ -10,16 +12,19 @@ import com.kausar.messmanagementapp.utils.ResultState
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
 class RealtimeDbRepositoryImpl @Inject constructor(
     private val db: DatabaseReference
 ) : RealtimeDbRepository {
 
+     private val phone_number = "01315783246"
     override fun insert(meal: Meal): Flow<ResultState<String>> = callbackFlow {
         trySend(ResultState.Loading)
 
-        db.push().setValue(
+        db.child(phone_number).push().setValue(
             meal
         ).addOnCompleteListener {
             if (it.isSuccessful) {
@@ -39,15 +44,20 @@ class RealtimeDbRepositoryImpl @Inject constructor(
         trySend(ResultState.Loading)
 
         val valueEvent = object : ValueEventListener {
+            @RequiresApi(Build.VERSION_CODES.O)
             override fun onDataChange(snapshot: DataSnapshot) {
-                val meals = snapshot.children.map {
+                val meals = snapshot.child(phone_number).children.map {
                     RealtimeMealResponse(
                         meal = it.getValue(Meal::class.java),
                         key = it.key
                     )
                 }
 
-                trySend(ResultState.Success(meals))
+                //sort by date ascending
+                val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
+                val sortedMeals = meals.sortedBy { LocalDate.parse(it.meal!!.date, formatter) }
+
+                trySend(ResultState.Success(sortedMeals))
             }
 
             override fun onCancelled(error: DatabaseError) {
@@ -76,7 +86,7 @@ class RealtimeDbRepositoryImpl @Inject constructor(
         map["dinner"] = res.meal?.dinner!!
         map["status"] = res.meal?.status!!
 
-        db.child(res.key!!).updateChildren(
+        db.child(phone_number).child(res.key!!).updateChildren(
             map
         ).addOnCompleteListener {
             if (it.isSuccessful) {

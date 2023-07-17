@@ -16,7 +16,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -35,27 +34,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.kausar.messmanagementapp.components.CustomProgressBar
+import com.kausar.messmanagementapp.components.CustomTopAppBar
 import com.kausar.messmanagementapp.data.model.Meal
 import com.kausar.messmanagementapp.data.model.MealStatus
 import com.kausar.messmanagementapp.data.model.mealListTitle
 import com.kausar.messmanagementapp.navigation.Screen
-import com.kausar.messmanagementapp.components.CustomTopAppBar
 import com.kausar.messmanagementapp.presentation.viewmodels.RealtimeDbViewModel
-
-//val mealList = (1..30).map {
-//    Meal(
-//        date = "$it/7/23",
-//        dayName = "Wednesday",
-//        breakfast = true,
-//        lunch = true,
-//        dinner = true,
-//        status = when {
-//            it % 2 == 0 -> MealStatus.Pending
-//            it % 3 == 0 -> MealStatus.Completed
-//            else -> MealStatus.Running
-//        }
-//    )
-//}.toList()
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -134,25 +118,25 @@ fun MealListScreen(
                         }
                     )
                 } else {
-                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text(text = "Not found any meal history!")
+                    Box(
+                        Modifier
+                            .fillMaxHeight()
+                            .fillMaxWidth(.9f),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        if (itemState.isLoading) {
+                            CustomProgressBar("Fetching data...")
+                        } else if (itemState.error.isNotEmpty()) {
+                            Text(itemState.error)
+                        } else {
+                            if (itemState.item.isEmpty()) {
+                                Text(text = "Not found any meal history!")
+                            }
+                        }
+
                     }
 
                 }
-
-                if (itemState.isLoading) {
-                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator()
-                    }
-                }
-
-                if (itemState.error.isNotEmpty()) {
-                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text(itemState.error)
-                    }
-                }
-
-
             }
         }
     }
