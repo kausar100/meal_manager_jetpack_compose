@@ -32,7 +32,7 @@ fun CustomTopAppBar(
     showAction: Boolean = false,
     actionIcon: ImageVector? = null,
     onClickAction: (() -> Unit)? = null,
-    canLogout: Boolean = false,
+    canLogout: Boolean = true,
     logoutAction: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
     scrollBehavior: TopAppBarScrollBehavior? = null,
@@ -86,7 +86,7 @@ fun CustomTopAppBar(
                 }
 
             }
-            if(canLogout){
+            if (canLogout) {
                 IconButton(onClick = logoutAction!!, Modifier.padding(end = 16.dp)) {
                     Icon(
                         imageVector = Icons.Default.ExitToApp,

@@ -31,10 +31,12 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -107,7 +109,10 @@ fun OtpVerifyScreen(
 
     Scaffold(topBar = {
         CustomTopAppBar(
-            title = Screen.PinVerify.title, canNavigateBack = false, scrollBehavior = scrollBehavior
+            title = Screen.PinVerify.title,
+            canNavigateBack = false,
+            canLogout = false,
+            scrollBehavior = scrollBehavior
         ) {}
     }) { padding ->
         Box(
@@ -174,6 +179,7 @@ fun OtpVerifyScreen(
 
 }
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun VerifyPinContent(
     onCodeEnter: (String) -> Unit,
@@ -182,22 +188,31 @@ fun VerifyPinContent(
     onChange: (String) -> Unit
 ) {
     val focusManager = LocalFocusManager.current
+    val keyboardController = LocalSoftwareKeyboardController.current
     Column(
         modifier = Modifier.padding(horizontal = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        CustomOutlinedTextField(modifier = Modifier.fillMaxWidth(), input = otp, onInputChange = {
-            onChange(it)
-        }, placeholder = { Text(text = "Enter otp") }, prefixIcon = {
-            Image(
-                painter = painterResource(id = R.drawable.ic_pin),
-                contentDescription = "otp",
-                modifier = Modifier.background(color = Color.White)
+        CustomOutlinedTextField(modifier = Modifier.fillMaxWidth(), input = otp,
+            onInputChange = {
+                if (it.length < 6) {
+                    onChange(it)
+                }else{
+                    onChange(it)
+                    keyboardController?.hide()
+                    focusManager.clearFocus(true)
+                }
+
+            }, placeholder = { Text(text = "Enter otp") }, prefixIcon = {
+                Image(
+                    painter = painterResource(id = R.drawable.ic_pin),
+                    contentDescription = "otp",
+                    modifier = Modifier.background(color = Color.White)
+                )
+            }, label = { Text(text = "OTP") }, keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Number, imeAction = ImeAction.Done
             )
-        }, label = { Text(text = "OTP") }, keyboardOptions = KeyboardOptions(
-            keyboardType = KeyboardType.Number, imeAction = ImeAction.Done
-        )
         ) {
             focusManager.clearFocus(true)
         }

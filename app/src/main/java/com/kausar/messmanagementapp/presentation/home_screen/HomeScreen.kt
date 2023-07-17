@@ -2,6 +2,7 @@ package com.kausar.messmanagementapp.presentation.home_screen
 
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -119,68 +120,71 @@ fun HomeScreen(
             onClickDrawerMenu = toggleDrawerState
         )
     }) {
-        Column(
+        Box(
             Modifier
                 .fillMaxSize()
-                .padding(it),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .padding(it), 
+            contentAlignment = Alignment.Center
         ) {
-            Spacer(modifier = Modifier.fillMaxHeight(.1f))
-            DateInfo(modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-                date = currentDate,
-                onNextDay = {
-                    calendar.add(Calendar.DATE, 1)
-                    currentDate = fetchDateAsString(calendar)
-                    println(currentDate)
-                },
-                onPreviousDay = {
-                    calendar.add(Calendar.DATE, -1)
-                    currentDate = fetchDateAsString(calendar)
-                    println(currentDate)
-                })
-
-            MealInfo(
-                modifier = Modifier
-                    .fillMaxWidth(.9f)
+            Column(
+                Modifier
+                    .fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                DateInfo(modifier = Modifier
+                    .fillMaxWidth()
                     .padding(16.dp),
-                updateMeal = { breakfast, lunch, dinner ->
-                    scope.launch {
-                        viewModel.insert(
-                            Meal(
-                                getDate(calendar),
-                                getDayName(calendar),
-                                breakfast,
-                                lunch,
-                                dinner,
-                                MealStatus.Pending
-                            )
-                        ).collectLatest { result ->
-                            showProgress = when (result) {
-                                is ResultState.Success -> {
-                                    context.showToast(result.data)
-                                    false
-                                }
+                    date = currentDate,
+                    onNextDay = {
+                        calendar.add(Calendar.DATE, 1)
+                        currentDate = fetchDateAsString(calendar)
+                        println(currentDate)
+                    },
+                    onPreviousDay = {
+                        calendar.add(Calendar.DATE, -1)
+                        currentDate = fetchDateAsString(calendar)
+                        println(currentDate)
+                    })
 
-                                is ResultState.Failure -> {
-                                    context.showToast(result.message.toString())
-                                    false
-                                }
+                MealInfo(
+                    modifier = Modifier
+                        .fillMaxWidth(.9f)
+                        .padding(16.dp),
+                    updateMeal = { breakfast, lunch, dinner ->
+                        scope.launch {
+                            viewModel.insert(
+                                Meal(
+                                    getDate(calendar),
+                                    getDayName(calendar),
+                                    breakfast,
+                                    lunch,
+                                    dinner,
+                                    MealStatus.Pending
+                                )
+                            ).collectLatest { result ->
+                                showProgress = when (result) {
+                                    is ResultState.Success -> {
+                                        context.showToast(result.data)
+                                        false
+                                    }
 
-                                is ResultState.Loading -> {
-                                    true
+                                    is ResultState.Failure -> {
+                                        context.showToast(result.message.toString())
+                                        false
+                                    }
+
+                                    is ResultState.Loading -> {
+                                        true
+                                    }
                                 }
                             }
                         }
                     }
-                }
-            )
-
+                )
+            }
             if (showProgress) {
                 CustomProgressBar(msg = "Data Updating...")
             }
-
         }
 
     }
@@ -333,10 +337,11 @@ fun DateInfo(
     onPreviousDay: () -> Unit
 ) {
     Column(
-        modifier = modifier.padding(16.dp),
+        modifier = modifier.padding(horizontal = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        Spacer(modifier = Modifier.fillMaxHeight(.1f))
         Text(
             text = "Meal Information",
             textAlign = TextAlign.Center,
@@ -373,7 +378,7 @@ fun DateInfo(
 @Preview
 @Composable
 fun PreviewHome() {
-  HomeScreen(onLogout = { /*TODO*/ }, navigateToProfileScreen = { /*TODO*/ }) {
+    HomeScreen(onLogout = { /*TODO*/ }, navigateToProfileScreen = { /*TODO*/ }) {
 
-  }
+    }
 }

@@ -10,6 +10,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -54,14 +55,7 @@ fun SetupNavGraph(navController: NavHostController, startDestination: String) {
                 }) {
                 HomeScreen(
                     onLogout = {
-                        navController.popBackStack()
-                        navController.navigate(Screen.Login.route) {
-                            popUpTo(navController.graph.id) {
-                                if (navController.previousBackStackEntry != null) {
-                                    inclusive = true
-                                }
-                            }
-                        }
+                        logoutAndNavigateToLoginPage(navController)
                     },
                     navigateToProfileScreen = {
                         navController.navigate(Screen.Profile.route)
@@ -96,7 +90,9 @@ fun SetupNavGraph(navController: NavHostController, startDestination: String) {
                     toggle = !toggle
                     changeDrawerState(drawerState = drawerState, scope = coroutineScope)
                 }) {
-                AboutScreen {
+                AboutScreen(onLogout = {
+                    logoutAndNavigateToLoginPage(navController)
+                }) {
                     toggle = true
                 }
 
@@ -113,7 +109,9 @@ fun SetupNavGraph(navController: NavHostController, startDestination: String) {
                     toggle = !toggle
                     changeDrawerState(drawerState = drawerState, scope = coroutineScope)
                 }) {
-                DefaultMealInfo {
+                DefaultMealInfo(onLogout = {
+                    logoutAndNavigateToLoginPage(navController)
+                }) {
                     toggle = true
                 }
 
@@ -130,7 +128,9 @@ fun SetupNavGraph(navController: NavHostController, startDestination: String) {
                     toggle = !toggle
                     changeDrawerState(drawerState = drawerState, scope = coroutineScope)
                 }) {
-                MealListScreen(toggleDrawerState = { toggle = true })
+                MealListScreen(
+                    onLogout = { logoutAndNavigateToLoginPage(navController) },
+                    toggleDrawerState = { toggle = true })
             }
 
         }
@@ -141,6 +141,18 @@ fun SetupNavGraph(navController: NavHostController, startDestination: String) {
             }
         }
     }
+}
+
+fun logoutAndNavigateToLoginPage(navController: NavController) {
+    navController.popBackStack()
+    navController.navigate(Screen.Login.route) {
+        popUpTo(navController.graph.id) {
+            if (navController.previousBackStackEntry != null) {
+                inclusive = true
+            }
+        }
+    }
+
 }
 
 @Composable

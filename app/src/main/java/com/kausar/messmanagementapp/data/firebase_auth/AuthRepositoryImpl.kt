@@ -74,19 +74,20 @@ class AuthRepositoryImpl @Inject constructor(
             }
 
         awaitClose { close() }
-
     }
 
-    override fun logout(): Flow<ResultState<String>>  = callbackFlow{
+    override fun logout(): Flow<ResultState<String>> = callbackFlow {
         trySend(ResultState.Loading)
 
-        if (firebaseAuth.currentUser!=null){
+        if (firebaseAuth.currentUser != null) {
             firebaseAuth.signOut()
             trySend(ResultState.Success("Successfully log out!"))
-        }else{
+        } else {
             trySend(ResultState.Failure(Exception("No user found!")))
 
         }
         awaitClose { close() }
     }
+
+
 }

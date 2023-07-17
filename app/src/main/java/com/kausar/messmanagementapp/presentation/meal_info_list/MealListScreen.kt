@@ -44,6 +44,7 @@ import com.kausar.messmanagementapp.presentation.viewmodels.RealtimeDbViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MealListScreen(
+    onLogout: ()->Unit,
     toggleDrawerState: () -> Unit,
     viewModel: RealtimeDbViewModel = hiltViewModel()
 ) {
@@ -55,6 +56,7 @@ fun MealListScreen(
             title = Screen.MealList.title,
             canNavigateBack = false,
             canShowDrawer = true,
+            logoutAction = onLogout,
             scrollBehavior = scrollBehavior,
             onClickDrawerMenu = toggleDrawerState
         )
@@ -80,7 +82,7 @@ fun MealListScreen(
             Spacer(modifier = Modifier.height(16.dp))
             Column(
                 Modifier
-                    .fillMaxHeight(.8f)
+                    .fillMaxHeight(.9f)
                     .border(1.dp, Color.Gray, RoundedCornerShape(4.dp))
             ) {
 
@@ -213,5 +215,5 @@ fun ShowTitle(modifier: Modifier, items: List<String>) {
 @Preview(showBackground = true)
 @Composable
 fun PreviewMealListScreen() {
-    MealListScreen(toggleDrawerState = { /*TODO*/ })
+   MealListScreen(onLogout = { /*TODO*/ }, toggleDrawerState = { /*TODO*/ })
 }

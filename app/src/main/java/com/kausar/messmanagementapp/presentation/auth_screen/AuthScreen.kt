@@ -64,6 +64,7 @@ fun AuthScreen(
             CustomTopAppBar(
                 title = screenTitle.toString(),
                 canNavigateBack = false,
+                canLogout = false,
                 scrollBehavior = scrollBehavior
             ) {}
         }
