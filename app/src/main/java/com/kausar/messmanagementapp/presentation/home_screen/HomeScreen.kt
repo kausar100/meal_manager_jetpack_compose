@@ -58,7 +58,6 @@ import java.util.Calendar
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    userName: String,
     viewModel: RealtimeDbViewModel = hiltViewModel(),
     navigateToProfileScreen: () -> Unit,
     toggleDrawerState: () -> Unit
@@ -148,7 +147,7 @@ fun HomeScreen(
             )
 
             if (showProgress) {
-                CustomProgressBar(msg = "Loading...")
+                CustomProgressBar(msg = "Data Updating...")
             }
 
         }
@@ -343,7 +342,7 @@ fun DateInfo(
 @Preview
 @Composable
 fun PreviewHome() {
-    HomeScreen(userName = "", navigateToProfileScreen = { /*TODO*/ }) {
+    HomeScreen(navigateToProfileScreen = { /*TODO*/ }) {
 
     }
 }

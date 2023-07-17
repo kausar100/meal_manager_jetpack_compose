@@ -39,17 +39,11 @@ fun SetupNavGraph(navController: NavHostController, startDestination: String) {
 
     NavHost(navController = navController, startDestination = startDestination) {
         composable(route = Screen.Login.route) {
-            AuthScreen { name, phone ->
-                navController.navigate(Screen.PinVerify.passNameAndPhoneNumber(name, phone))
+            AuthScreen { phone, _ ->
+                navController.navigate(Screen.PinVerify.phoneNumber(phone))
             }
         }
-        composable(route = Screen.Home.route.plus(Screen.Home.path), arguments = listOf(
-            navArgument(Screen.Home.argKey[0]) {
-                type = NavType.StringType
-            }
-        )) {
-            val username = it.arguments?.getString(Screen.Home.argKey[0]) ?: ""
-
+        composable(route = Screen.Home.route) {
             NavigationDrawer(navController = navController,
                 drawerState = drawerState,
                 currentScreen = Screen.Home.title!!,
@@ -58,7 +52,7 @@ fun SetupNavGraph(navController: NavHostController, startDestination: String) {
                     toggle = !toggle
                     changeDrawerState(drawerState = drawerState, scope = coroutineScope)
                 }) {
-                HomeScreen(userName = username, navigateToProfileScreen = {
+                HomeScreen(navigateToProfileScreen = {
                     navController.navigate(Screen.Profile.route)
                 }) {
                     toggle = true
@@ -72,15 +66,11 @@ fun SetupNavGraph(navController: NavHostController, startDestination: String) {
             navArgument(Screen.PinVerify.argKey[0]) {
                 type = NavType.StringType
             },
-            navArgument(Screen.PinVerify.argKey[1]) {
-                type = NavType.StringType
-            }
         )) {
-            val username = it.arguments?.getString(Screen.PinVerify.argKey[0]) ?: ""
-            val phone = it.arguments?.getString(Screen.PinVerify.argKey[1]) ?: ""
-            OtpVerifyScreen(userName = username, phoneNumber = phone) {
+            val phone = it.arguments?.getString(Screen.PinVerify.argKey[0]) ?: ""
+            OtpVerifyScreen(phoneNumber = phone) {
                 navController.popBackStack()
-                navController.navigate(Screen.Home.passName(username))
+                navController.navigate(Screen.Home.route)
             }
         }
 

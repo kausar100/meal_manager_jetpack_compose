@@ -49,7 +49,7 @@ import com.kausar.messmanagementapp.components.CustomTopAppBar
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AuthScreen(
-    onSubmit: (String, String) -> Unit
+    onSubmit: (String, String?) -> Unit
 ) {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     var screenTitle by rememberSaveable {
@@ -88,7 +88,7 @@ fun AuthScreen(
                 }
             },
             onSubmit = { phone, name ->
-                onSubmit(name!!, phone)
+                onSubmit(phone, name)
             }
         )
     }
@@ -175,7 +175,7 @@ fun AuthScreenContent(
         ) {
             ElevatedButton(
                 onClick = {
-                    onSubmit(contactNo, user.ifEmpty { "No user" })
+                    onSubmit(contactNo, user)
                 },
                 shape = RoundedCornerShape(4.dp),
                 colors = ButtonDefaults.buttonColors(

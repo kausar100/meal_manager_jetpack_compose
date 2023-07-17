@@ -33,7 +33,7 @@ fun NavigationDrawer(
             ) { onUserPickedOption ->
                 when (onUserPickedOption) {
                     Screen.Home -> {
-                        navigateToDrawerItem(Screen.Home.passName("kausar"), navController)
+                        navigateToDrawerItem(Screen.Home.route, navController)
                     }
                     Screen.About -> {
                         navigateToDrawerItem(Screen.About.route, navController)

@@ -28,7 +28,7 @@ class RealtimeDbRepositoryImpl @Inject constructor(
             meal
         ).addOnCompleteListener {
             if (it.isSuccessful) {
-                trySend(ResultState.Success(data = "Data inserted Successfully!"))
+                trySend(ResultState.Success(data = "Data Inserted Successfully!"))
             }
         }.addOnFailureListener {
             trySend(ResultState.Failure(it))
@@ -90,7 +90,7 @@ class RealtimeDbRepositoryImpl @Inject constructor(
             map
         ).addOnCompleteListener {
             if (it.isSuccessful) {
-                trySend(ResultState.Success(data = "Data updated Successfully!"))
+                trySend(ResultState.Success(data = "Data Updated Successfully!"))
             }
         }.addOnFailureListener {
             trySend(ResultState.Failure(it))
