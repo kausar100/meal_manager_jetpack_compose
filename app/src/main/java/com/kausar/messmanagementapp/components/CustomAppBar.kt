@@ -77,7 +77,11 @@ fun CustomTopAppBar(
         actions = {
             if (showAction) {
                 actionIcon?.let {
-                    IconButton(onClick = onClickAction!!, Modifier.padding(end = 16.dp)) {
+                    IconButton(onClick = {
+                        if (onClickAction != null) {
+                            onClickAction()
+                        }
+                    }, Modifier.padding(end = 16.dp)) {
                         Icon(
                             imageVector = actionIcon,
                             contentDescription = "action"
@@ -87,7 +91,11 @@ fun CustomTopAppBar(
 
             }
             if (canLogout) {
-                IconButton(onClick = logoutAction!!, Modifier.padding(end = 16.dp)) {
+                IconButton(onClick = {
+                    if (logoutAction != null) {
+                        logoutAction()
+                    }
+                }, Modifier.padding(end = 16.dp)) {
                     Icon(
                         imageVector = Icons.Default.ExitToApp,
                         contentDescription = "logout"

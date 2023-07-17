@@ -39,13 +39,14 @@ import com.kausar.messmanagementapp.components.CustomTopAppBar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProfileScreen(onSubmit: () -> Unit, onNavigateBack: () -> Unit) {
+fun ProfileScreen(onLogout: () -> Unit, onNavigateBack: () -> Unit) {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
     Scaffold(topBar = {
         CustomTopAppBar(
             title = "Profile",
             canNavigateBack = true,
+            logoutAction = onLogout,
             scrollBehavior = scrollBehavior,
             navigateUp = onNavigateBack
         )
@@ -148,7 +149,7 @@ fun UserInfo(
 @Preview(showBackground = true)
 @Composable
 fun PreviewMealListScreen() {
-    ProfileScreen(onSubmit = { /*TODO*/ }) {
+    ProfileScreen(onLogout = { /*TODO*/ }) {
 
     }
 }

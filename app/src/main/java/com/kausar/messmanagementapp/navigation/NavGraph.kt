@@ -136,7 +136,9 @@ fun SetupNavGraph(navController: NavHostController, startDestination: String) {
         }
 
         composable(route = Screen.Profile.route) {
-            ProfileScreen(onSubmit = {}) {
+            ProfileScreen(onLogout = {
+                logoutAndNavigateToLoginPage(navController)
+            }) {
                 navController.navigateUp()
             }
         }
