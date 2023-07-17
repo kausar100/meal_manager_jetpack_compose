@@ -3,6 +3,7 @@ package com.kausar.messmanagementapp.components
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -31,6 +32,8 @@ fun CustomTopAppBar(
     showAction: Boolean = false,
     actionIcon: ImageVector? = null,
     onClickAction: (() -> Unit)? = null,
+    canLogout: Boolean = false,
+    logoutAction: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
     scrollBehavior: TopAppBarScrollBehavior? = null,
     navigateUp: () -> Unit = {},
@@ -80,6 +83,15 @@ fun CustomTopAppBar(
                             contentDescription = "action"
                         )
                     }
+                }
+
+            }
+            if(canLogout){
+                IconButton(onClick = logoutAction!!, Modifier.padding(end = 16.dp)) {
+                    Icon(
+                        imageVector = Icons.Default.ExitToApp,
+                        contentDescription = "logout"
+                    )
                 }
 
             }

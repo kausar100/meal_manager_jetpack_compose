@@ -72,17 +72,37 @@ fun OtpVerifyScreen(
         mutableStateOf("")
     }
 
-    var otpEnter by rememberSaveable {
-        mutableStateOf(false)
-    }
-
     var resendOtp by rememberSaveable {
         mutableStateOf(false)
     }
 
-
     var otp by rememberSaveable {
         mutableStateOf("")
+    }
+
+    LaunchedEffect(key1 = true) {
+        viewModel.createUserWithPhoneNumber(
+            phone = phoneNumber,
+            activity = context as Activity
+        )
+            .collectLatest {
+                when (it) {
+                    is ResultState.Loading -> {
+                        progressMsg = "Sending otp..."
+                        showProgress = true
+                    }
+
+                    is ResultState.Failure -> {
+                        showProgress = false
+                        it.message.message?.let { msg -> context.showToast(msg) }
+                    }
+
+                    is ResultState.Success -> {
+                        showProgress = false
+                        context.showToast(it.data)
+                    }
+                }
+            }
     }
 
     Scaffold(topBar = {
@@ -95,83 +115,55 @@ fun OtpVerifyScreen(
                 .fillMaxSize()
                 .padding(padding), contentAlignment = Alignment.Center
         ) {
-            LaunchedEffect(key1 = true) {
-                viewModel.createUserWithPhoneNumber(
-                    phone = phoneNumber,
-                    activity = context as Activity
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp)
+                    .padding(padding),
+                verticalArrangement = Arrangement.Top,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                WelcomeText()
+                Spacer(modifier = Modifier.fillMaxHeight(.1f))
+                Text(
+                    text = "Enter otp sent to $phoneNumber",
+                    textAlign = TextAlign.Center,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black,
                 )
-                    .collectLatest {
-                        when (it) {
-                            is ResultState.Loading -> {
-                                progressMsg = "Sending otp..."
-                                showProgress = true
-                            }
+                Spacer(modifier = Modifier.height(16.dp))
+                VerifyPinContent(otp = otp, onCodeEnter = { otp ->
+                    scope.launch(Dispatchers.Main) {
+                        viewModel.signInWithCredential(
+                            otp
+                        ).collectLatest {
+                            when (it) {
+                                is ResultState.Loading -> {
+                                    progressMsg = "Verifying otp..."
+                                    showProgress = true
+                                }
 
-                            is ResultState.Failure -> {
-                                showProgress = false
-                                otpEnter = true
-                                it.message.message?.let { it1 -> context.showToast(it1) }
-                            }
+                                is ResultState.Failure -> {
+                                    showProgress = false
+                                    context.showToast("Please enter correct otp!")
+                                }
 
-                            is ResultState.Success -> {
-                                showProgress = false
-                                otpEnter = true
-                                context.showToast(it.data)
-                            }
-                        }
-                    }
-            }
-            if (otpEnter) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp)
-                        .padding(padding),
-                    verticalArrangement = Arrangement.Top,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    WelcomeText()
-                    Spacer(modifier = Modifier.fillMaxHeight(.1f))
-                    Text(
-                        text = "Enter otp sent to $phoneNumber",
-                        textAlign = TextAlign.Center,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.Black,
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    VerifyPinContent(otp = otp, onCodeEnter = { otp ->
-                        scope.launch(Dispatchers.Main) {
-                            viewModel.signInWithCredential(
-                                otp
-                            ).collectLatest {
-                                when (it) {
-                                    is ResultState.Loading -> {
-                                        progressMsg = "Verifying otp..."
-                                        showProgress = true
-                                    }
-
-                                    is ResultState.Failure -> {
-                                        showProgress = false
-                                        context.showToast("Please enter correct otp!")
-                                        otpEnter = true
-                                    }
-
-                                    is ResultState.Success -> {
-                                        showProgress = false
-                                        context.showToast(it.data)
-                                        onSubmit()
-                                    }
+                                is ResultState.Success -> {
+                                    showProgress = false
+                                    context.showToast(it.data)
+                                    onSubmit()
                                 }
                             }
                         }
-                    }, onResendOtp = {
-                        resendOtp = true
-                    }, onChange = {
-                        otp = it
-                    })
-                }
+                    }
+                }, onResendOtp = {
+                    resendOtp = true
+                }, onChange = {
+                    otp = it
+                })
             }
+
             if (showProgress) {
                 CustomProgressBar(msg = progressMsg)
             }

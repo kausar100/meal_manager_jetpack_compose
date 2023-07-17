@@ -18,4 +18,7 @@ class AuthViewModel @Inject constructor(
 
     fun signInWithCredential(code: String) = repository.signWithCredential(code)
 
+
+    fun logout() = repository.logout()
+
 }

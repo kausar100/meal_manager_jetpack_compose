@@ -48,6 +48,7 @@ import com.kausar.messmanagementapp.components.CustomTopAppBar
 import com.kausar.messmanagementapp.data.model.Meal
 import com.kausar.messmanagementapp.data.model.MealStatus
 import com.kausar.messmanagementapp.navigation.Screen
+import com.kausar.messmanagementapp.presentation.auth_screen.AuthViewModel
 import com.kausar.messmanagementapp.presentation.viewmodels.RealtimeDbViewModel
 import com.kausar.messmanagementapp.utils.ResultState
 import com.kausar.messmanagementapp.utils.showToast
@@ -59,6 +60,8 @@ import java.util.Calendar
 @Composable
 fun HomeScreen(
     viewModel: RealtimeDbViewModel = hiltViewModel(),
+    authViewModel: AuthViewModel = hiltViewModel(),
+    onLogout: () -> Unit,
     navigateToProfileScreen: () -> Unit,
     toggleDrawerState: () -> Unit
 ) {
@@ -70,6 +73,10 @@ fun HomeScreen(
     }
     var showProgress by rememberSaveable {
         mutableStateOf(false)
+    }
+
+    var progressMsg by rememberSaveable {
+        mutableStateOf("")
     }
 
 
@@ -84,6 +91,30 @@ fun HomeScreen(
             showAction = true,
             actionIcon = Icons.Default.Person,
             onClickAction = navigateToProfileScreen,
+            canLogout = true,
+            logoutAction = {
+                scope.launch {
+                    authViewModel.logout().collectLatest {
+                        when (it) {
+                            is ResultState.Loading -> {
+                                progressMsg = "Signing out..."
+                                showProgress = true
+                            }
+
+                            is ResultState.Failure -> {
+                                showProgress = false
+                                it.message.localizedMessage?.let { msg -> context.showToast(msg) }
+                            }
+
+                            is ResultState.Success -> {
+                                showProgress = false
+                                context.showToast(it.data)
+                                onLogout()
+                            }
+                        }
+                    }
+                }
+            },
             scrollBehavior = scrollBehavior,
             onClickDrawerMenu = toggleDrawerState
         )
@@ -342,7 +373,7 @@ fun DateInfo(
 @Preview
 @Composable
 fun PreviewHome() {
-    HomeScreen(navigateToProfileScreen = { /*TODO*/ }) {
+  HomeScreen(onLogout = { /*TODO*/ }, navigateToProfileScreen = { /*TODO*/ }) {
 
-    }
+  }
 }

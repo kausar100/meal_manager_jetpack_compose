@@ -52,9 +52,20 @@ fun SetupNavGraph(navController: NavHostController, startDestination: String) {
                     toggle = !toggle
                     changeDrawerState(drawerState = drawerState, scope = coroutineScope)
                 }) {
-                HomeScreen(navigateToProfileScreen = {
-                    navController.navigate(Screen.Profile.route)
-                }) {
+                HomeScreen(
+                    onLogout = {
+                        navController.popBackStack()
+                        navController.navigate(Screen.Login.route) {
+                            popUpTo(navController.graph.id) {
+                                if (navController.previousBackStackEntry != null) {
+                                    inclusive = true
+                                }
+                            }
+                        }
+                    },
+                    navigateToProfileScreen = {
+                        navController.navigate(Screen.Profile.route)
+                    }) {
                     toggle = true
                 }
 
@@ -62,11 +73,13 @@ fun SetupNavGraph(navController: NavHostController, startDestination: String) {
         }
 
 
-        composable(route = Screen.PinVerify.route.plus(Screen.PinVerify.path), arguments = listOf(
-            navArgument(Screen.PinVerify.argKey[0]) {
-                type = NavType.StringType
-            },
-        )) {
+        composable(
+            route = Screen.PinVerify.route.plus(Screen.PinVerify.path), arguments = listOf(
+                navArgument(Screen.PinVerify.argKey[0]) {
+                    type = NavType.StringType
+                },
+            )
+        ) {
             val phone = it.arguments?.getString(Screen.PinVerify.argKey[0]) ?: ""
             OtpVerifyScreen(phoneNumber = phone) {
                 navController.popBackStack()

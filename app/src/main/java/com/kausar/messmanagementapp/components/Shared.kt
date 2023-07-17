@@ -27,7 +27,7 @@ fun CustomProgressBar(msg: String) {
         shape = RoundedCornerShape(4.dp),
         colors = CardDefaults.elevatedCardColors(),
         modifier = Modifier
-            .fillMaxWidth(9f)
+            .fillMaxWidth(.9f)
             .padding(16.dp)
     ) {
         Row(

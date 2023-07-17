@@ -11,4 +11,6 @@ interface AuthRepository {
     ): Flow<ResultState<String>>
 
     fun signWithCredential(otp: String) : Flow<ResultState<String>>
+
+    fun logout(): Flow<ResultState<String>>
 }
