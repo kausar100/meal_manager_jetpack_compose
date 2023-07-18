@@ -1,5 +1,6 @@
 package com.kausar.messmanagementapp.presentation.home_screen
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -11,16 +12,16 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowForward
-import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
@@ -36,8 +37,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -48,9 +47,8 @@ import com.kausar.messmanagementapp.components.CustomProgressBar
 import com.kausar.messmanagementapp.components.CustomTopAppBar
 import com.kausar.messmanagementapp.data.model.Meal
 import com.kausar.messmanagementapp.data.model.MealStatus
-import com.kausar.messmanagementapp.navigation.Screen
 import com.kausar.messmanagementapp.presentation.auth_screen.AuthViewModel
-import com.kausar.messmanagementapp.presentation.viewmodels.RealtimeDbViewModel
+import com.kausar.messmanagementapp.presentation.viewmodels.FirebaseFirestoreDbViewModel
 import com.kausar.messmanagementapp.utils.ResultState
 import com.kausar.messmanagementapp.utils.showToast
 import kotlinx.coroutines.flow.collectLatest
@@ -60,7 +58,7 @@ import java.util.Calendar
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    viewModel: RealtimeDbViewModel = hiltViewModel(),
+    viewModel: FirebaseFirestoreDbViewModel = hiltViewModel(),
     authViewModel: AuthViewModel = hiltViewModel(),
     onLogout: () -> Unit,
     navigateToProfileScreen: () -> Unit,
@@ -80,19 +78,18 @@ fun HomeScreen(
         mutableStateOf("")
     }
 
+    var newMeal by rememberSaveable {
+        mutableStateOf(false)
+    }
+
 
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
 
     Scaffold(topBar = {
         CustomTopAppBar(
-            title = Screen.Home.title,
+            title = "Meal Information",
             canNavigateBack = false,
-            canShowDrawer = true,
-            showAction = true,
-            actionIcon = Icons.Default.Person,
-            onClickAction = navigateToProfileScreen,
-            canLogout = true,
             logoutAction = {
                 scope.launch {
                     authViewModel.logout().collectLatest {
@@ -119,11 +116,30 @@ fun HomeScreen(
             scrollBehavior = scrollBehavior,
             onClickDrawerMenu = toggleDrawerState
         )
-    }) {
+    },
+        floatingActionButton = {
+            if (!newMeal) {
+                FloatingActionButton(
+                    onClick = {
+                        calendar.add(Calendar.DATE, 1)
+                        currentDate = fetchDateAsString(calendar)
+                        newMeal = true
+                    },
+                    modifier = Modifier.background(Color.Transparent, shape = CircleShape)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "add meal",
+                        tint = Color.Black
+                    )
+                }
+            }
+
+        }) {
         Box(
             Modifier
                 .fillMaxSize()
-                .padding(it), 
+                .padding(it),
             contentAlignment = Alignment.Center
         ) {
             Column(
@@ -131,26 +147,24 @@ fun HomeScreen(
                     .fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                DateInfo(modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                    date = currentDate,
-                    onNextDay = {
-                        calendar.add(Calendar.DATE, 1)
-                        currentDate = fetchDateAsString(calendar)
-                        println(currentDate)
-                    },
-                    onPreviousDay = {
-                        calendar.add(Calendar.DATE, -1)
-                        currentDate = fetchDateAsString(calendar)
-                        println(currentDate)
-                    })
+                Spacer(modifier = Modifier.fillMaxHeight(.1f))
+                Text(text = currentDate, textAlign = TextAlign.Center)
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = if (!newMeal) "Running Meal information" else "Change Meal status and Click Add meal",
+                    textAlign = TextAlign.Center
+                )
 
                 MealInfo(
                     modifier = Modifier
                         .fillMaxWidth(.9f)
                         .padding(16.dp),
+                    newMeal = newMeal,
+                    onCancel = {
+                        newMeal = false
+                    },
                     updateMeal = { breakfast, lunch, dinner ->
+                        newMeal = false
                         scope.launch {
                             viewModel.insert(
                                 Meal(
@@ -164,12 +178,15 @@ fun HomeScreen(
                             ).collectLatest { result ->
                                 showProgress = when (result) {
                                     is ResultState.Success -> {
-                                        context.showToast(result.data)
+                                        context.showToast(result.data.message.toString())
                                         false
                                     }
 
                                     is ResultState.Failure -> {
-                                        context.showToast(result.message.toString())
+                                        result.message.localizedMessage?.let { msg ->
+                                            context.showToast(
+                                                msg)
+                                        }
                                         false
                                     }
 
@@ -183,7 +200,7 @@ fun HomeScreen(
                 )
             }
             if (showProgress) {
-                CustomProgressBar(msg = "Data Updating...")
+                CustomProgressBar(msg = "Data updating...")
             }
         }
 
@@ -193,93 +210,101 @@ fun HomeScreen(
 @Composable
 fun MealInfo(
     modifier: Modifier = Modifier,
+    newMeal: Boolean = false,
+    onCancel: () -> Unit,
     updateMeal: (Boolean, Boolean, Boolean) -> Unit
 ) {
     var breakFast by rememberSaveable { mutableStateOf(true) }
     var lunch by rememberSaveable { mutableStateOf(true) }
     var dinner by rememberSaveable { mutableStateOf(true) }
-    var updateMealInfo by rememberSaveable { mutableStateOf(false) }
-    val roundBorder = Modifier
-        .border(
-            width = 1.dp, color = Color.Gray, shape = RoundedCornerShape(4.dp)
-        )
-        .padding(8.dp)
 
     Column(
-        modifier = modifier
-            .border(
-                width = 1.dp, color = Color.Gray, shape = RoundedCornerShape(4.dp)
-            )
-            .padding(horizontal = 8.dp)
-            .padding(top = 8.dp, bottom = 0.dp),
+        modifier = modifier.fillMaxHeight(.8f),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        verticalArrangement = Arrangement.Top
     ) {
-
         Row(
+            modifier = Modifier
+                .padding(horizontal = 8.dp, vertical = 0.dp)
+                .weight(1f),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
-                text = "Meal Time",
-                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                text = "Meal time",
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp
+                )
             )
             Spacer(modifier = Modifier.weight(1f))
             Text(
-                text = "Meal Status",
-                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                text = "Meal status",
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 1.sp
+                )
             )
 
         }
-        Spacer(modifier = Modifier.height(16.dp))
         Row(
-            verticalAlignment = Alignment.CenterVertically, modifier = roundBorder
+            modifier = Modifier
+                .border(
+                    width = 1.dp, color = Color.Gray, shape = RoundedCornerShape(4.dp)
+                )
+                .padding(horizontal = 8.dp, vertical = 0.dp)
+                .weight(2f)
         ) {
-            Text(text = "Breakfast")
-            Spacer(modifier = Modifier.weight(1f))
-            CustomCheckBox(isEnabled = updateMealInfo, isChecked = breakFast, onCheckChange = {
-                breakFast = it
-            })
-
-        }
-        Row(
-            verticalAlignment = Alignment.CenterVertically, modifier = roundBorder
-        ) {
-            Text(text = "Lunch")
-            Spacer(modifier = Modifier.weight(1f))
-            CustomCheckBox(isEnabled = updateMealInfo, isChecked = lunch, onCheckChange = {
-                lunch = it
-            })
-
-        }
-        Row(
-            verticalAlignment = Alignment.CenterVertically, modifier = roundBorder
-        ) {
-            Text(text = "Dinner")
-            Spacer(modifier = Modifier.weight(1f))
-            CustomCheckBox(isEnabled = updateMealInfo, isChecked = dinner, onCheckChange = {
-                dinner = it
-            })
-
-        }
-
-        Spacer(modifier = Modifier.fillMaxHeight(.1f))
-
-        OutlinedButton(
-            onClick = {
-                updateMealInfo = !updateMealInfo
-                if (!updateMealInfo) {
-                    updateMeal(breakFast, lunch, dinner)
+            val title = listOf("Breakfast", "Lunch", "Dinner")
+            Column(Modifier.fillMaxHeight(), verticalArrangement = Arrangement.SpaceEvenly) {
+                repeat(title.size) {
+                    Text(text = title[it], textAlign = TextAlign.Center)
                 }
-            }, shape = RoundedCornerShape(4.dp), colors = ButtonDefaults.buttonColors(
-                containerColor = if (updateMealInfo) Color(0xFF222B83) else Color.DarkGray,
-                contentColor = Color.White,
-            )
-        ) {
-            Text(
-                text = if (updateMealInfo) "Done" else "Update Meal",
-                letterSpacing = 2.sp,
-                fontWeight = FontWeight.Bold
-            )
+            }
+            Spacer(modifier = Modifier.weight(1f))
+            Column(Modifier.fillMaxHeight(), verticalArrangement = Arrangement.SpaceEvenly) {
+                CustomCheckBox(isEnabled = newMeal, isChecked = breakFast, onCheckChange = {
+                    breakFast = it
+                })
+                CustomCheckBox(isEnabled = newMeal, isChecked = lunch, onCheckChange = {
+                    lunch = it
+                })
+                CustomCheckBox(isEnabled = newMeal, isChecked = dinner, onCheckChange = {
+                    dinner = it
+                })
+            }
+        }
+        if (newMeal) {
+            Row(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .weight(1f)
+            ) {
+                OutlinedButton(
+                    onClick = onCancel, shape = RoundedCornerShape(4.dp)
+                ) {
+                    Text(
+                        text = "Cancel",
+                        letterSpacing = 2.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+                Spacer(modifier = Modifier.weight(1f))
+                ElevatedButton(
+                    onClick = {
+                        updateMeal(breakFast, lunch, dinner)
+                    }, shape = RoundedCornerShape(4.dp), colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF222B83),
+                        contentColor = Color.White,
+                    )
+                ) {
+                    Text(
+                        text = "Add Meal",
+                        letterSpacing = 2.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
+            }
         }
     }
 }
@@ -327,52 +352,6 @@ private fun getDayName(calendar: Calendar): String {
         else -> ""
     }
     return day
-}
-
-@Composable
-fun DateInfo(
-    modifier: Modifier = Modifier,
-    date: String,
-    onNextDay: () -> Unit,
-    onPreviousDay: () -> Unit
-) {
-    Column(
-        modifier = modifier.padding(horizontal = 16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        Spacer(modifier = Modifier.fillMaxHeight(.1f))
-        Text(
-            text = "Meal Information",
-            textAlign = TextAlign.Center,
-            fontSize = 20.sp,
-            style = TextStyle(
-                fontWeight = FontWeight.Bold,
-                color = Color.Black,
-                fontFamily = FontFamily.Cursive
-            )
-        )
-
-        Row(
-            Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center
-        ) {
-            IconButton(onClick = onPreviousDay, modifier = Modifier.weight(1f)) {
-                Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "previous_day")
-
-            }
-            Text(text = date, modifier = Modifier.weight(5f), textAlign = TextAlign.Center)
-            IconButton(onClick = onNextDay, modifier = Modifier.weight(1f)) {
-                Icon(
-                    imageVector = Icons.Default.ArrowForward, contentDescription = "next_day"
-                )
-
-            }
-
-        }
-    }
-
 }
 
 @Preview

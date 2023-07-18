@@ -68,8 +68,8 @@ fun DefaultMealInfo(onLogout: () -> Unit, toggleDrawerState: () -> Unit) {
                 modifier = Modifier
                     .fillMaxWidth(.9f)
                     .padding(16.dp),
+                onCancel = {},
                 updateMeal = { breakfast, lunch, dinner ->
-
 
                 }
             )

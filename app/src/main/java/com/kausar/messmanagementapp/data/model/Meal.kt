@@ -14,7 +14,7 @@ data class Meal(
     val status: MealStatus? = MealStatus.Pending
 )
 
-val mealListTitle: List<String> = listOf("Date", "Day", "B", "L", "D", "Status")
+val mealListTitle: List<String> = listOf("Date", "Day", "Breakfast", "Lunch", "Dinner", "Status")
 
 enum class MealStatus {
     Pending, Running, Completed

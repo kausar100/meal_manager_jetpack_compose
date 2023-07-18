@@ -175,3 +175,21 @@ fun changeDrawerState(drawerState: DrawerState, scope: CoroutineScope) {
     }
 
 }
+
+@Composable
+fun BottomNavGraph(navController: NavHostController) {
+    NavHost(
+        navController = navController,
+        startDestination = BottomBarScreen.Home.route
+    ) {
+        composable(route = BottomBarScreen.Home.route) {
+            HomeScreen(onLogout = {}, navigateToProfileScreen = {}, toggleDrawerState = {})
+        }
+        composable(route = BottomBarScreen.Profile.route) {
+            ProfileScreen(onLogout = {}, onNavigateBack = {})
+        }
+        composable(route = BottomBarScreen.MealList.route) {
+            MealListScreen(onLogout = {}, toggleDrawerState = {})
+        }
+    }
+}

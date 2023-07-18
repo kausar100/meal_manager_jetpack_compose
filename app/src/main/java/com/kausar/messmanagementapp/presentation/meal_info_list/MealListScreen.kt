@@ -1,7 +1,5 @@
 package com.kausar.messmanagementapp.presentation.meal_info_list
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,15 +13,19 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Checkbox
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Done
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
@@ -36,31 +38,30 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.kausar.messmanagementapp.components.CustomProgressBar
 import com.kausar.messmanagementapp.components.CustomTopAppBar
 import com.kausar.messmanagementapp.data.model.Meal
-import com.kausar.messmanagementapp.data.model.MealStatus
 import com.kausar.messmanagementapp.data.model.mealListTitle
-import com.kausar.messmanagementapp.navigation.Screen
 import com.kausar.messmanagementapp.presentation.viewmodels.RealtimeDbViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MealListScreen(
-    onLogout: ()->Unit,
+    onLogout: () -> Unit,
     toggleDrawerState: () -> Unit,
     viewModel: RealtimeDbViewModel = hiltViewModel()
 ) {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val itemState = viewModel.response.value
 
-    Scaffold(topBar = {
-        CustomTopAppBar(
-            title = Screen.MealList.title,
-            canNavigateBack = false,
-            canShowDrawer = true,
-            logoutAction = onLogout,
-            scrollBehavior = scrollBehavior,
-            onClickDrawerMenu = toggleDrawerState
-        )
-    }) {
+    Scaffold(
+        topBar = {
+            CustomTopAppBar(
+                title = "Your Meal Information",
+                canNavigateBack = false,
+                logoutAction = onLogout,
+                scrollBehavior = scrollBehavior,
+                onClickDrawerMenu = toggleDrawerState
+            )
+        }
+    ) {
         Column(
             Modifier
                 .fillMaxSize()
@@ -68,9 +69,9 @@ fun MealListScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top
         ) {
-            Spacer(modifier = Modifier.fillMaxHeight(.1f))
+            Spacer(modifier = Modifier.height(16.dp))
             Text(
-                text = "Your Meal Information",
+                text = "Meal List <> July, 2023",
                 fontSize = 20.sp,
                 textAlign = TextAlign.Center,
                 style = TextStyle(
@@ -82,22 +83,11 @@ fun MealListScreen(
             Spacer(modifier = Modifier.height(16.dp))
             Column(
                 Modifier
-                    .fillMaxHeight(.9f)
-                    .border(1.dp, Color.Gray, RoundedCornerShape(4.dp))
+                    .fillMaxHeight(.95f)
             ) {
 
                 if (itemState.item.isNotEmpty()) {
                     val mealResponseList = itemState.item
-
-                    ShowTitle(
-                        modifier = Modifier
-                            .fillMaxWidth(.9f)
-                            .shadow(
-                                elevation = 1.dp,
-                                clip = true
-                            ),
-                        mealListTitle
-                    )
                     LazyColumn(
                         content = {
                             items(
@@ -107,15 +97,7 @@ fun MealListScreen(
                                 }
 
                             ) { item ->
-                                ShowInfo(
-                                    modifier = Modifier
-                                        .fillMaxWidth(.9f)
-                                        .shadow(
-                                            elevation = 1.dp,
-                                            clip = true
-                                        ),
-                                    item = item.meal!!
-                                )
+                                MealItem(meal = item.meal!!)
                             }
                         }
                     )
@@ -146,74 +128,51 @@ fun MealListScreen(
 }
 
 @Composable
-fun ShowInfo(modifier: Modifier, item: Meal) {
-    Row(
-        modifier = modifier
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalAlignment = Alignment.CenterVertically
+fun MealItem(meal: Meal) {
+    Card(
+        modifier = Modifier.padding(8.dp),
+        elevation = CardDefaults.cardElevation(4.dp),
+        shape = RoundedCornerShape(8.dp)
     ) {
-        Text(
-            text = item.date!!,
-            fontSize = 10.sp,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.weight(2f)
-        )
-        Text(
-            text = item.dayName!!,
-            fontSize = 10.sp,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.weight(2f)
-        )
-        Checkbox(checked = item.breakfast!!, onCheckedChange = {}, modifier = Modifier.weight(1f))
-        Checkbox(checked = item.lunch!!, onCheckedChange = {}, modifier = Modifier.weight(1f))
-        Checkbox(checked = item.dinner!!, onCheckedChange = {}, modifier = Modifier.weight(1f))
-        Text(
-            text = item.status!!.name,
-            fontSize = 6.sp,
-            color = Color.White,
-            textAlign = TextAlign.Center,
-            fontWeight = FontWeight.ExtraBold,
+        Row(
             modifier = Modifier
-                .background(
-                    when (item.status!!) {
-                        MealStatus.Pending -> Color.Gray
-                        MealStatus.Running -> Color.Blue
-                        MealStatus.Completed -> Color.Green
-                    }, shape = RoundedCornerShape(2.dp)
-                )
-                .padding(2.dp)
-                .weight(1.3f)
-        )
-    }
+                .fillMaxWidth(.9f)
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(Modifier.padding(4.dp)) {
+                repeat(mealListTitle.size) {
+                    Text(
+                        text = mealListTitle[it],
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.weight(1f))
+            Column(Modifier.padding(4.dp)) {
+                Text(text = meal.date.toString())
+                Text(text = meal.dayName.toString())
+                MealIcon(status = meal.breakfast!!, desc = "breakfast")
+                MealIcon(status = meal.lunch!!, desc = "breakfast")
+                MealIcon(status = meal.dinner!!, desc = "breakfast")
+                Text(text = meal.status?.name.toString())
+            }
 
+        }
+    }
 }
 
 @Composable
-fun ShowTitle(modifier: Modifier, items: List<String>) {
-    Row(
-        modifier = modifier
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        repeat(items.size) {
-            Text(
-                text = items[it],
-                fontWeight = FontWeight.W800,
-                textAlign = TextAlign.Center,
-                fontSize = 12.sp,
-                modifier = Modifier.weight(if (it == 0 || it == 1) 2f else if (it == items.lastIndex) 1.5f else 1f)
-            )
-        }
-
-    }
-
+fun MealIcon(status: Boolean, desc: String) {
+    if (status)
+        Icon(imageVector = Icons.Default.Done, contentDescription = desc, tint = Color.Blue)
+    else
+        Icon(imageVector = Icons.Default.Clear, contentDescription = desc, tint = Color.Gray)
 }
-
 
 @Preview(showBackground = true)
 @Composable
 fun PreviewMealListScreen() {
-   MealListScreen(onLogout = { /*TODO*/ }, toggleDrawerState = { /*TODO*/ })
+    MealListScreen(onLogout = { /*TODO*/ }, toggleDrawerState = { /*TODO*/ })
 }
