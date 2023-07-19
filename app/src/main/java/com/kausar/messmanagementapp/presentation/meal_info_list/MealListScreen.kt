@@ -38,7 +38,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.kausar.messmanagementapp.components.CustomProgressBar
 import com.kausar.messmanagementapp.components.CustomTopAppBar
 import com.kausar.messmanagementapp.data.model.MealInfo
-import com.kausar.messmanagementapp.data.model.mealListTitle
 import com.kausar.messmanagementapp.presentation.viewmodels.FirebaseFirestoreDbViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -127,6 +126,7 @@ fun MealListScreen(
 
 @Composable
 fun MealItem(meal: MealInfo) {
+    val mealListTitle = listOf("Date", "Day", "Breakfast", "Lunch", "Dinner")
     Card(
         modifier = Modifier.padding(8.dp),
         elevation = CardDefaults.cardElevation(4.dp),

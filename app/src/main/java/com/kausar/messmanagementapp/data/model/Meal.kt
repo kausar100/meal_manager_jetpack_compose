@@ -7,8 +7,6 @@ data class RealtimeMealResponse(
     val key: String? = ""
 )
 
-val mealListTitle: List<String> = listOf("Date", "Day", "Breakfast", "Lunch", "Dinner", "Status")
-
 data class MealInfo(
     val date: String? = "",
     val dayName: String? = "",
