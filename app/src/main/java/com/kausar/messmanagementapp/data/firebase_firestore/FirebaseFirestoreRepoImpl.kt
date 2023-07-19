@@ -2,18 +2,12 @@ package com.kausar.messmanagementapp.data.firebase_firestore
 
 import android.os.Build
 import androidx.annotation.RequiresApi
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.ValueEventListener
-import com.google.firebase.firestore.DocumentSnapshot
-import com.google.firebase.firestore.EventListener
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.FirebaseFirestoreException
-import com.kausar.messmanagementapp.data.model.Meal
-import com.kausar.messmanagementapp.data.model.MealStatus
+import com.google.firebase.firestore.ktx.toObject
+import com.kausar.messmanagementapp.data.model.MealInfo
 import com.kausar.messmanagementapp.data.model.RealtimeMealResponse
+import com.kausar.messmanagementapp.data.model.toMap
 import com.kausar.messmanagementapp.utils.ResultState
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -27,18 +21,12 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
 
     private val dbCollectionPath = "Meal_info"
 
-    override fun insert(meal: Meal): Flow<ResultState<Response>> = callbackFlow {
+    override fun insert(meal: MealInfo): Flow<ResultState<Response>> = callbackFlow {
         trySend(ResultState.Loading)
-        val newMeal = hashMapOf<String, Any>(
-            "date" to meal.date!!,
-            "day" to meal.dayName!!,
-            "breakfast" to meal.breakfast!!,
-            "lunch" to meal.lunch!!,
-            "dinner" to meal.dinner!!,
-            "status" to meal.status!!
-        )
 
-        firestoreDb.collection(dbCollectionPath).add(newMeal)
+        val hashMeal = meal.toMap()
+
+        firestoreDb.collection(dbCollectionPath).add(hashMeal)
             .addOnSuccessListener {
                 if (it?.id != null) {
                     trySend(
@@ -66,27 +54,18 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
 
         firestoreDb.collection(dbCollectionPath).get()
             .addOnSuccessListener { result ->
-                lateinit var meals: MutableList<RealtimeMealResponse>
+                val meals = mutableListOf<RealtimeMealResponse>()
                 for (document in result) {
-                    println(document.toString())
                     meals.add(
                         RealtimeMealResponse(
-                            meal = Meal(
-                                date = document.data["date"] as String,
-                                dayName = document.data["day"] as String,
-                                breakfast = document.data["breakfast"] as Boolean,
-                                lunch = document.data["lunch"] as Boolean,
-                                dinner = document.data["dinner"] as Boolean,
-                                status = document.data["status"] as MealStatus,
-                            ),
+                            meal = document.toObject(),
                             key = document.id
                         )
                     )
                 }
-
                 //sort by date ascending
                 val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
-                val sortedMeals = meals.sortedBy { LocalDate.parse(it.meal!!.date, formatter) }
+                val sortedMeals = meals.sortedByDescending { LocalDate.parse(it.meal!!.date, formatter) }
 
                 trySend(ResultState.Success(sortedMeals))
 

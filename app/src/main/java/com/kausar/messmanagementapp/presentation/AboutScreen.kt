@@ -35,8 +35,7 @@ import com.kausar.messmanagementapp.components.CustomTopAppBar
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AboutScreen(
-    onLogout: ()->Unit,
-    toggleDrawerState: () -> Unit) {
+    onLogout: ()->Unit) {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val context = LocalContext.current
     Scaffold(
@@ -44,11 +43,9 @@ fun AboutScreen(
             CustomTopAppBar(
                 title = "Meal Management App",
                 canNavigateBack = false,
-                canShowDrawer = true,
                 showAction = false,
                 logoutAction = onLogout,
                 scrollBehavior = scrollBehavior,
-                onClickDrawerMenu = toggleDrawerState
             )
         }
     ) {
@@ -166,7 +163,7 @@ fun AboutScreen(
 @Preview(showBackground = true)
 @Composable
 fun PreviewAboutScreen() {
-    AboutScreen(onLogout = { /*TODO*/ }) {
-        
-    }
+   AboutScreen {
+
+   }
 }

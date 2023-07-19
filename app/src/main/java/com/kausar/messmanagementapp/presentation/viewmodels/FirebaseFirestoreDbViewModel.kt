@@ -7,7 +7,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kausar.messmanagementapp.data.firebase_firestore.FirebaseFirestoreRepo
-import com.kausar.messmanagementapp.data.model.Meal
+import com.kausar.messmanagementapp.data.model.MealInfo
 import com.kausar.messmanagementapp.data.model.RealtimeMealResponse
 import com.kausar.messmanagementapp.utils.ResultState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -49,7 +49,7 @@ class FirebaseFirestoreDbViewModel @Inject constructor(
         }
     }
 
-    fun insert(meal: Meal) = repo.insert(meal)
+    fun insert(meal: MealInfo) = repo.insert(meal)
 
     data class ItemState(
         val item: List<RealtimeMealResponse> = emptyList(),

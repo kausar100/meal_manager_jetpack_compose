@@ -1,21 +1,22 @@
 package com.kausar.messmanagementapp.data.model
 
+import kotlin.reflect.full.memberProperties
+
 data class RealtimeMealResponse(
-    val meal: Meal? = null,
+    val meal: MealInfo? = null,
     val key: String? = ""
 )
 
-data class Meal(
+val mealListTitle: List<String> = listOf("Date", "Day", "Breakfast", "Lunch", "Dinner", "Status")
+
+data class MealInfo(
     val date: String? = "",
     val dayName: String? = "",
     val breakfast: Boolean? = false,
     val lunch: Boolean? = false,
     val dinner: Boolean? = false,
-    val status: MealStatus? = MealStatus.Pending
 )
 
-val mealListTitle: List<String> = listOf("Date", "Day", "Breakfast", "Lunch", "Dinner", "Status")
-
-enum class MealStatus {
-    Pending, Running, Completed
+fun MealInfo.toMap(): Map<String, Any?> = MealInfo::class.memberProperties.associate {
+    it.name to it.get(this)
 }

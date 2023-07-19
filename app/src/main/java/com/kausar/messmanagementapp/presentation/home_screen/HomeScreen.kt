@@ -45,8 +45,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.kausar.messmanagementapp.components.CustomProgressBar
 import com.kausar.messmanagementapp.components.CustomTopAppBar
-import com.kausar.messmanagementapp.data.model.Meal
-import com.kausar.messmanagementapp.data.model.MealStatus
+import com.kausar.messmanagementapp.data.model.MealInfo
 import com.kausar.messmanagementapp.presentation.auth_screen.AuthViewModel
 import com.kausar.messmanagementapp.presentation.viewmodels.FirebaseFirestoreDbViewModel
 import com.kausar.messmanagementapp.utils.ResultState
@@ -60,9 +59,7 @@ import java.util.Calendar
 fun HomeScreen(
     viewModel: FirebaseFirestoreDbViewModel = hiltViewModel(),
     authViewModel: AuthViewModel = hiltViewModel(),
-    onLogout: () -> Unit,
-    navigateToProfileScreen: () -> Unit,
-    toggleDrawerState: () -> Unit
+    onLogout: () -> Unit
 ) {
 
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
@@ -113,9 +110,7 @@ fun HomeScreen(
                     }
                 }
             },
-            scrollBehavior = scrollBehavior,
-            onClickDrawerMenu = toggleDrawerState
-        )
+            scrollBehavior = scrollBehavior)
     },
         floatingActionButton = {
             if (!newMeal) {
@@ -167,17 +162,16 @@ fun HomeScreen(
                         newMeal = false
                         scope.launch {
                             viewModel.insert(
-                                Meal(
+                                MealInfo(
                                     getDate(calendar),
                                     getDayName(calendar),
                                     breakfast,
                                     lunch,
-                                    dinner,
-                                    MealStatus.Pending
-                                )
+                                    dinner)
                             ).collectLatest { result ->
                                 showProgress = when (result) {
                                     is ResultState.Success -> {
+                                        println("id from firestore : "+result.data.key.toString())
                                         context.showToast(result.data.message.toString())
                                         false
                                     }
@@ -357,7 +351,7 @@ private fun getDayName(calendar: Calendar): String {
 @Preview
 @Composable
 fun PreviewHome() {
-    HomeScreen(onLogout = { /*TODO*/ }, navigateToProfileScreen = { /*TODO*/ }) {
+   HomeScreen() {
 
-    }
+   }
 }

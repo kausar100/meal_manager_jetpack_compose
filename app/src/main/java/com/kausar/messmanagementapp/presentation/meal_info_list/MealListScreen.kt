@@ -37,16 +37,15 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.kausar.messmanagementapp.components.CustomProgressBar
 import com.kausar.messmanagementapp.components.CustomTopAppBar
-import com.kausar.messmanagementapp.data.model.Meal
+import com.kausar.messmanagementapp.data.model.MealInfo
 import com.kausar.messmanagementapp.data.model.mealListTitle
-import com.kausar.messmanagementapp.presentation.viewmodels.RealtimeDbViewModel
+import com.kausar.messmanagementapp.presentation.viewmodels.FirebaseFirestoreDbViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MealListScreen(
+    viewModel: FirebaseFirestoreDbViewModel = hiltViewModel(),
     onLogout: () -> Unit,
-    toggleDrawerState: () -> Unit,
-    viewModel: RealtimeDbViewModel = hiltViewModel()
 ) {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val itemState = viewModel.response.value
@@ -58,7 +57,6 @@ fun MealListScreen(
                 canNavigateBack = false,
                 logoutAction = onLogout,
                 scrollBehavior = scrollBehavior,
-                onClickDrawerMenu = toggleDrawerState
             )
         }
     ) {
@@ -128,7 +126,7 @@ fun MealListScreen(
 }
 
 @Composable
-fun MealItem(meal: Meal) {
+fun MealItem(meal: MealInfo) {
     Card(
         modifier = Modifier.padding(8.dp),
         elevation = CardDefaults.cardElevation(4.dp),
@@ -156,7 +154,6 @@ fun MealItem(meal: Meal) {
                 MealIcon(status = meal.breakfast!!, desc = "breakfast")
                 MealIcon(status = meal.lunch!!, desc = "breakfast")
                 MealIcon(status = meal.dinner!!, desc = "breakfast")
-                Text(text = meal.status?.name.toString())
             }
 
         }
@@ -174,5 +171,7 @@ fun MealIcon(status: Boolean, desc: String) {
 @Preview(showBackground = true)
 @Composable
 fun PreviewMealListScreen() {
-    MealListScreen(onLogout = { /*TODO*/ }, toggleDrawerState = { /*TODO*/ })
+    MealListScreen() {
+
+    }
 }
