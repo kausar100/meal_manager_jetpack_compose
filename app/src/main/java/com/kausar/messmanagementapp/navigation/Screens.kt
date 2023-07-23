@@ -12,6 +12,7 @@ sealed class Screen(
     val path: String = "",
     val title: String? = null
 ) {
+    object Splash : Screen(route = "splash_screen")
     object Login : Screen(route = "login_screen", title = "Log In")
     object SignUp : Screen(route = "signup_screen", title = "Sign Up")
     object PinVerify : Screen(

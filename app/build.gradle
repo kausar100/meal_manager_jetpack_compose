@@ -85,4 +85,9 @@ dependencies {
 
     //kotlin obj to hashmap
     implementation "org.jetbrains.kotlin:kotlin-reflect:1.8.0"
+
+    //datastore
+    implementation "androidx.datastore:datastore-preferences:1.0.0"
+    //view model
+    implementation "androidx.lifecycle:lifecycle-viewmodel-compose:2.6.1"
 }

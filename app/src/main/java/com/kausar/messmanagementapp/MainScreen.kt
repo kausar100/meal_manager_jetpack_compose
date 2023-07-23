@@ -23,11 +23,24 @@ import androidx.navigation.compose.rememberNavController
 import com.kausar.messmanagementapp.navigation.BottomBarScreen
 import com.kausar.messmanagementapp.navigation.BottomNavGraph
 import com.kausar.messmanagementapp.navigation.Screen
+import com.kausar.messmanagementapp.presentation.viewmodels.MainViewModel
 
 @Composable
-fun MainScreen() {
+fun MainScreen(viewModel: MainViewModel) {
     val navController = rememberNavController()
-    BottomNavGraph(navController = navController, startDestination = Screen.Login.route)
+
+    val isLogin = viewModel.isLoggedIn.value
+
+    println("main screen islogged in $isLogin")
+
+    BottomNavGraph(
+        navController = navController,
+        mainViewModel = viewModel,
+        isLoggedIn = isLogin,
+        startDestination = Screen.Splash.route
+    )
+
+
 }
 
 @Composable
