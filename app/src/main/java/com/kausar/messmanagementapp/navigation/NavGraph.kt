@@ -1,22 +1,24 @@
 package com.kausar.messmanagementapp.navigation
 
-import androidx.compose.material3.DrawerState
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.kausar.messmanagementapp.BottomBar
 import com.kausar.messmanagementapp.presentation.AboutScreen
 import com.kausar.messmanagementapp.presentation.auth_screen.AuthScreen
 import com.kausar.messmanagementapp.presentation.auth_screen.OtpVerifyScreen
 import com.kausar.messmanagementapp.presentation.home_screen.HomeScreen
 import com.kausar.messmanagementapp.presentation.meal_info_list.MealListScreen
 import com.kausar.messmanagementapp.presentation.profile_screen.ProfileScreen
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 
 fun logoutAndNavigateToLoginPage(navController: NavController) {
     navController.popBackStack()
@@ -30,26 +32,41 @@ fun logoutAndNavigateToLoginPage(navController: NavController) {
 
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BottomNavGraph(navController: NavHostController) {
+fun BottomNavGraph(navController: NavHostController, startDestination: String) {
     NavHost(
         navController = navController,
-        startDestination = BottomBarScreen.Home.route
+        startDestination = startDestination
     ) {
         composable(route = BottomBarScreen.Home.route) {
-            HomeScreen{
-                logoutAndNavigateToLoginPage(navController)
+            Scaffold(bottomBar = { BottomBar(navController = navController) }) {
+                Box(Modifier.padding(it)) {
+                    HomeScreen{
+                        logoutAndNavigateToLoginPage(navController)
+                    }
+                }
             }
+
         }
         composable(route = BottomBarScreen.Profile.route) {
-            ProfileScreen {
-                logoutAndNavigateToLoginPage(navController)
+            Scaffold(bottomBar = { BottomBar(navController = navController) }) {
+                Box(Modifier.padding(it)) {
+                    ProfileScreen {
+                        logoutAndNavigateToLoginPage(navController)
+                    }
+                }
             }
         }
         composable(route = BottomBarScreen.MealList.route) {
-            MealListScreen {
-                logoutAndNavigateToLoginPage(navController)
+            Scaffold(bottomBar = { BottomBar(navController = navController) }) {
+                Box(Modifier.padding(it)) {
+                    MealListScreen {
+                        logoutAndNavigateToLoginPage(navController)
+                    }
+                }
             }
+
         }
         composable(route = Screen.Login.route) {
             AuthScreen { phone, _ ->

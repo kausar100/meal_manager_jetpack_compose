@@ -24,6 +24,7 @@ sealed class Screen(
             return this.route + "/$phone"
         }
     }
+
     object About : Screen(route = "about_screen", title = "About")
 }
 

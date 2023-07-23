@@ -22,16 +22,12 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.kausar.messmanagementapp.navigation.BottomBarScreen
 import com.kausar.messmanagementapp.navigation.BottomNavGraph
+import com.kausar.messmanagementapp.navigation.Screen
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen() {
     val navController = rememberNavController()
-    Scaffold(bottomBar = { BottomBar(navController = navController) }) {
-        Box(Modifier.padding(it)) {
-            BottomNavGraph(navController = navController)
-        }
-    }
+    BottomNavGraph(navController = navController, startDestination = Screen.Login.route)
 }
 
 @Composable
