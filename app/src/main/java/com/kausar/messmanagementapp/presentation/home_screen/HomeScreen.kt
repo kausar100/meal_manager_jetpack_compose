@@ -16,15 +16,12 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
@@ -76,10 +73,6 @@ fun HomeScreen(
         mutableStateOf(false)
     }
 
-    LaunchedEffect(key1 = true) {
-        viewModel.getMealAtDate(getDate(calendar))
-    }
-
     var progressMsg by rememberSaveable {
         mutableStateOf("")
     }
@@ -126,6 +119,9 @@ fun HomeScreen(
     },
         floatingActionButton = {
             if (!newMeal) {
+                LaunchedEffect(key1 = true) {
+                    viewModel.getMealAtDate(getDate(calendar))
+                }
                 FloatingActionButton(
                     onClick = {
                         calendar.add(Calendar.DATE, 1)
