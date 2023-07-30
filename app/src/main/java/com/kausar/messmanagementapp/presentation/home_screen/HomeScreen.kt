@@ -17,7 +17,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -209,15 +208,7 @@ fun HomeScreen(
                         }
                     )
                 } else {
-                    if (itemState.isLoading) {
-                        CircularProgressIndicator()
-                    } else if (itemState.error.isNotEmpty()) {
-                        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                            Text(text = itemState.error)
-
-                        }
-
-                    } else if (itemState.success.isNotEmpty()) {
+                    if (itemState.success.isNotEmpty()) {
                         MealInformation(
                             modifier = Modifier
                                 .fillMaxWidth(.9f)
@@ -225,6 +216,25 @@ fun HomeScreen(
                             mealInfo = itemState.meal,
                         )
                     }
+                    Box(
+                        Modifier
+                            .fillMaxHeight()
+                            .fillMaxWidth(.9f),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        if (itemState.isLoading) {
+                            CustomProgressBar("Fetching data...")
+                        } else if (itemState.error.isNotEmpty()) {
+                            Text(itemState.error)
+                        } else {
+                            if (itemState.item.isEmpty()) {
+                                Text(text = "Not found any meal history!")
+                            }
+                        }
+
+                    }
+
+
                 }
 
 
