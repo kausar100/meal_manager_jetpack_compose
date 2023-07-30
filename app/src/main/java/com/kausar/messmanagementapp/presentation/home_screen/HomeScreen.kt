@@ -18,6 +18,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
@@ -28,8 +29,10 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -50,6 +53,8 @@ import com.kausar.messmanagementapp.presentation.auth_screen.AuthViewModel
 import com.kausar.messmanagementapp.presentation.viewmodels.FirebaseFirestoreDbViewModel
 import com.kausar.messmanagementapp.utils.ResultState
 import com.kausar.messmanagementapp.utils.showToast
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.util.Calendar
@@ -71,13 +76,19 @@ fun HomeScreen(
         mutableStateOf(false)
     }
 
+    LaunchedEffect(key1 = true) {
+        viewModel.getMealAtDate(getDate(calendar))
+    }
+
     var progressMsg by rememberSaveable {
         mutableStateOf("")
     }
 
-    var newMeal by rememberSaveable {
+    var newMeal by remember {
         mutableStateOf(false)
     }
+
+    val itemState = viewModel.response.value
 
 
     val scope = rememberCoroutineScope()
@@ -110,7 +121,8 @@ fun HomeScreen(
                     }
                 }
             },
-            scrollBehavior = scrollBehavior)
+            scrollBehavior = scrollBehavior
+        )
     },
         floatingActionButton = {
             if (!newMeal) {
@@ -149,49 +161,77 @@ fun HomeScreen(
                     text = if (!newMeal) "Running Meal information" else "Change Meal status and Click Add meal",
                     textAlign = TextAlign.Center
                 )
+                if (newMeal) {
+                    AddNewMeal(
+                        modifier = Modifier
+                            .fillMaxWidth(.9f)
+                            .padding(16.dp),
+                        onCancel = {
+                            newMeal = false
+                            calendar.add(Calendar.DATE, -1)
+                            currentDate = fetchDateAsString(calendar)
+                        },
+                        updateMeal = { breakfast, lunch, dinner ->
+                            newMeal = false
+                            CoroutineScope(Dispatchers.IO).launch {
+                                val finish = scope.launch {
+                                    viewModel.insert(
+                                        MealInfo(
+                                            getDate(calendar),
+                                            getDayName(calendar),
+                                            breakfast,
+                                            lunch,
+                                            dinner
+                                        )
+                                    ).collectLatest { result ->
+                                        showProgress = when (result) {
+                                            is ResultState.Success -> {
+                                                println("id from firestore : " + result.data.key.toString())
+                                                context.showToast(result.data.message.toString())
+                                                false
+                                            }
 
-                MealInfo(
-                    modifier = Modifier
-                        .fillMaxWidth(.9f)
-                        .padding(16.dp),
-                    newMeal = newMeal,
-                    onCancel = {
-                        newMeal = false
-                    },
-                    updateMeal = { breakfast, lunch, dinner ->
-                        newMeal = false
-                        scope.launch {
-                            viewModel.insert(
-                                MealInfo(
-                                    getDate(calendar),
-                                    getDayName(calendar),
-                                    breakfast,
-                                    lunch,
-                                    dinner)
-                            ).collectLatest { result ->
-                                showProgress = when (result) {
-                                    is ResultState.Success -> {
-                                        println("id from firestore : "+result.data.key.toString())
-                                        context.showToast(result.data.message.toString())
-                                        false
-                                    }
+                                            is ResultState.Failure -> {
+                                                result.message.localizedMessage?.let { msg ->
+                                                    context.showToast(
+                                                        msg
+                                                    )
+                                                }
+                                                false
+                                            }
 
-                                    is ResultState.Failure -> {
-                                        result.message.localizedMessage?.let { msg ->
-                                            context.showToast(
-                                                msg)
+                                            is ResultState.Loading -> {
+                                                true
+                                            }
                                         }
-                                        false
-                                    }
-
-                                    is ResultState.Loading -> {
-                                        true
                                     }
                                 }
+                                finish.join()
+                                calendar.add(Calendar.DATE, -1)
+                                currentDate = fetchDateAsString(calendar)
                             }
                         }
+                    )
+                } else {
+                    if (itemState.isLoading) {
+                        CircularProgressIndicator()
+                    } else if (itemState.error.isNotEmpty()) {
+                        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            Text(text = itemState.error)
+
+                        }
+
+                    } else if (itemState.success.isNotEmpty()) {
+                        MealInformation(
+                            modifier = Modifier
+                                .fillMaxWidth(.9f)
+                                .padding(16.dp),
+                            mealInfo = itemState.meal,
+                        )
                     }
-                )
+                }
+
+
             }
             if (showProgress) {
                 CustomProgressBar(msg = "Data updating...")
@@ -202,15 +242,13 @@ fun HomeScreen(
 }
 
 @Composable
-fun MealInfo(
+fun MealInformation(
     modifier: Modifier = Modifier,
-    newMeal: Boolean = false,
-    onCancel: () -> Unit,
-    updateMeal: (Boolean, Boolean, Boolean) -> Unit
+    mealInfo: MealInfo?
 ) {
-    var breakFast by rememberSaveable { mutableStateOf(true) }
-    var lunch by rememberSaveable { mutableStateOf(true) }
-    var dinner by rememberSaveable { mutableStateOf(true) }
+    var breakFast by rememberSaveable { mutableStateOf(mealInfo?.breakfast ?: false) }
+    var lunch by rememberSaveable { mutableStateOf(mealInfo?.lunch ?: false) }
+    var dinner by rememberSaveable { mutableStateOf(mealInfo?.dinner ?: false) }
 
     Column(
         modifier = modifier.fillMaxHeight(.8f),
@@ -256,48 +294,15 @@ fun MealInfo(
             }
             Spacer(modifier = Modifier.weight(1f))
             Column(Modifier.fillMaxHeight(), verticalArrangement = Arrangement.SpaceEvenly) {
-                CustomCheckBox(isEnabled = newMeal, isChecked = breakFast, onCheckChange = {
+                CustomCheckBox(isEnabled = false, isChecked = breakFast, onCheckChange = {
                     breakFast = it
                 })
-                CustomCheckBox(isEnabled = newMeal, isChecked = lunch, onCheckChange = {
+                CustomCheckBox(isEnabled = false, isChecked = lunch, onCheckChange = {
                     lunch = it
                 })
-                CustomCheckBox(isEnabled = newMeal, isChecked = dinner, onCheckChange = {
+                CustomCheckBox(isEnabled = false, isChecked = dinner, onCheckChange = {
                     dinner = it
                 })
-            }
-        }
-        if (newMeal) {
-            Row(
-                modifier = Modifier
-                    .padding(16.dp)
-                    .weight(1f)
-            ) {
-                OutlinedButton(
-                    onClick = onCancel, shape = RoundedCornerShape(4.dp)
-                ) {
-                    Text(
-                        text = "Cancel",
-                        letterSpacing = 2.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-                Spacer(modifier = Modifier.weight(1f))
-                ElevatedButton(
-                    onClick = {
-                        updateMeal(breakFast, lunch, dinner)
-                    }, shape = RoundedCornerShape(4.dp), colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF222B83),
-                        contentColor = Color.White,
-                    )
-                ) {
-                    Text(
-                        text = "Add Meal",
-                        letterSpacing = 2.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-
             }
         }
     }
@@ -351,7 +356,7 @@ private fun getDayName(calendar: Calendar): String {
 @Preview
 @Composable
 fun PreviewHome() {
-   HomeScreen() {
+    HomeScreen() {
 
-   }
+    }
 }

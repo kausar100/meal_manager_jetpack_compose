@@ -51,9 +51,40 @@ class FirebaseFirestoreDbViewModel @Inject constructor(
 
     fun insert(meal: MealInfo) = repo.insert(meal)
 
+    fun getMealAtDate(date: String) = viewModelScope.launch {
+        repo.getMealByDate(date).collectLatest {
+            when (it) {
+                is ResultState.Success -> {
+                    it.data?.let { meal ->
+                        _res.value = ItemState(
+                            meal = meal,
+                            success = "Meal fetch successfully!"
+                        )
+
+                    }
+
+                }
+
+                is ResultState.Failure -> {
+                    _res.value = ItemState(
+                        error = it.message.localizedMessage.toString()
+                    )
+                }
+
+                is ResultState.Loading -> {
+                    _res.value = ItemState(
+                        isLoading = true
+                    )
+                }
+            }
+        }
+    }
+
     data class ItemState(
         val item: List<RealtimeMealResponse> = emptyList(),
         val error: String = "",
+        val success: String = "",
+        val meal: MealInfo = MealInfo(),
         val isLoading: Boolean = false
     )
 }

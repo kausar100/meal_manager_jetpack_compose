@@ -15,5 +15,7 @@ interface FirebaseFirestoreRepo {
 
     fun insert(meal: MealInfo) : Flow<ResultState<Response>>
 
+    fun getMealByDate(date: String) : Flow<ResultState<MealInfo?>>
+
     fun getAllMeal() : Flow<ResultState<List<RealtimeMealResponse>>>
 }
