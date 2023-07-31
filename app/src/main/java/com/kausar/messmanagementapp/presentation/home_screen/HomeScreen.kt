@@ -49,8 +49,6 @@ import com.kausar.messmanagementapp.presentation.auth_screen.AuthViewModel
 import com.kausar.messmanagementapp.presentation.viewmodels.FirebaseFirestoreDbViewModel
 import com.kausar.messmanagementapp.utils.ResultState
 import com.kausar.messmanagementapp.utils.showToast
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.util.Calendar
@@ -74,6 +72,10 @@ fun HomeScreen(
 
     var progressMsg by rememberSaveable {
         mutableStateOf("")
+    }
+
+    LaunchedEffect(key1 = true) {
+        viewModel.getMealAtDate(getDate(calendar))
     }
 
     var newMeal by remember {
@@ -118,9 +120,6 @@ fun HomeScreen(
     },
         floatingActionButton = {
             if (!newMeal) {
-                LaunchedEffect(key1 = true) {
-                    viewModel.getMealAtDate(getDate(calendar))
-                }
                 FloatingActionButton(
                     onClick = {
                         calendar.add(Calendar.DATE, 1)
@@ -165,45 +164,44 @@ fun HomeScreen(
                             newMeal = false
                             calendar.add(Calendar.DATE, -1)
                             currentDate = fetchDateAsString(calendar)
+
                         },
                         updateMeal = { breakfast, lunch, dinner ->
                             newMeal = false
-                            CoroutineScope(Dispatchers.IO).launch {
-                                val finish = scope.launch {
-                                    viewModel.insert(
-                                        MealInfo(
-                                            getDate(calendar),
-                                            getDayName(calendar),
-                                            breakfast,
-                                            lunch,
-                                            dinner
-                                        )
-                                    ).collectLatest { result ->
-                                        showProgress = when (result) {
-                                            is ResultState.Success -> {
-                                                context.showToast(result.data.message.toString())
-                                                false
-                                            }
+                            scope.launch {
+                                viewModel.insert(
+                                    MealInfo(
+                                        getDate(calendar),
+                                        getDayName(calendar),
+                                        breakfast,
+                                        lunch,
+                                        dinner
+                                    )
+                                ).collectLatest { result ->
+                                    showProgress = when (result) {
+                                        is ResultState.Success -> {
+                                            context.showToast(result.data.message.toString())
+                                            false
+                                        }
 
-                                            is ResultState.Failure -> {
-                                                result.message.localizedMessage?.let { msg ->
-                                                    context.showToast(
-                                                        msg
-                                                    )
-                                                }
-                                                false
+                                        is ResultState.Failure -> {
+                                            result.message.localizedMessage?.let { msg ->
+                                                context.showToast(
+                                                    msg
+                                                )
                                             }
+                                            false
+                                        }
 
-                                            is ResultState.Loading -> {
-                                                progressMsg = "Adding new meal..."
-                                                true
-                                            }
+                                        is ResultState.Loading -> {
+                                            progressMsg = "Adding new meal..."
+                                            true
                                         }
                                     }
                                 }
-                                finish.join()
                                 calendar.add(Calendar.DATE, -1)
                                 currentDate = fetchDateAsString(calendar)
+
                             }
                         }
                     )
@@ -226,7 +224,8 @@ fun HomeScreen(
                         if (itemState.error.isNotEmpty()) {
                             showProgress = false
                             Text(itemState.error)
-                        }else if(itemState.isLoading){
+                        }
+                        else if (itemState.isLoading) {
                             progressMsg = "Fetching meal info..."
                             showProgress = true
                         }
