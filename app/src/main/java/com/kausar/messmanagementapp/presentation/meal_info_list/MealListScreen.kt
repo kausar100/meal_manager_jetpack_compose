@@ -89,12 +89,8 @@ fun MealListScreen(
                         content = {
                             items(
                                 mealResponseList,
-                                key = { firebase_db ->
-                                    firebase_db.key!!
-                                }
-
                             ) { item ->
-                                MealItem(meal = item.meal!!)
+                                MealItem(meal = item)
                             }
                         }
                     )

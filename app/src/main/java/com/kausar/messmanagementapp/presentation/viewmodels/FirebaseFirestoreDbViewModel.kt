@@ -8,7 +8,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kausar.messmanagementapp.data.firebase_firestore.FirebaseFirestoreRepo
 import com.kausar.messmanagementapp.data.model.MealInfo
-import com.kausar.messmanagementapp.data.model.RealtimeMealResponse
 import com.kausar.messmanagementapp.utils.ResultState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.collectLatest
@@ -67,7 +66,7 @@ class FirebaseFirestoreDbViewModel @Inject constructor(
 
                 is ResultState.Failure -> {
                     _res.value = ItemState(
-                        error = it.message.localizedMessage.toString()
+                        error = it.message?.localizedMessage.toString()
                     )
                 }
 
@@ -81,7 +80,7 @@ class FirebaseFirestoreDbViewModel @Inject constructor(
     }
 
     data class ItemState(
-        val item: List<RealtimeMealResponse> = emptyList(),
+        val item: List<MealInfo> = emptyList(),
         val error: String = "",
         val success: String = "",
         val meal: MealInfo = MealInfo(),

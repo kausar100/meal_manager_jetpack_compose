@@ -2,11 +2,6 @@ package com.kausar.messmanagementapp.data.model
 
 import kotlin.reflect.full.memberProperties
 
-data class RealtimeMealResponse(
-    val meal: MealInfo? = null,
-    val key: String? = ""
-)
-
 data class MealInfo(
     val date: String? = "",
     val dayName: String? = "",

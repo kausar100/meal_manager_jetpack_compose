@@ -180,7 +180,7 @@ fun HomeScreen(
                                 ).collectLatest { result ->
                                     showProgress = when (result) {
                                         is ResultState.Success -> {
-                                            context.showToast(result.data.message.toString())
+                                            context.showToast(result.data)
                                             false
                                         }
 
@@ -224,8 +224,7 @@ fun HomeScreen(
                         if (itemState.error.isNotEmpty()) {
                             showProgress = false
                             Text(itemState.error)
-                        }
-                        else if (itemState.isLoading) {
+                        } else if (itemState.isLoading) {
                             progressMsg = "Fetching meal info..."
                             showProgress = true
                         }

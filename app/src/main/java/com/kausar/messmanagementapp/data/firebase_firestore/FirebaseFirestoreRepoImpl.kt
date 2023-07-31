@@ -3,9 +3,7 @@ package com.kausar.messmanagementapp.data.firebase_firestore
 import android.os.Build
 import androidx.annotation.RequiresApi
 import com.google.firebase.firestore.CollectionReference
-import com.google.firebase.firestore.ktx.toObject
 import com.kausar.messmanagementapp.data.model.MealInfo
-import com.kausar.messmanagementapp.data.model.RealtimeMealResponse
 import com.kausar.messmanagementapp.data.model.toMap
 import com.kausar.messmanagementapp.utils.ResultState
 import kotlinx.coroutines.channels.awaitClose
@@ -19,29 +17,29 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
     private val firestoreDb: CollectionReference
 ) : FirebaseFirestoreRepo {
 
-    override fun insert(meal: MealInfo): Flow<ResultState<Response>> = callbackFlow {
+    override fun insert(meal: MealInfo): Flow<ResultState<String>> = callbackFlow {
         trySend(ResultState.Loading)
 
         firestoreDb.whereEqualTo("date", meal.date).get().addOnSuccessListener {
-            it?.let {
-                if (it.documents.isNotEmpty()) {
+            it?.let { result ->
+                if (result.documents.isNotEmpty()) {
                     trySend(ResultState.Failure(Exception("Data already exists!")))
                 } else {
                     val hashMeal = meal.toMap()
 
-                    firestoreDb.add(hashMeal).addOnSuccessListener {
-                        if (it?.id != null) {
-                            trySend(
-                                ResultState.Success(
-                                    data = Response(
-                                        key = it.id, message = "Data Inserted Successfully!"
+                    firestoreDb.add(hashMeal)
+                        .addOnSuccessListener { rst->
+                            if (rst?.id != null) {
+                                trySend(
+                                    ResultState.Success(
+                                        "Data Inserted Successfully!"
                                     )
                                 )
-                            )
+
+                            }
+                        }.addOnFailureListener {exp->
+                            trySend(ResultState.Failure(exp))
                         }
-                    }.addOnFailureListener {
-                        trySend(ResultState.Failure(it))
-                    }
                 }
             }
         }
@@ -76,22 +74,21 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    override fun getAllMeal(): Flow<ResultState<List<RealtimeMealResponse>>> = callbackFlow {
+    override fun getAllMeal(): Flow<ResultState<List<MealInfo>>> = callbackFlow {
         trySend(ResultState.Loading)
 
         firestoreDb.get().addOnSuccessListener { result ->
-            val meals = mutableListOf<RealtimeMealResponse>()
+            val meals = mutableListOf<MealInfo>()
             for (document in result.documents) {
-                meals.add(
-                    RealtimeMealResponse(
-                        meal = document.toObject(), key = document.id
-                    )
-                )
+                val meal = document.toObject(MealInfo::class.java)
+                if (meal != null) {
+                    meals.add(meal)
+                }
             }
             //sort by date ascending
             val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
             val sortedMeals =
-                meals.sortedByDescending { LocalDate.parse(it.meal!!.date, formatter) }
+                meals.sortedByDescending { LocalDate.parse(it.date, formatter) }
 
             trySend(ResultState.Success(sortedMeals))
 
