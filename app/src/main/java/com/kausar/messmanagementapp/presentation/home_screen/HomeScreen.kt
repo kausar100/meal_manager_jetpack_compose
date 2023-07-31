@@ -181,7 +181,6 @@ fun HomeScreen(
                                     ).collectLatest { result ->
                                         showProgress = when (result) {
                                             is ResultState.Success -> {
-                                                println("id from firestore : " + result.data.key.toString())
                                                 context.showToast(result.data.message.toString())
                                                 false
                                             }
@@ -196,6 +195,7 @@ fun HomeScreen(
                                             }
 
                                             is ResultState.Loading -> {
+                                                progressMsg = "Adding new meal..."
                                                 true
                                             }
                                         }
@@ -209,6 +209,7 @@ fun HomeScreen(
                     )
                 } else {
                     if (itemState.success.isNotEmpty()) {
+                        showProgress = false
                         MealInformation(
                             modifier = Modifier
                                 .fillMaxWidth(.9f)
@@ -222,25 +223,22 @@ fun HomeScreen(
                             .fillMaxWidth(.9f),
                         contentAlignment = Alignment.Center
                     ) {
-                        if (itemState.isLoading) {
-                            CustomProgressBar("Fetching data...")
-                        } else if (itemState.error.isNotEmpty()) {
+                        if (itemState.error.isNotEmpty()) {
+                            showProgress = false
                             Text(itemState.error)
-                        } else {
-                            if (itemState.item.isEmpty()) {
-                                Text(text = "Not found any meal history!")
-                            }
+                        }else if(itemState.isLoading){
+                            progressMsg = "Fetching meal info..."
+                            showProgress = true
                         }
 
                     }
-
 
                 }
 
 
             }
             if (showProgress) {
-                CustomProgressBar(msg = "Data updating...")
+                CustomProgressBar(msg = progressMsg)
             }
         }
 

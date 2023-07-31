@@ -1,18 +1,12 @@
 package com.kausar.messmanagementapp.navigation
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.kausar.messmanagementapp.BottomBar
 import com.kausar.messmanagementapp.presentation.AboutScreen
 import com.kausar.messmanagementapp.presentation.SplashScreen
 import com.kausar.messmanagementapp.presentation.auth_screen.AuthScreen
@@ -34,7 +28,6 @@ fun logoutAndNavigateToLoginPage(navController: NavController) {
 
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BottomNavGraph(
     navController: NavHostController,
@@ -47,35 +40,29 @@ fun BottomNavGraph(
         startDestination = startDestination
     ) {
         composable(route = BottomBarScreen.Home.route) {
-            Scaffold(bottomBar = { BottomBar(navController = navController) }) {
-                Box(Modifier.padding(it)) {
-                    HomeScreen {
-                        mainViewModel.saveLoginStatus(false)
-                        logoutAndNavigateToLoginPage(navController)
-                    }
-                }
+
+            HomeScreen {
+                mainViewModel.saveLoginStatus(false)
+                logoutAndNavigateToLoginPage(navController)
             }
+
 
         }
         composable(route = BottomBarScreen.Profile.route) {
-            Scaffold(bottomBar = { BottomBar(navController = navController) }) {
-                Box(Modifier.padding(it)) {
-                    ProfileScreen {
-                        mainViewModel.saveLoginStatus(false)
-                        logoutAndNavigateToLoginPage(navController)
-                    }
-                }
+
+            ProfileScreen {
+                mainViewModel.saveLoginStatus(false)
+                logoutAndNavigateToLoginPage(navController)
             }
+
         }
         composable(route = BottomBarScreen.MealList.route) {
-            Scaffold(bottomBar = { BottomBar(navController = navController) }) {
-                Box(Modifier.padding(it)) {
-                    MealListScreen {
-                        mainViewModel.saveLoginStatus(false)
-                        logoutAndNavigateToLoginPage(navController)
-                    }
-                }
+
+            MealListScreen {
+                mainViewModel.saveLoginStatus(false)
+                logoutAndNavigateToLoginPage(navController)
             }
+
 
         }
         composable(route = Screen.Login.route) {
@@ -94,7 +81,13 @@ fun BottomNavGraph(
             OtpVerifyScreen(phoneNumber = phone) {
                 mainViewModel.saveLoginStatus(true)
                 navController.popBackStack()
-                navController.navigate(BottomBarScreen.Home.route)
+                navController.navigate(BottomBarScreen.Home.route) {
+                    popUpTo(navController.graph.id) {
+                        if (navController.previousBackStackEntry != null) {
+                            inclusive = true
+                        }
+                    }
+                }
             }
         }
 

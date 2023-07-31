@@ -13,10 +13,11 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavController
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hierarchy
-import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
@@ -25,6 +26,7 @@ import com.kausar.messmanagementapp.navigation.BottomNavGraph
 import com.kausar.messmanagementapp.navigation.Screen
 import com.kausar.messmanagementapp.presentation.viewmodels.MainViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(viewModel: MainViewModel) {
     val navController = rememberNavController()
@@ -33,14 +35,37 @@ fun MainScreen(viewModel: MainViewModel) {
 
     println("main screen islogged in $isLogin")
 
-    BottomNavGraph(
-        navController = navController,
-        mainViewModel = viewModel,
-        isLoggedIn = isLogin,
-        startDestination = Screen.Splash.route
-    )
+    Scaffold(bottomBar = {
+        when (currentRoute(navController)) {
+            BottomBarScreen.Home.route, BottomBarScreen.MealList.route, BottomBarScreen.Profile.route -> {
+                BottomBar(navController = navController)
+            }
+        }
+    }) {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.padding(
+                bottom = it.calculateBottomPadding()
+            )
+        ) {
+            BottomNavGraph(
+                navController = navController,
+                mainViewModel = viewModel,
+                isLoggedIn = isLogin,
+                startDestination = Screen.Splash.route
+            )
+        }
+
+    }
 
 
+}
+
+
+@Composable
+fun currentRoute(navController: NavController): String? {
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    return navBackStackEntry?.destination?.route?.substringBeforeLast("/")
 }
 
 @Composable
@@ -75,7 +100,7 @@ fun RowScope.AddDestination(
         } == true,
         onClick = {
             navController.navigate(screen.route) {
-                popUpTo(navController.graph.findStartDestination().id)
+                popUpTo(BottomBarScreen.Home.route)
                 launchSingleTop = true
             }
         },
