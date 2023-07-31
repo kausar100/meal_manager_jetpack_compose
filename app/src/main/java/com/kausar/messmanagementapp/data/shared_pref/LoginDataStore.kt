@@ -7,6 +7,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
+import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
@@ -22,6 +23,8 @@ class LoginDataStore @Inject constructor(
 
     object KEYS {
         val KEY_IS_LOGGED_IN = booleanPreferencesKey("is_logged_in")
+        val KEY_USERNAME = stringPreferencesKey("username")
+        val KEY_CONTACT_NUMBER = stringPreferencesKey("contact_number")
     }
 
     override fun getLoginStatus(): Flow<Boolean> {
@@ -39,6 +42,38 @@ class LoginDataStore @Inject constructor(
         context.dataStore.edit { preference ->
             preference[KEYS.KEY_IS_LOGGED_IN] = status
         }
+    }
+
+    override suspend fun saveUsername(name: String) {
+        context.dataStore.edit { preference ->
+            preference[KEYS.KEY_USERNAME] = name
+        }
+    }
+
+    override fun getUsername(): Flow<String> {
+        return context.dataStore.data
+            .catch {
+                emit(emptyPreferences())
+            }
+            .map { preference ->
+                preference[KEYS.KEY_USERNAME] ?: ""
+            }
+    }
+
+    override suspend fun saveContactNumber(contact: String) {
+        context.dataStore.edit { preference ->
+            preference[KEYS.KEY_CONTACT_NUMBER] = contact
+        }
+    }
+
+    override fun getContactNumber(): Flow<String> {
+        return context.dataStore.data
+            .catch {
+                emit(emptyPreferences())
+            }
+            .map { preference ->
+                preference[KEYS.KEY_CONTACT_NUMBER] ?: ""
+            }
     }
 
 }

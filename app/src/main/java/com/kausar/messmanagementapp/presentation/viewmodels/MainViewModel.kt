@@ -17,13 +17,31 @@ class MainViewModel @Inject constructor(
     private val _loginStatus = mutableStateOf(false)
     val isLoggedIn: State<Boolean> = _loginStatus
 
+    private val _user = mutableStateOf("")
+    val userName: State<String> = _user
+
+    private val _contact = mutableStateOf("")
+    val contact: State<String> = _contact
+
     init {
         viewModelScope.launch {
             loginPref.getLoginStatus().collectLatest {
                 _loginStatus.value = it
             }
+            loginPref.getUsername().collectLatest {
+                _user.value = it
+            }
+            loginPref.getContactNumber().collectLatest {
+                _contact.value = it
+            }
         }
     }
 
+
+
     fun saveLoginStatus(status: Boolean) = viewModelScope.launch { loginPref.saveLoginStatus(status) }
+
+    fun saveUsername(username: String) = viewModelScope.launch { loginPref.saveUsername(username) }
+
+    fun saveContact(phone: String) = viewModelScope.launch { loginPref.saveContactNumber(phone) }
 }

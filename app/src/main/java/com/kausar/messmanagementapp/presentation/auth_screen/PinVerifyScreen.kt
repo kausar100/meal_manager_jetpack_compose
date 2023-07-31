@@ -51,6 +51,7 @@ import com.kausar.messmanagementapp.components.CustomProgressBar
 import com.kausar.messmanagementapp.components.CustomTopAppBar
 import com.kausar.messmanagementapp.components.WelcomeText
 import com.kausar.messmanagementapp.navigation.Screen
+import com.kausar.messmanagementapp.presentation.viewmodels.MainViewModel
 import com.kausar.messmanagementapp.utils.ResultState
 import com.kausar.messmanagementapp.utils.showToast
 import kotlinx.coroutines.Dispatchers
@@ -60,7 +61,9 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OtpVerifyScreen(
-    phoneNumber: String, viewModel: AuthViewModel = hiltViewModel(), onSubmit: () -> Unit
+    phoneNumber: String,
+    viewModel: AuthViewModel = hiltViewModel(),
+    onSubmit: () -> Unit
 ) {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val context = LocalContext.current

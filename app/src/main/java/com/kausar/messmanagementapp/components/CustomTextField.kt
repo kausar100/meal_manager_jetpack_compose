@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.dp
 fun CustomOutlinedTextField(
     modifier: Modifier = Modifier,
     input: String,
+    editable: Boolean = true,
     onInputChange: (String) -> Unit,
     placeholder: @Composable() (() -> Unit)? = null,
     prefixIcon: @Composable() (() -> Unit)? = null,
@@ -29,6 +30,7 @@ fun CustomOutlinedTextField(
     OutlinedTextField(
         value = input,
         onValueChange = onInputChange,
+        enabled = editable,
         placeholder = placeholder,
         leadingIcon = prefixIcon,
         singleLine = true,

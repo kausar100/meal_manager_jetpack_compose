@@ -55,7 +55,7 @@ fun BottomNavGraph(
 
         }
         composable(route = Screen.Login.route) {
-            AuthScreen { phone, _ ->
+            AuthScreen(mainViewModel) { phone, _ ->
                 navController.navigate(Screen.PinVerify.phoneNumber(phone))
             }
         }

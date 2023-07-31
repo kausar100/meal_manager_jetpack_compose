@@ -42,13 +42,16 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.kausar.messmanagementapp.navigation.Screen
 import com.kausar.messmanagementapp.components.CustomOutlinedTextField
 import com.kausar.messmanagementapp.components.CustomTopAppBar
+import com.kausar.messmanagementapp.presentation.viewmodels.MainViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AuthScreen(
+    mainViewModel: MainViewModel = hiltViewModel(),
     onSubmit: (String, String?) -> Unit
 ) {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
@@ -75,6 +78,7 @@ fun AuthScreen(
                 .padding(it),
             isLoginScreen = isLoginScreen,
             buttonText = screenTitle.toString(),
+            viewModel = mainViewModel,
             toggleScreen = {
                 when (screenTitle) {
                     Screen.Login.title -> {
@@ -101,16 +105,17 @@ fun AuthScreenContent(
     modifier: Modifier = Modifier,
     isLoginScreen: Boolean = true,
     buttonText: String,
+    viewModel: MainViewModel,
     toggleScreen: () -> Unit,
     onSubmit: (contact: String, name: String?) -> Unit,
 ) {
     val focusManager = LocalFocusManager.current
 
     var user by remember {
-        mutableStateOf("Kausar")
+        mutableStateOf(viewModel.userName.value)
     }
     var contactNo by remember {
-        mutableStateOf("01315783246")
+        mutableStateOf(viewModel.contact.value)
     }
     Column(
         modifier = modifier.padding(16.dp),
@@ -122,13 +127,13 @@ fun AuthScreenContent(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-//            AnimatedVisibility(visible = !isLoginScreen) {
             CustomOutlinedTextField(
                 modifier = Modifier.fillMaxWidth(),
                 input = user,
                 onInputChange = {
                     user = it
                 },
+                editable = !isLoginScreen,
                 placeholder = { Text(text = "Enter your name") },
                 label = { Text(text = "Name") },
                 prefixIcon = {
@@ -144,7 +149,6 @@ fun AuthScreenContent(
             ) {
                 focusManager.moveFocus(FocusDirection.Next)
             }
-//            }
             CustomOutlinedTextField(
                 modifier = Modifier.fillMaxWidth(),
                 input = contactNo,
