@@ -11,6 +11,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -23,12 +24,9 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -53,12 +51,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kausar.messmanagementapp.components.CustomBasicTextField
-import com.kausar.messmanagementapp.components.CustomTopAppBar
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProfileScreen(onLogout: () -> Unit) {
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+fun ProfileScreen() {
     val context = LocalContext.current
     val bitmap = remember {
         mutableStateOf<Bitmap?>(null)
@@ -74,33 +69,15 @@ fun ProfileScreen(onLogout: () -> Unit) {
             selectedImage = it
         })
 
-    Scaffold(topBar = {
-        CustomTopAppBar(
-            canNavigateBack = false,
-            logoutAction = onLogout,
-            scrollBehavior = scrollBehavior,
-        )
-    },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = {
-                    imagePicker.launch("image/*")
-                },
-                modifier = Modifier.background(Color.Transparent, shape = CircleShape)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Edit,
-                    contentDescription = "update profile",
-                    tint = Color.Black
-                )
-            }
-        }) {
+    Box(
+        Modifier
+            .fillMaxSize()
+            .padding(16.dp)) {
         Column(
             Modifier
-                .fillMaxSize()
-                .padding(it),
+                .fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Top
+            verticalArrangement = Arrangement.Center
         ) {
             selectedImage?.let { uri ->
                 if (Build.VERSION.SDK_INT < 28) {
@@ -169,6 +146,22 @@ fun ProfileScreen(onLogout: () -> Unit) {
 
         }
 
+        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.BottomEnd) {
+            FloatingActionButton(
+                onClick = {
+                    imagePicker.launch("image/*")
+                },
+                modifier = Modifier
+                    .background(Color.Transparent, shape = CircleShape)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Edit,
+                    contentDescription = "update profile",
+                    tint = Color.Black
+                )
+            }
+        }
+
     }
 }
 
@@ -215,7 +208,5 @@ fun UserInfo(
 @Preview(showBackground = true)
 @Composable
 fun PreviewMealListScreen() {
-   ProfileScreen {
-
-   }
+    ProfileScreen()
 }

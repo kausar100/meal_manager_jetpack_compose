@@ -17,13 +17,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -43,9 +40,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.kausar.messmanagementapp.components.CustomProgressBar
-import com.kausar.messmanagementapp.components.CustomTopAppBar
 import com.kausar.messmanagementapp.data.model.MealInfo
-import com.kausar.messmanagementapp.presentation.auth_screen.AuthViewModel
 import com.kausar.messmanagementapp.presentation.viewmodels.FirebaseFirestoreDbViewModel
 import com.kausar.messmanagementapp.utils.ResultState
 import com.kausar.messmanagementapp.utils.showToast
@@ -53,25 +48,14 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.util.Calendar
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     viewModel: FirebaseFirestoreDbViewModel = hiltViewModel(),
-    authViewModel: AuthViewModel = hiltViewModel(),
-    onLogout: () -> Unit
 ) {
 
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val calendar = Calendar.getInstance()
     var currentDate by rememberSaveable {
         mutableStateOf(fetchDateAsString(calendar))
-    }
-    var showProgress by rememberSaveable {
-        mutableStateOf(false)
-    }
-
-    var progressMsg by rememberSaveable {
-        mutableStateOf("")
     }
 
     LaunchedEffect(key1 = true) {
@@ -88,38 +72,99 @@ fun HomeScreen(
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
 
-    Scaffold(topBar = {
-        CustomTopAppBar(
-            title = "Meal Information",
-            canNavigateBack = false,
-            logoutAction = {
-                scope.launch {
-                    authViewModel.logout().collectLatest {
-                        when (it) {
-                            is ResultState.Loading -> {
-                                progressMsg = "Signing out..."
-                                showProgress = true
-                            }
 
-                            is ResultState.Failure -> {
-                                showProgress = false
-                                it.message.localizedMessage?.let { msg -> context.showToast(msg) }
-                            }
+    Box(
+        Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+    ) {
+        Column(
+            Modifier
+                .fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Spacer(modifier = Modifier.fillMaxHeight(.1f))
+            Text(text = currentDate, textAlign = TextAlign.Center)
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = if (!newMeal) "Running Meal information" else "Change Meal status and Click Add meal",
+                textAlign = TextAlign.Center
+            )
+            if (newMeal) {
+                AddNewMeal(
+                    modifier = Modifier
+                        .fillMaxWidth(.9f)
+                        .padding(16.dp),
+                    onCancel = {
+                        newMeal = false
+                        calendar.add(Calendar.DATE, -1)
+                        currentDate = fetchDateAsString(calendar)
 
-                            is ResultState.Success -> {
-                                showProgress = false
-                                context.showToast(it.data)
-                                onLogout()
+                    },
+                    updateMeal = { breakfast, lunch, dinner ->
+                        newMeal = false
+                        scope.launch {
+                            viewModel.insert(
+                                MealInfo(
+                                    getDate(calendar),
+                                    getDayName(calendar),
+                                    breakfast,
+                                    lunch,
+                                    dinner
+                                )
+                            ).collectLatest { result ->
+                                when (result) {
+                                    is ResultState.Success -> {
+                                        context.showToast(result.data)
+                                    }
+
+                                    is ResultState.Failure -> {
+                                        result.message.localizedMessage?.let { msg ->
+                                            context.showToast(
+                                                msg
+                                            )
+                                        }
+                                    }
+
+                                    is ResultState.Loading -> {
+                                    }
+                                }
                             }
+                            calendar.add(Calendar.DATE, -1)
+                            currentDate = fetchDateAsString(calendar)
+
                         }
                     }
+                )
+            } else {
+                if (itemState.success.isNotEmpty()) {
+                    MealInformation(
+                        modifier = Modifier
+                            .fillMaxWidth(.9f)
+                            .padding(16.dp),
+                        mealInfo = itemState.meal,
+                    )
                 }
-            },
-            scrollBehavior = scrollBehavior
-        )
-    },
-        floatingActionButton = {
-            if (!newMeal) {
+                Box(
+                    Modifier
+                        .fillMaxHeight()
+                        .fillMaxWidth(.9f),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (itemState.error.isNotEmpty()) {
+                        Text(itemState.error)
+                    } else if (itemState.isLoading) {
+                        CustomProgressBar(msg = "Fetching meal info...")
+                    }
+
+                }
+
+            }
+
+
+        }
+        if (!newMeal) {
+            Box(Modifier.fillMaxSize(),contentAlignment = Alignment.BottomEnd) {
                 FloatingActionButton(
                     onClick = {
                         calendar.add(Calendar.DATE, 1)
@@ -134,109 +179,6 @@ fun HomeScreen(
                         tint = Color.Black
                     )
                 }
-            }
-
-        }) {
-        Box(
-            Modifier
-                .fillMaxSize()
-                .padding(it),
-            contentAlignment = Alignment.Center
-        ) {
-            Column(
-                Modifier
-                    .fillMaxSize(),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Spacer(modifier = Modifier.fillMaxHeight(.1f))
-                Text(text = currentDate, textAlign = TextAlign.Center)
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = if (!newMeal) "Running Meal information" else "Change Meal status and Click Add meal",
-                    textAlign = TextAlign.Center
-                )
-                if (newMeal) {
-                    AddNewMeal(
-                        modifier = Modifier
-                            .fillMaxWidth(.9f)
-                            .padding(16.dp),
-                        onCancel = {
-                            newMeal = false
-                            calendar.add(Calendar.DATE, -1)
-                            currentDate = fetchDateAsString(calendar)
-
-                        },
-                        updateMeal = { breakfast, lunch, dinner ->
-                            newMeal = false
-                            scope.launch {
-                                viewModel.insert(
-                                    MealInfo(
-                                        getDate(calendar),
-                                        getDayName(calendar),
-                                        breakfast,
-                                        lunch,
-                                        dinner
-                                    )
-                                ).collectLatest { result ->
-                                    showProgress = when (result) {
-                                        is ResultState.Success -> {
-                                            context.showToast(result.data)
-                                            false
-                                        }
-
-                                        is ResultState.Failure -> {
-                                            result.message.localizedMessage?.let { msg ->
-                                                context.showToast(
-                                                    msg
-                                                )
-                                            }
-                                            false
-                                        }
-
-                                        is ResultState.Loading -> {
-                                            progressMsg = "Adding new meal..."
-                                            true
-                                        }
-                                    }
-                                }
-                                calendar.add(Calendar.DATE, -1)
-                                currentDate = fetchDateAsString(calendar)
-
-                            }
-                        }
-                    )
-                } else {
-                    if (itemState.success.isNotEmpty()) {
-                        showProgress = false
-                        MealInformation(
-                            modifier = Modifier
-                                .fillMaxWidth(.9f)
-                                .padding(16.dp),
-                            mealInfo = itemState.meal,
-                        )
-                    }
-                    Box(
-                        Modifier
-                            .fillMaxHeight()
-                            .fillMaxWidth(.9f),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        if (itemState.error.isNotEmpty()) {
-                            showProgress = false
-                            Text(itemState.error)
-                        } else if (itemState.isLoading) {
-                            progressMsg = "Fetching meal info..."
-                            showProgress = true
-                        }
-
-                    }
-
-                }
-
-
-            }
-            if (showProgress) {
-                CustomProgressBar(msg = progressMsg)
             }
         }
 
@@ -358,7 +300,5 @@ private fun getDayName(calendar: Calendar): String {
 @Preview
 @Composable
 fun PreviewHome() {
-    HomeScreen() {
-
-    }
+    HomeScreen()
 }

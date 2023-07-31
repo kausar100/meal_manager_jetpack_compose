@@ -11,37 +11,78 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.kausar.messmanagementapp.components.CustomTopAppBar
 import com.kausar.messmanagementapp.navigation.BottomBarScreen
 import com.kausar.messmanagementapp.navigation.BottomNavGraph
 import com.kausar.messmanagementapp.navigation.Screen
+import com.kausar.messmanagementapp.navigation.logoutAndNavigateToLoginPage
+import com.kausar.messmanagementapp.presentation.auth_screen.AuthViewModel
 import com.kausar.messmanagementapp.presentation.viewmodels.MainViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(viewModel: MainViewModel) {
+
+    val authViewModel: AuthViewModel = hiltViewModel()
     val navController = rememberNavController()
+    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
     val isLogin = viewModel.isLoggedIn.value
 
     println("main screen islogged in $isLogin")
 
-    Scaffold(bottomBar = {
-        when (currentRoute(navController)) {
-            BottomBarScreen.Home.route, BottomBarScreen.MealList.route, BottomBarScreen.Profile.route -> {
-                BottomBar(navController = navController)
+    Scaffold(
+        topBar = {
+            when (currentRoute(navController)) {
+                BottomBarScreen.Home.route,
+                BottomBarScreen.MealList.route,
+                BottomBarScreen.Profile.route -> {
+                    CustomTopAppBar(
+                        title = when (currentRoute(navController)) {
+                            BottomBarScreen.Home.route -> {
+                                BottomBarScreen.Home.title
+                            }
+
+                            BottomBarScreen.MealList.route -> {
+                                BottomBarScreen.MealList.title
+                            }
+
+                            BottomBarScreen.Profile.route -> {
+                                BottomBarScreen.Profile.title
+                            }
+
+                            else -> {
+                                null
+                            }
+                        },
+                        canNavigateBack = false, logoutAction = {
+                            authViewModel.logout()
+                            viewModel.saveLoginStatus(false)
+                            logoutAndNavigateToLoginPage(navController)
+                        }, scrollBehavior = scrollBehavior
+                    )
+                }
             }
-        }
-    }) {
+        },
+        bottomBar = {
+            when (currentRoute(navController)) {
+                BottomBarScreen.Home.route, BottomBarScreen.MealList.route, BottomBarScreen.Profile.route -> {
+                    BottomBar(navController = navController)
+                }
+            }
+        }) {
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier.padding(

@@ -40,28 +40,17 @@ fun BottomNavGraph(
         startDestination = startDestination
     ) {
         composable(route = BottomBarScreen.Home.route) {
-
-            HomeScreen {
-                mainViewModel.saveLoginStatus(false)
-                logoutAndNavigateToLoginPage(navController)
-            }
-
+            HomeScreen()
 
         }
         composable(route = BottomBarScreen.Profile.route) {
 
-            ProfileScreen {
-                mainViewModel.saveLoginStatus(false)
-                logoutAndNavigateToLoginPage(navController)
-            }
+            ProfileScreen()
 
         }
         composable(route = BottomBarScreen.MealList.route) {
 
-            MealListScreen {
-                mainViewModel.saveLoginStatus(false)
-                logoutAndNavigateToLoginPage(navController)
-            }
+            MealListScreen()
 
 
         }

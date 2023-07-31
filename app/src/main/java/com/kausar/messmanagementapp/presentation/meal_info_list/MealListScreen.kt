@@ -18,11 +18,8 @@ import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -36,84 +33,70 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.kausar.messmanagementapp.components.CustomProgressBar
-import com.kausar.messmanagementapp.components.CustomTopAppBar
 import com.kausar.messmanagementapp.data.model.MealInfo
 import com.kausar.messmanagementapp.presentation.viewmodels.FirebaseFirestoreDbViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MealListScreen(
     viewModel: FirebaseFirestoreDbViewModel = hiltViewModel(),
-    onLogout: () -> Unit,
 ) {
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+
     val itemState = viewModel.response.value
 
-    Scaffold(
-        topBar = {
-            CustomTopAppBar(
-                title = "Your Meal Information",
-                canNavigateBack = false,
-                logoutAction = onLogout,
-                scrollBehavior = scrollBehavior,
-            )
-        }
+    Column(
+        Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Top
     ) {
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(
+            text = "Meal List <> July, 2023",
+            fontSize = 20.sp,
+            textAlign = TextAlign.Center,
+            style = TextStyle(
+                fontWeight = FontWeight.Bold,
+                color = Color.Black,
+                fontFamily = FontFamily.Cursive
+            )
+        )
+        Spacer(modifier = Modifier.height(16.dp))
         Column(
             Modifier
-                .fillMaxSize()
-                .padding(it),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Top
+                .fillMaxHeight(.95f)
         ) {
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                text = "Meal List <> July, 2023",
-                fontSize = 20.sp,
-                textAlign = TextAlign.Center,
-                style = TextStyle(
-                    fontWeight = FontWeight.Bold,
-                    color = Color.Black,
-                    fontFamily = FontFamily.Cursive
+
+            if (itemState.item.isNotEmpty()) {
+                val mealResponseList = itemState.item
+                LazyColumn(
+                    content = {
+                        items(
+                            mealResponseList,
+                        ) { item ->
+                            MealItem(meal = item)
+                        }
+                    }
                 )
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            Column(
-                Modifier
-                    .fillMaxHeight(.95f)
-            ) {
-
-                if (itemState.item.isNotEmpty()) {
-                    val mealResponseList = itemState.item
-                    LazyColumn(
-                        content = {
-                            items(
-                                mealResponseList,
-                            ) { item ->
-                                MealItem(meal = item)
-                            }
+            } else {
+                Box(
+                    Modifier
+                        .fillMaxHeight()
+                        .fillMaxWidth(.9f),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (itemState.isLoading) {
+                        CustomProgressBar("Fetching data...")
+                    } else if (itemState.error.isNotEmpty()) {
+                        Text(itemState.error)
+                    } else {
+                        if (itemState.item.isEmpty()) {
+                            Text(text = "Not found any meal history!")
                         }
-                    )
-                } else {
-                    Box(
-                        Modifier
-                            .fillMaxHeight()
-                            .fillMaxWidth(.9f),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        if (itemState.isLoading) {
-                            CustomProgressBar("Fetching data...")
-                        } else if (itemState.error.isNotEmpty()) {
-                            Text(itemState.error)
-                        } else {
-                            if (itemState.item.isEmpty()) {
-                                Text(text = "Not found any meal history!")
-                            }
-                        }
-
                     }
 
                 }
+
             }
         }
     }
@@ -167,7 +150,5 @@ fun MealIcon(status: Boolean, desc: String) {
 @Preview(showBackground = true)
 @Composable
 fun PreviewMealListScreen() {
-    MealListScreen() {
-
-    }
+   MealListScreen()
 }
