@@ -39,7 +39,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun setupWorker() {
-        val workerRequest = PeriodicWorkRequestBuilder<NotifyWorker>(2, TimeUnit.MINUTES).build()
+        val workerRequest = PeriodicWorkRequestBuilder<NotifyWorker>(1, TimeUnit.DAYS).build()
         WorkManager.getInstance(this).enqueue(workerRequest)
     }
 }
