@@ -29,10 +29,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -113,6 +115,7 @@ fun AuthScreen(
 
 }
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun AuthScreenContent(
     modifier: Modifier = Modifier,
@@ -140,6 +143,8 @@ fun AuthScreenContent(
     var successMsg by rememberSaveable {
         mutableStateOf<String?>(null)
     }
+
+    val keyboardController = LocalSoftwareKeyboardController.current
 
     Column(
         modifier = modifier.padding(16.dp),
@@ -177,7 +182,17 @@ fun AuthScreenContent(
                 modifier = Modifier.fillMaxWidth(),
                 input = contactNo,
                 onInputChange = {
-                    contactNo = it
+                    if (it.length < 11) {
+                        contactNo = it
+                    }else if(it.length==11){
+                        contactNo = it
+                        keyboardController?.hide()
+                        focusManager.clearFocus(true)
+                    }else{
+                        keyboardController?.hide()
+                        focusManager.clearFocus(true)
+                    }
+
                 },
                 placeholder = { Text(text = "Enter your contact number") },
                 label = { Text(text = "Contact Number") },

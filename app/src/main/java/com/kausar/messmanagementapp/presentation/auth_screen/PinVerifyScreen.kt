@@ -51,7 +51,6 @@ import com.kausar.messmanagementapp.components.CustomProgressBar
 import com.kausar.messmanagementapp.components.CustomTopAppBar
 import com.kausar.messmanagementapp.components.WelcomeText
 import com.kausar.messmanagementapp.navigation.Screen
-import com.kausar.messmanagementapp.presentation.viewmodels.MainViewModel
 import com.kausar.messmanagementapp.utils.ResultState
 import com.kausar.messmanagementapp.utils.showToast
 import kotlinx.coroutines.Dispatchers
@@ -201,8 +200,11 @@ fun VerifyPinContent(
             onInputChange = {
                 if (it.length < 6) {
                     onChange(it)
-                }else{
+                }else if(it.length==6){
                     onChange(it)
+                    keyboardController?.hide()
+                    focusManager.clearFocus(true)
+                }else{
                     keyboardController?.hide()
                     focusManager.clearFocus(true)
                 }
