@@ -44,6 +44,7 @@ import com.kausar.messmanagementapp.data.model.MealInfo
 import com.kausar.messmanagementapp.presentation.viewmodels.FirebaseFirestoreDbViewModel
 import com.kausar.messmanagementapp.utils.ResultState
 import com.kausar.messmanagementapp.utils.showToast
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.util.Calendar
@@ -96,14 +97,15 @@ fun HomeScreen(
                         .fillMaxWidth(.9f)
                         .padding(16.dp),
                     onCancel = {
-                        newMeal = false
-                        calendar.add(Calendar.DATE, -1)
                         currentDate = fetchDateAsString(calendar)
-
+                        scope.launch {
+                            delay(100)
+                            newMeal = false
+                        }
                     },
                     updateMeal = { breakfast, lunch, dinner ->
-                        newMeal = false
                         scope.launch {
+                            calendar.add(Calendar.DATE,1)
                             viewModel.insert(
                                 MealInfo(
                                     getDate(calendar),
@@ -116,6 +118,9 @@ fun HomeScreen(
                                 when (result) {
                                     is ResultState.Success -> {
                                         context.showToast(result.data)
+                                        calendar.add(Calendar.DATE,-1)
+                                        currentDate = fetchDateAsString(calendar)
+                                        newMeal = false
                                     }
 
                                     is ResultState.Failure -> {
@@ -123,6 +128,9 @@ fun HomeScreen(
                                             context.showToast(
                                                 msg
                                             )
+                                            calendar.add(Calendar.DATE,-1)
+                                            currentDate = fetchDateAsString(calendar)
+                                            newMeal = false
                                         }
                                     }
 
@@ -130,9 +138,6 @@ fun HomeScreen(
                                     }
                                 }
                             }
-                            calendar.add(Calendar.DATE, -1)
-                            currentDate = fetchDateAsString(calendar)
-
                         }
                     }
                 )
@@ -164,7 +169,7 @@ fun HomeScreen(
 
         }
         if (!newMeal) {
-            Box(Modifier.fillMaxSize(),contentAlignment = Alignment.BottomEnd) {
+            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.BottomEnd) {
                 FloatingActionButton(
                     onClick = {
                         calendar.add(Calendar.DATE, 1)
