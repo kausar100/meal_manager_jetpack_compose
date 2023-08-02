@@ -41,21 +41,15 @@ fun BottomNavGraph(
     ) {
         composable(route = BottomBarScreen.Home.route) {
             HomeScreen()
-
         }
         composable(route = BottomBarScreen.Profile.route) {
-
-            ProfileScreen()
-
+            ProfileScreen(mainViewModel)
         }
         composable(route = BottomBarScreen.MealList.route) {
-
             MealListScreen()
-
-
         }
         composable(route = Screen.Login.route) {
-            AuthScreen(mainViewModel) { phone, _ ->
+            AuthScreen(mainViewModel) { phone ->
                 navController.navigate(Screen.PinVerify.phoneNumber(phone))
             }
         }

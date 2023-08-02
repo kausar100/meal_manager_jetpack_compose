@@ -28,7 +28,7 @@ class MainViewModel @Inject constructor(
             loginPref.getLoginStatus().collectLatest {
                 _loginStatus.value = it
             }
-            loginPref.getUsername().collectLatest {
+            loginPref. getUsername().collectLatest {
                 _user.value = it
             }
             loginPref.getContactNumber().collectLatest {
@@ -37,7 +37,17 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    fun getUserName() = viewModelScope.launch {
+        loginPref. getUsername().collectLatest {
+            _user.value = it
+        }
+    }
 
+    fun getContactNumber() = viewModelScope.launch {
+        loginPref.getContactNumber().collectLatest {
+            _contact.value = it
+        }
+    }
 
     fun saveLoginStatus(status: Boolean) = viewModelScope.launch { loginPref.saveLoginStatus(status) }
 

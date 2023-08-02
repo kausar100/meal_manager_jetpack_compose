@@ -28,6 +28,7 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -50,10 +51,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.kausar.messmanagementapp.components.CustomBasicTextField
+import com.kausar.messmanagementapp.presentation.viewmodels.MainViewModel
 
 @Composable
-fun ProfileScreen() {
+fun ProfileScreen(mainViewModel: MainViewModel = hiltViewModel()) {
     val context = LocalContext.current
     val bitmap = remember {
         mutableStateOf<Bitmap?>(null)
@@ -61,6 +64,11 @@ fun ProfileScreen() {
 
     var selectedImage by remember {
         mutableStateOf<Uri?>(null)
+    }
+
+    LaunchedEffect(key1 = true){
+        mainViewModel.getUserName()
+        mainViewModel.getContactNumber()
     }
 
     val imagePicker = rememberLauncherForActivityResult(
@@ -113,7 +121,7 @@ fun ProfileScreen() {
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                text = "Md.Golam Kausar",
+                text = mainViewModel.userName.value,
                 textAlign = TextAlign.Center,
                 fontSize = 20.sp,
                 style = TextStyle(
@@ -127,21 +135,21 @@ fun ProfileScreen() {
 
             UserInfo(
                 title = "Contact Number",
-                info = "01315783246",
+                info = mainViewModel.contact.value,
                 onInputChange = {
 
                 },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
             )
-
-            UserInfo(
-                title = "Member type",
-                info = "Manager",
-                onInputChange = {
-
-                },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
-            )
+//
+//            UserInfo(
+//                title = "Member type",
+//                info = "Manager",
+//                onInputChange = {
+//
+//                },
+//                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
+//            )
 
 
         }

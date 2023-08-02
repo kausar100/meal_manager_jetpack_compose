@@ -45,6 +45,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.kausar.messmanagementapp.navigation.Screen
 import com.kausar.messmanagementapp.components.CustomOutlinedTextField
+import com.kausar.messmanagementapp.components.CustomToast
 import com.kausar.messmanagementapp.components.CustomTopAppBar
 import com.kausar.messmanagementapp.presentation.viewmodels.MainViewModel
 
@@ -52,14 +53,22 @@ import com.kausar.messmanagementapp.presentation.viewmodels.MainViewModel
 @Composable
 fun AuthScreen(
     mainViewModel: MainViewModel = hiltViewModel(),
-    onSubmit: (String, String?) -> Unit
+    onSubmit: (String) -> Unit
 ) {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     var screenTitle by rememberSaveable {
-        mutableStateOf(Screen.Login.title)
+        mutableStateOf(
+            if (mainViewModel.userName.value.isEmpty()) {
+                Screen.SignUp.title
+            } else {
+                Screen.Login.title
+            }
+        )
     }
     var isLoginScreen by rememberSaveable {
-        mutableStateOf(true)
+        mutableStateOf(
+            mainViewModel.userName.value.isNotEmpty()
+        )
     }
 
     Scaffold(
@@ -93,7 +102,11 @@ fun AuthScreen(
                 }
             },
             onSubmit = { phone, name ->
-                onSubmit(phone, name)
+                if (mainViewModel.userName.value.isEmpty()){
+                    mainViewModel.saveUsername(name)
+                    mainViewModel.saveContact(phone)
+                }
+                onSubmit(phone)
             }
         )
     }
@@ -107,7 +120,7 @@ fun AuthScreenContent(
     buttonText: String,
     viewModel: MainViewModel,
     toggleScreen: () -> Unit,
-    onSubmit: (contact: String, name: String?) -> Unit,
+    onSubmit: (contact: String, name: String) -> Unit,
 ) {
     val focusManager = LocalFocusManager.current
 
@@ -117,6 +130,17 @@ fun AuthScreenContent(
     var contactNo by remember {
         mutableStateOf(viewModel.contact.value)
     }
+
+    var showToast by rememberSaveable {
+        mutableStateOf(false)
+    }
+    var errMsg by rememberSaveable {
+        mutableStateOf<String?>(null)
+    }
+    var successMsg by rememberSaveable {
+        mutableStateOf<String?>(null)
+    }
+
     Column(
         modifier = modifier.padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -180,7 +204,20 @@ fun AuthScreenContent(
         ) {
             ElevatedButton(
                 onClick = {
-                    onSubmit(contactNo, user)
+                    if (contactNo.isBlank() || contactNo.isEmpty()) {
+                        errMsg = "PLease enter your contact number"
+                        successMsg = null
+                        showToast = true
+
+                    } else if (user.isBlank() || user.isEmpty()) {
+                        errMsg = "Please enter username"
+                        successMsg = null
+                        showToast = true
+
+                    } else {
+                        onSubmit(contactNo, user)
+                    }
+
                 },
                 shape = RoundedCornerShape(4.dp),
                 colors = ButtonDefaults.buttonColors(
@@ -194,7 +231,15 @@ fun AuthScreenContent(
                 )
 
             }
-            Box {
+            Box(contentAlignment = Alignment.Center) {
+                CustomToast(
+                    showToast = showToast,
+                    errorMessage = errMsg,
+                    successMessage = successMsg
+                ) {
+                    showToast = false
+                }
+
                 if (isLoginScreen) {
                     TextButton(onClick = toggleScreen) {
                         Text(text = buildAnnotatedString {
@@ -233,7 +278,5 @@ fun AuthScreenContent(
 @Preview(showBackground = true)
 @Composable
 fun PreviewLoginScreen() {
-    AuthScreen(onSubmit = { name, contact ->
-
-    })
+    AuthScreen(onSubmit = {})
 }
