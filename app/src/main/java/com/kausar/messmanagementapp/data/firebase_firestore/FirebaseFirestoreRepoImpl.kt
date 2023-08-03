@@ -5,18 +5,33 @@ import androidx.annotation.RequiresApi
 import com.google.firebase.firestore.CollectionReference
 import com.kausar.messmanagementapp.data.model.MealInfo
 import com.kausar.messmanagementapp.data.model.toMap
+import com.kausar.messmanagementapp.data.shared_pref.LoginPreference
 import com.kausar.messmanagementapp.utils.ResultState
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
 class FirebaseFirestoreRepoImpl @Inject constructor(
-    private val firestoreDb: CollectionReference
+    private val firestoreDb: CollectionReference,
+    private val datastore: LoginPreference
 ) : FirebaseFirestoreRepo {
 
+    var phoneNumber: String = ""
+
+    init {
+        CoroutineScope(Dispatchers.IO).launch {
+            datastore.getContactNumber().collectLatest {
+                phoneNumber = it
+            }
+        }
+    }
     override fun insert(meal: MealInfo): Flow<ResultState<String>> = callbackFlow {
         trySend(ResultState.Loading)
 
