@@ -331,7 +331,7 @@ fun MealSummary(
     ) {
         Column(
             Modifier
-                .fillMaxWidth(),
+                .fillMaxWidth().padding(8.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
@@ -345,16 +345,16 @@ fun MealSummary(
                     .fillMaxWidth()
                     .padding(2.dp)
             ) {
-                Text(text = "Total Meal")
+                Text(text = "Total Meal", fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.weight(1f))
-                Text(text = totalMeal)
+                Text(text = totalMeal, fontWeight = FontWeight.Bold)
             }
             Row(
                 Modifier
                     .fillMaxWidth()
                     .padding(2.dp)
             ) {
-                Text(text = "Number of BreakFast(0.5)")
+                Text(text = "Number of BreakFast")
                 Spacer(modifier = Modifier.weight(1f))
                 Text(text = numberOfBreakfast)
             }
@@ -364,7 +364,7 @@ fun MealSummary(
                     .fillMaxWidth()
                     .padding(2.dp)
             ) {
-                Text(text = "Number of Lunch(1.0)")
+                Text(text = "Number of Lunch")
                 Spacer(modifier = Modifier.weight(1f))
                 Text(text = numberOfLunch)
             }
@@ -374,10 +374,23 @@ fun MealSummary(
                     .fillMaxWidth()
                     .padding(2.dp)
             ) {
-                Text(text = "Number of Dinner(1.0)")
+                Text(text = "Number of Dinner")
                 Spacer(modifier = Modifier.weight(1f))
                 Text(text = numberOfDinner)
             }
+            Divider(Modifier.height(1.dp), color = Color.Gray)
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(2.dp),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Text(text = "Breakfast(0.5)", fontSize = 12.sp, fontWeight = FontWeight.ExtraBold)
+                Text(text = "Lunch(1.0)", fontSize = 12.sp, fontWeight = FontWeight.ExtraBold)
+                Text(text = "Dinner(1.0)", fontSize = 12.sp, fontWeight = FontWeight.ExtraBold)
+            }
+
+
 
         }
     }

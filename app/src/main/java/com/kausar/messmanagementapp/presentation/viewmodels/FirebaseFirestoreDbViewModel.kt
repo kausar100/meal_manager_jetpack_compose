@@ -39,6 +39,14 @@ class FirebaseFirestoreDbViewModel @Inject constructor(
                         _res.value = ItemState(
                             item = it.data
                         )
+                        _cnt.update { cnt->
+                            cnt.copy(
+                                breakfast = 0.0,
+                                lunch = 0.0,
+                                dinner = 0.0,
+                                totalMeal = 0.0
+                            )
+                        }
                         getMealCnt(it.data)
                     }
 

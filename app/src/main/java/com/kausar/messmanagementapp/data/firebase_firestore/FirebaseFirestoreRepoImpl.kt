@@ -56,7 +56,7 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
             .get().addOnSuccessListener { result ->
                 result?.let {
                     if (it.documents.size == 0) {
-                        trySend(ResultState.Failure(Exception("No meal information found!")))
+                        trySend(ResultState.Failure(Exception("Not found any meal for today!")))
                     } else {
                         val data = it.documents[0].toObject(MealInfo::class.java)
                         trySend(ResultState.Success(data))
