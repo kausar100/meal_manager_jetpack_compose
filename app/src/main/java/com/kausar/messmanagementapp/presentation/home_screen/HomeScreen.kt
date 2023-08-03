@@ -71,7 +71,7 @@ fun HomeScreen(
         mutableStateOf(false)
     }
 
-    val itemState = viewModel.response.value
+    val mealInfoState = viewModel.mealInfo.value
     val mealCnt by viewModel.mealCnt.collectAsState()
 
     val scope = rememberCoroutineScope()
@@ -158,12 +158,12 @@ fun HomeScreen(
                     numberOfDinner = mealCnt.dinner.toString()
                 )
 
-                if (itemState.success.isNotEmpty()) {
+                if (mealInfoState.success.isNotEmpty()) {
                     MealInformation(
                         modifier = Modifier
                             .fillMaxWidth(.9f)
                             .padding(16.dp),
-                        mealInfo = itemState.meal,
+                        mealInfo = mealInfoState.meal,
                     )
 
                 }
@@ -173,9 +173,9 @@ fun HomeScreen(
                         .fillMaxWidth(.9f),
                     contentAlignment = Alignment.Center
                 ) {
-                    if (itemState.error.isNotEmpty()) {
-                        Text(itemState.error)
-                    } else if (itemState.isLoading) {
+                    if (mealInfoState.error.isNotEmpty()) {
+                        Text(mealInfoState.error)
+                    } else if (mealInfoState.isLoading) {
                         CustomProgressBar(msg = "Fetching meal info...")
                     }
                 }

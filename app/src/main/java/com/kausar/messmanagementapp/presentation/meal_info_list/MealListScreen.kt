@@ -35,13 +35,37 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.kausar.messmanagementapp.components.CustomProgressBar
 import com.kausar.messmanagementapp.data.model.MealInfo
 import com.kausar.messmanagementapp.presentation.viewmodels.FirebaseFirestoreDbViewModel
+import java.util.Calendar
 
+
+fun fetchCurrentMonthName():String{
+    val calendar = Calendar.getInstance()
+    val month =  when(calendar[Calendar.MONTH]){
+        0 -> "January"
+        1 -> "February"
+        2 -> "March"
+        3 -> "April"
+        4 -> "May"
+        5 -> "June"
+        6 -> "July"
+        7 -> "August"
+        8 -> "September"
+        9 -> "October"
+        10 -> "November"
+        11 -> "December"
+        else -> ""
+    }
+    val year = calendar[Calendar.YEAR]
+    return "$month, $year"
+}
 @Composable
 fun MealListScreen(
     viewModel: FirebaseFirestoreDbViewModel = hiltViewModel(),
 ) {
 
     val itemState = viewModel.response.value
+    val listTitle = fetchCurrentMonthName()
+
 
     Column(
         Modifier
@@ -50,9 +74,9 @@ fun MealListScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
     ) {
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.fillMaxHeight(.1f))
         Text(
-            text = "Meal List <> July, 2023",
+            text = "Meal List <> $listTitle",
             fontSize = 20.sp,
             textAlign = TextAlign.Center,
             style = TextStyle(

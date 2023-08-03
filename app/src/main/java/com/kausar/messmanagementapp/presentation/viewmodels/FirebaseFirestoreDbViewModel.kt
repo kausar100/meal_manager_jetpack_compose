@@ -24,6 +24,9 @@ class FirebaseFirestoreDbViewModel @Inject constructor(
     private val _res: MutableState<ItemState> = mutableStateOf(ItemState())
     val response: State<ItemState> = _res
 
+    private val _singleMeal: MutableState<SingleMeal> = mutableStateOf(SingleMeal())
+    val mealInfo: State<SingleMeal> = _singleMeal
+
     private val _cnt = MutableStateFlow(MealCount())
     val mealCnt: StateFlow<MealCount> = _cnt
 
@@ -93,7 +96,7 @@ class FirebaseFirestoreDbViewModel @Inject constructor(
             when (it) {
                 is ResultState.Success -> {
                     it.data?.let { meal ->
-                        _res.value = ItemState(
+                        _singleMeal.value = SingleMeal(
                             meal = meal,
                             success = "Meal fetch successfully!"
                         )
@@ -103,13 +106,13 @@ class FirebaseFirestoreDbViewModel @Inject constructor(
                 }
 
                 is ResultState.Failure -> {
-                    _res.value = ItemState(
+                    _singleMeal.value = SingleMeal(
                         error = it.message?.localizedMessage.toString()
                     )
                 }
 
                 is ResultState.Loading -> {
-                    _res.value = ItemState(
+                    _singleMeal.value = SingleMeal(
                         isLoading = true
                     )
                 }
@@ -119,6 +122,10 @@ class FirebaseFirestoreDbViewModel @Inject constructor(
 
     data class ItemState(
         val item: List<MealInfo> = emptyList(),
+        val error: String = "",
+        val isLoading: Boolean = false
+    )
+    data class SingleMeal(
         val error: String = "",
         val success: String = "",
         val meal: MealInfo = MealInfo(),
