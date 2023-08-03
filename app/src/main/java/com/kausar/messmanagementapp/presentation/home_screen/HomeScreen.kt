@@ -16,13 +16,17 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.Divider
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -68,7 +72,7 @@ fun HomeScreen(
     }
 
     val itemState = viewModel.response.value
-
+    val mealCnt by viewModel.mealCnt.collectAsState()
 
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
@@ -84,6 +88,7 @@ fun HomeScreen(
                 .fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+
             Spacer(modifier = Modifier.fillMaxHeight(.1f))
             Text(text = currentDate, textAlign = TextAlign.Center)
             Spacer(modifier = Modifier.height(8.dp))
@@ -105,7 +110,7 @@ fun HomeScreen(
                     },
                     updateMeal = { breakfast, lunch, dinner ->
                         scope.launch {
-                            calendar.add(Calendar.DATE,1)
+                            calendar.add(Calendar.DATE, 1)
                             viewModel.insert(
                                 MealInfo(
                                     getDate(calendar),
@@ -118,7 +123,7 @@ fun HomeScreen(
                                 when (result) {
                                     is ResultState.Success -> {
                                         context.showToast(result.data)
-                                        calendar.add(Calendar.DATE,-1)
+                                        calendar.add(Calendar.DATE, -1)
                                         currentDate = fetchDateAsString(calendar)
                                         newMeal = false
                                     }
@@ -128,7 +133,7 @@ fun HomeScreen(
                                             context.showToast(
                                                 msg
                                             )
-                                            calendar.add(Calendar.DATE,-1)
+                                            calendar.add(Calendar.DATE, -1)
                                             currentDate = fetchDateAsString(calendar)
                                             newMeal = false
                                         }
@@ -142,6 +147,17 @@ fun HomeScreen(
                     }
                 )
             } else {
+                Spacer(modifier = Modifier.height(16.dp))
+                MealSummary(
+                    modifier = Modifier
+                        .fillMaxWidth(.9f)
+                        .padding(horizontal = 8.dp),
+                    totalMeal = mealCnt.totalMeal.toString(),
+                    numberOfBreakfast = mealCnt.breakfast.toString(),
+                    numberOfLunch = mealCnt.lunch.toString(),
+                    numberOfDinner = mealCnt.dinner.toString()
+                )
+
                 if (itemState.success.isNotEmpty()) {
                     MealInformation(
                         modifier = Modifier
@@ -149,6 +165,7 @@ fun HomeScreen(
                             .padding(16.dp),
                         mealInfo = itemState.meal,
                     )
+
                 }
                 Box(
                     Modifier
@@ -161,11 +178,9 @@ fun HomeScreen(
                     } else if (itemState.isLoading) {
                         CustomProgressBar(msg = "Fetching meal info...")
                     }
-
                 }
 
             }
-
 
         }
         if (!newMeal) {
@@ -206,8 +221,7 @@ fun MealInformation(
     ) {
         Row(
             modifier = Modifier
-                .padding(horizontal = 8.dp, vertical = 0.dp)
-                .weight(1f),
+                .padding(horizontal = 8.dp, vertical = 4.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
@@ -300,6 +314,73 @@ private fun getDayName(calendar: Calendar): String {
         else -> ""
     }
     return day
+}
+
+@Composable
+fun MealSummary(
+    modifier: Modifier,
+    totalMeal: String,
+    numberOfBreakfast: String,
+    numberOfLunch: String,
+    numberOfDinner: String
+) {
+    Card(
+        elevation = CardDefaults.elevatedCardElevation(),
+        shape = RoundedCornerShape(4.dp),
+        modifier = modifier.padding(8.dp)
+    ) {
+        Column(
+            Modifier
+                .fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = "Number of meal until Today",
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center
+            )
+            Divider(Modifier.height(1.dp), color = Color.Gray)
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(2.dp)
+            ) {
+                Text(text = "Total Meal")
+                Spacer(modifier = Modifier.weight(1f))
+                Text(text = totalMeal)
+            }
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(2.dp)
+            ) {
+                Text(text = "Number of BreakFast(0.5)")
+                Spacer(modifier = Modifier.weight(1f))
+                Text(text = numberOfBreakfast)
+            }
+
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(2.dp)
+            ) {
+                Text(text = "Number of Lunch(1.0)")
+                Spacer(modifier = Modifier.weight(1f))
+                Text(text = numberOfLunch)
+            }
+
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(2.dp)
+            ) {
+                Text(text = "Number of Dinner(1.0)")
+                Spacer(modifier = Modifier.weight(1f))
+                Text(text = numberOfDinner)
+            }
+
+        }
+    }
 }
 
 @Preview

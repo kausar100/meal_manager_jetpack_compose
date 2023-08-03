@@ -10,7 +10,10 @@ import com.kausar.messmanagementapp.data.firebase_firestore.FirebaseFirestoreRep
 import com.kausar.messmanagementapp.data.model.MealInfo
 import com.kausar.messmanagementapp.utils.ResultState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -21,6 +24,9 @@ class FirebaseFirestoreDbViewModel @Inject constructor(
     private val _res: MutableState<ItemState> = mutableStateOf(ItemState())
     val response: State<ItemState> = _res
 
+    private val _cnt = MutableStateFlow(MealCount())
+    val mealCnt: StateFlow<MealCount> = _cnt
+
 
     init {
         viewModelScope.launch {
@@ -30,6 +36,7 @@ class FirebaseFirestoreDbViewModel @Inject constructor(
                         _res.value = ItemState(
                             item = it.data
                         )
+                        getMealCnt(it.data)
                     }
 
                     is ResultState.Failure -> {
@@ -47,6 +54,37 @@ class FirebaseFirestoreDbViewModel @Inject constructor(
             }
         }
     }
+
+    private fun getMealCnt(meals: List<MealInfo>) {
+        for (meal in meals) {
+            if (meal.breakfast == true) {
+                _cnt.update {
+                    it.copy(
+                        breakfast = it.breakfast.plus(1.0),
+                        totalMeal = it.totalMeal.plus(0.5)
+                    )
+                }
+            }
+            if (meal.lunch == true) {
+                _cnt.update {
+                    it.copy(
+                        lunch = it.lunch.plus(1.0),
+                        totalMeal = it.totalMeal.plus(1.0),
+                    )
+                }
+            }
+            if (meal.dinner == true) {
+                _cnt.update {
+                    it.copy(
+                        dinner = it.dinner.plus(1.0),
+                        totalMeal = it.totalMeal.plus(1.0),
+                    )
+                }
+            }
+        }
+
+    }
+
 
     fun insert(meal: MealInfo) = repo.insert(meal)
 
@@ -85,6 +123,13 @@ class FirebaseFirestoreDbViewModel @Inject constructor(
         val success: String = "",
         val meal: MealInfo = MealInfo(),
         val isLoading: Boolean = false
+    )
+
+    data class MealCount(
+        val breakfast: Double = 0.0,
+        val lunch: Double = 0.0,
+        val dinner: Double = 0.0,
+        val totalMeal: Double = 0.0
     )
 }
 

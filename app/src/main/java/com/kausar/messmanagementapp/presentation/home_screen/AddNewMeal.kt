@@ -43,8 +43,7 @@ fun AddNewMeal(
     ) {
         Row(
             modifier = Modifier
-                .padding(horizontal = 8.dp, vertical = 0.dp)
-                .weight(1f),
+                .padding(horizontal = 8.dp, vertical = 4.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
