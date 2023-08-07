@@ -74,6 +74,15 @@ fun HomeScreen(
         mutableStateOf(false)
     }
 
+    var progMsg by remember {
+        mutableStateOf("")
+    }
+
+    var showToast by remember {
+        mutableStateOf(false)
+    }
+
+
     val mealInfoState = viewModel.mealInfo.value
     val mealCnt by viewModel.mealCnt.collectAsState()
 
@@ -99,6 +108,19 @@ fun HomeScreen(
                 text = if (!newMeal) "Running Meal information" else "Change Meal status and Click Add meal",
                 textAlign = TextAlign.Center
             )
+            if (showToast) {
+                Box(
+                    Modifier
+                        .fillMaxHeight()
+                        .fillMaxWidth(.9f),
+                    contentAlignment = Alignment.Center
+                ) {
+
+                    CustomProgressBar(msg = progMsg)
+
+                }
+            }
+
             if (newMeal) {
                 AddNewMeal(
                     modifier = Modifier
@@ -112,6 +134,8 @@ fun HomeScreen(
                         }
                     },
                     updateMeal = { breakfast, lunch, dinner ->
+                        progMsg = "Inserting new meal..."
+                        showToast = true
                         scope.launch {
                             calendar.add(Calendar.DATE, 1)
                             viewModel.insert(
@@ -125,6 +149,7 @@ fun HomeScreen(
                             ).collectLatest { result ->
                                 when (result) {
                                     is ResultState.Success -> {
+                                        showToast = false
                                         context.showToast(result.data)
                                         calendar.add(Calendar.DATE, -1)
                                         currentDate = fetchDateAsString(calendar)
@@ -133,6 +158,7 @@ fun HomeScreen(
                                     }
 
                                     is ResultState.Failure -> {
+                                        showToast = false
                                         result.message.localizedMessage?.let { msg ->
                                             context.showToast(
                                                 msg
@@ -144,6 +170,7 @@ fun HomeScreen(
                                     }
 
                                     is ResultState.Loading -> {
+
                                     }
                                 }
                             }
@@ -304,7 +331,8 @@ fun MealSummary(
     ) {
         Column(
             Modifier
-                .fillMaxWidth().padding(8.dp),
+                .fillMaxWidth()
+                .padding(8.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
@@ -362,7 +390,6 @@ fun MealSummary(
                 Text(text = "Lunch(1.0)", fontSize = 12.sp, fontWeight = FontWeight.ExtraBold)
                 Text(text = "Dinner(1.0)", fontSize = 12.sp, fontWeight = FontWeight.ExtraBold)
             }
-
 
 
         }
