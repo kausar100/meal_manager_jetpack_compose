@@ -9,12 +9,15 @@ import androidx.lifecycle.viewModelScope
 import com.kausar.messmanagementapp.data.firebase_firestore.FirebaseFirestoreRepo
 import com.kausar.messmanagementapp.data.model.MealInfo
 import com.kausar.messmanagementapp.utils.ResultState
+import com.kausar.messmanagementapp.utils.getDate
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.util.Calendar
 import javax.inject.Inject
 
 @HiltViewModel
@@ -30,10 +33,12 @@ class FirebaseFirestoreDbViewModel @Inject constructor(
     private val _cnt = MutableStateFlow(MealCount())
     val mealCnt: StateFlow<MealCount> = _cnt
 
-
-    init {
+    fun getAllMeal() {
+        val calender = Calendar.getInstance()
+        val date = getDate(calender)
         viewModelScope.launch {
-            repo.getAllMeal().collectLatest {
+            delay(300)
+            repo.getAllMeal(date).collectLatest {
                 when (it) {
                     is ResultState.Success -> {
                         _res.value = ItemState(
@@ -64,6 +69,10 @@ class FirebaseFirestoreDbViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    init {
+        getAllMeal()
     }
 
     private fun getMealCnt(meals: List<MealInfo>) {

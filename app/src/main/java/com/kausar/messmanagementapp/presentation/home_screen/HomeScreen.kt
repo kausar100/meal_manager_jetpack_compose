@@ -47,6 +47,9 @@ import com.kausar.messmanagementapp.components.CustomProgressBar
 import com.kausar.messmanagementapp.data.model.MealInfo
 import com.kausar.messmanagementapp.presentation.viewmodels.FirebaseFirestoreDbViewModel
 import com.kausar.messmanagementapp.utils.ResultState
+import com.kausar.messmanagementapp.utils.fetchDateAsString
+import com.kausar.messmanagementapp.utils.getDate
+import com.kausar.messmanagementapp.utils.getDayName
 import com.kausar.messmanagementapp.utils.showToast
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
@@ -125,6 +128,7 @@ fun HomeScreen(
                                         context.showToast(result.data)
                                         calendar.add(Calendar.DATE, -1)
                                         currentDate = fetchDateAsString(calendar)
+                                        viewModel.getAllMeal()
                                         newMeal = false
                                     }
 
@@ -284,37 +288,6 @@ fun CustomCheckBox(
         onCheckedChange = { onCheckChange(it) })
 }
 
-private fun fetchDateAsString(calendar: Calendar): String {
-    // Fetching current year, month and day
-    val year = calendar[Calendar.YEAR]
-    val month = calendar[Calendar.MONTH]
-    val dayOfMonth = calendar[Calendar.DAY_OF_MONTH]
-    val dayName = getDayName(calendar)
-    return "$dayName, $dayOfMonth/${month + 1}/$year"
-}
-
-private fun getDate(calendar: Calendar): String {
-    val year = calendar[Calendar.YEAR]
-    val month = calendar[Calendar.MONTH]
-    val dayOfMonth = calendar[Calendar.DAY_OF_MONTH]
-    val prefixDayOfMonth = if (dayOfMonth < 10) "0" else ""
-    val prefixMonth = if (month < 9) "0" else ""
-    return "$prefixDayOfMonth$dayOfMonth/$prefixMonth${month + 1}/$year"
-}
-
-private fun getDayName(calendar: Calendar): String {
-    val day = when (calendar[Calendar.DAY_OF_WEEK]) {
-        1 -> "SUNDAY"
-        2 -> "MONDAY"
-        3 -> "TUESDAY"
-        4 -> "WEDNESDAY"
-        5 -> "THURSDAY"
-        6 -> "FRIDAY"
-        7 -> "SATURDAY"
-        else -> ""
-    }
-    return day
-}
 
 @Composable
 fun MealSummary(

@@ -25,6 +25,11 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
 
     var phoneNumber: String = ""
 
+    private fun getMonthYear(date: String): String {
+        val month = date.substring(startIndex = 3, endIndex = date.length)
+        return month.replace("/", "_")
+    }
+
     init {
         CoroutineScope(Dispatchers.IO).launch {
             datastore.getContactNumber().collectLatest {
@@ -35,14 +40,16 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
     override fun insert(meal: MealInfo): Flow<ResultState<String>> = callbackFlow {
         trySend(ResultState.Loading)
 
-        firestoreDb.whereEqualTo("date", meal.date).get().addOnSuccessListener {
+        val monthYear = getMonthYear(meal.date!!)
+
+        firestoreDb.document(phoneNumber).collection(monthYear).whereEqualTo("date", meal.date).get().addOnSuccessListener {
             it?.let { result ->
                 if (result.documents.isNotEmpty()) {
                     trySend(ResultState.Failure(Exception("Data already exists!")))
                 } else {
                     val hashMeal = meal.toMap()
 
-                    firestoreDb.add(hashMeal)
+                    firestoreDb.document(phoneNumber).collection(monthYear).add(hashMeal)
                         .addOnSuccessListener { rst->
                             if (rst?.id != null) {
                                 trySend(
@@ -67,7 +74,9 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
     override fun getMealByDate(date: String): Flow<ResultState<MealInfo?>> = callbackFlow {
         trySend(ResultState.Loading)
 
-        firestoreDb.whereEqualTo("date", date)
+        val monthYear = getMonthYear(date)
+
+        firestoreDb.document(phoneNumber).collection(monthYear).whereEqualTo("date", date)
             .get().addOnSuccessListener { result ->
                 result?.let {
                     if (it.documents.size == 0) {
@@ -89,10 +98,12 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    override fun getAllMeal(): Flow<ResultState<List<MealInfo>>> = callbackFlow {
+    override fun getAllMeal(date: String): Flow<ResultState<List<MealInfo>>> = callbackFlow {
         trySend(ResultState.Loading)
 
-        firestoreDb.get().addOnSuccessListener { result ->
+        val monthYear = getMonthYear(date)
+
+        firestoreDb.document(phoneNumber).collection(monthYear).get().addOnSuccessListener { result ->
             val meals = mutableListOf<MealInfo>()
             for (document in result.documents) {
                 val meal = document.toObject(MealInfo::class.java)

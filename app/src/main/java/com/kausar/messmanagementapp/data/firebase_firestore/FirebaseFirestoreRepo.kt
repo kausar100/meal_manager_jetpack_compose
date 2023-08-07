@@ -10,5 +10,5 @@ interface FirebaseFirestoreRepo {
 
     fun getMealByDate(date: String) : Flow<ResultState<MealInfo?>>
 
-    fun getAllMeal() : Flow<ResultState<List<MealInfo>>>
+    fun getAllMeal(date: String) : Flow<ResultState<List<MealInfo>>>
 }

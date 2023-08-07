@@ -35,29 +35,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.kausar.messmanagementapp.components.CustomProgressBar
 import com.kausar.messmanagementapp.data.model.MealInfo
 import com.kausar.messmanagementapp.presentation.viewmodels.FirebaseFirestoreDbViewModel
-import java.util.Calendar
+import com.kausar.messmanagementapp.utils.fetchCurrentMonthName
 
 
-fun fetchCurrentMonthName():String{
-    val calendar = Calendar.getInstance()
-    val month =  when(calendar[Calendar.MONTH]){
-        0 -> "January"
-        1 -> "February"
-        2 -> "March"
-        3 -> "April"
-        4 -> "May"
-        5 -> "June"
-        6 -> "July"
-        7 -> "August"
-        8 -> "September"
-        9 -> "October"
-        10 -> "November"
-        11 -> "December"
-        else -> ""
-    }
-    val year = calendar[Calendar.YEAR]
-    return "$month, $year"
-}
 @Composable
 fun MealListScreen(
     viewModel: FirebaseFirestoreDbViewModel = hiltViewModel(),
