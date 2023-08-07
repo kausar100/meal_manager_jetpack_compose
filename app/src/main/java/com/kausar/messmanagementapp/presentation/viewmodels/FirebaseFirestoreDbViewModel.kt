@@ -33,18 +33,21 @@ class FirebaseFirestoreDbViewModel @Inject constructor(
     private val _cnt = MutableStateFlow(MealCount())
     val mealCnt: StateFlow<MealCount> = _cnt
 
+    private lateinit var calender : Calendar
+    private var today: String = ""
+
     fun getAllMeal() {
-        val calender = Calendar.getInstance()
-        val date = getDate(calender)
+        calender = Calendar.getInstance()
+        today = getDate(calender)
         viewModelScope.launch {
             delay(300)
-            repo.getAllMeal(date).collectLatest {
+            repo.getAllMeal(today).collectLatest {
                 when (it) {
                     is ResultState.Success -> {
                         _res.value = ItemState(
                             item = it.data
                         )
-                        _cnt.update { cnt->
+                        _cnt.update { cnt ->
                             cnt.copy(
                                 breakfast = 0.0,
                                 lunch = 0.0,
@@ -52,7 +55,8 @@ class FirebaseFirestoreDbViewModel @Inject constructor(
                                 totalMeal = 0.0
                             )
                         }
-                        getMealCnt(it.data)
+                        val meals = it.data.asReversed()
+                        getMealCnt(meals)
                     }
 
                     is ResultState.Failure -> {
@@ -76,6 +80,7 @@ class FirebaseFirestoreDbViewModel @Inject constructor(
     }
 
     private fun getMealCnt(meals: List<MealInfo>) {
+
         for (meal in meals) {
             if (meal.breakfast == true) {
                 _cnt.update {
@@ -101,6 +106,10 @@ class FirebaseFirestoreDbViewModel @Inject constructor(
                     )
                 }
             }
+            println("meal date ${meal.date}")
+            println("today $today")
+            if (meal.date == today)
+                break
         }
 
     }
@@ -144,6 +153,7 @@ class FirebaseFirestoreDbViewModel @Inject constructor(
         val error: String = "",
         val isLoading: Boolean = false
     )
+
     data class SingleMeal(
         val error: String = "",
         val success: String = "",
