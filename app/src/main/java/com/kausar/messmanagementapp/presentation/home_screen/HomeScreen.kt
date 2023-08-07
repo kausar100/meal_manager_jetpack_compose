@@ -104,10 +104,13 @@ fun HomeScreen(
             Spacer(modifier = Modifier.fillMaxHeight(.1f))
             Text(text = currentDate, textAlign = TextAlign.Center)
             Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = if (!newMeal) "Running Meal information" else "Change Meal status and Click Add meal for adding new meal or Update Meal for update meal information",
-                textAlign = TextAlign.Center
-            )
+            if (!newMeal) {
+                Text(
+                    text = "Running Meal information",
+                    textAlign = TextAlign.Center
+                )
+            }
+
             if (showToast) {
                 Box(
                     Modifier
