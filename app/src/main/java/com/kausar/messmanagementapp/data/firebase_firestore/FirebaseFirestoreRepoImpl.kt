@@ -37,38 +37,76 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
             }
         }
     }
+
     override fun insert(meal: MealInfo): Flow<ResultState<String>> = callbackFlow {
         trySend(ResultState.Loading)
 
         val monthYear = getMonthYear(meal.date!!)
 
-        firestoreDb.document(phoneNumber).collection(monthYear).whereEqualTo("date", meal.date).get().addOnSuccessListener {
-            it?.let { result ->
-                if (result.documents.isNotEmpty()) {
-                    trySend(ResultState.Failure(Exception("Data already exists!")))
-                } else {
-                    val hashMeal = meal.toMap()
+        firestoreDb.document(phoneNumber).collection(monthYear).whereEqualTo("date", meal.date)
+            .get().addOnSuccessListener {
+                it?.let { result ->
+                    if (result.documents.isNotEmpty()) {
+                        trySend(ResultState.Failure(Exception("Data already exists!")))
+                    } else {
+                        val hashMeal = meal.toMap()
 
-                    firestoreDb.document(phoneNumber).collection(monthYear).add(hashMeal)
-                        .addOnSuccessListener { rst->
-                            if (rst?.id != null) {
-                                trySend(
-                                    ResultState.Success(
-                                        "Data Inserted Successfully!"
+                        firestoreDb.document(phoneNumber).collection(monthYear).add(hashMeal)
+                            .addOnSuccessListener { rst ->
+                                if (rst?.id != null) {
+                                    trySend(
+                                        ResultState.Success(
+                                            "Data Inserted Successfully!"
+                                        )
                                     )
-                                )
 
+                                }
+                            }.addOnFailureListener { exp ->
+                                trySend(ResultState.Failure(exp))
                             }
-                        }.addOnFailureListener {exp->
-                            trySend(ResultState.Failure(exp))
-                        }
+                    }
                 }
             }
-        }
 
         awaitClose {
             close()
         }
+    }
+
+    override fun update(meal: MealInfo): Flow<ResultState<String>> = callbackFlow {
+        trySend(ResultState.Loading)
+
+        val monthYear = getMonthYear(meal.date!!)
+
+        firestoreDb.document(phoneNumber).collection(monthYear).whereEqualTo("date", meal.date)
+            .get().addOnSuccessListener {
+                it?.let { result ->
+                    if (result.documents.isNotEmpty()) {
+                        val doc = result.documents[0]
+                        val hashMeal = meal.toMap()
+                        doc.reference.update(hashMeal).addOnSuccessListener {
+                            trySend(
+                                ResultState.Success(
+                                    "Data updated Successfully!"
+                                )
+                            )
+
+                        }.addOnFailureListener { exp ->
+                            trySend(ResultState.Failure(exp))
+                        }
+
+                    } else {
+                        trySend(ResultState.Failure(Exception("Data doesn't exists!")))
+                    }
+                }
+            }.addOnFailureListener { exp ->
+                trySend(ResultState.Failure(exp))
+            }
+
+        awaitClose {
+            close()
+        }
+
     }
 
     override fun getMealByDate(date: String): Flow<ResultState<MealInfo?>> = callbackFlow {
@@ -103,24 +141,25 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
 
         val monthYear = getMonthYear(date)
 
-        firestoreDb.document(phoneNumber).collection(monthYear).get().addOnSuccessListener { result ->
-            val meals = mutableListOf<MealInfo>()
-            for (document in result.documents) {
-                val meal = document.toObject(MealInfo::class.java)
-                if (meal != null) {
-                    meals.add(meal)
+        firestoreDb.document(phoneNumber).collection(monthYear).get()
+            .addOnSuccessListener { result ->
+                val meals = mutableListOf<MealInfo>()
+                for (document in result.documents) {
+                    val meal = document.toObject(MealInfo::class.java)
+                    if (meal != null) {
+                        meals.add(meal)
+                    }
                 }
+                //sort by date ascending
+                val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
+                val sortedMeals =
+                    meals.sortedByDescending { LocalDate.parse(it.date, formatter) }
+
+                trySend(ResultState.Success(sortedMeals))
+
+            }.addOnFailureListener {
+                trySend(ResultState.Failure(it))
             }
-            //sort by date ascending
-            val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
-            val sortedMeals =
-                meals.sortedByDescending { LocalDate.parse(it.date, formatter) }
-
-            trySend(ResultState.Success(sortedMeals))
-
-        }.addOnFailureListener {
-            trySend(ResultState.Failure(it))
-        }
 
         awaitClose {
             close()

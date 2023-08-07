@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonDefaults
@@ -30,7 +31,8 @@ import androidx.compose.ui.unit.sp
 fun AddNewMeal(
     modifier: Modifier = Modifier,
     onCancel: () -> Unit,
-    updateMeal: (Boolean, Boolean, Boolean) -> Unit
+    updateMeal:(Boolean, Boolean, Boolean) -> Unit,
+    addMeal: (Boolean, Boolean, Boolean) -> Unit
 ) {
     var breakFast by rememberSaveable { mutableStateOf(false) }
     var lunch by rememberSaveable { mutableStateOf(false) }
@@ -108,7 +110,7 @@ fun AddNewMeal(
             Spacer(modifier = Modifier.weight(1f))
             ElevatedButton(
                 onClick = {
-                    updateMeal(breakFast, lunch, dinner)
+                    addMeal(breakFast, lunch, dinner)
                 }, shape = RoundedCornerShape(4.dp), colors = ButtonDefaults.buttonColors(
                     containerColor = Color(0xFF222B83),
                     contentColor = Color.White,
@@ -121,6 +123,23 @@ fun AddNewMeal(
                 )
             }
 
+
+        }
+
+        ElevatedButton(
+            onClick = {
+                updateMeal(breakFast, lunch, dinner)
+            }, shape = RoundedCornerShape(4.dp), colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFF222B83),
+                contentColor = Color.White,
+            ),
+            modifier = Modifier.fillMaxWidth(1f)
+        ) {
+            Text(
+                text = "Update Meal",
+                letterSpacing = 2.sp,
+                fontWeight = FontWeight.Bold
+            )
         }
 
     }

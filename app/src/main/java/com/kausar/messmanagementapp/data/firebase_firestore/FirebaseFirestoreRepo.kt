@@ -8,6 +8,8 @@ interface FirebaseFirestoreRepo {
 
     fun insert(meal: MealInfo) : Flow<ResultState<String>>
 
+    fun update(meal: MealInfo) : Flow<ResultState<String>>
+
     fun getMealByDate(date: String) : Flow<ResultState<MealInfo?>>
 
     fun getAllMeal(date: String) : Flow<ResultState<List<MealInfo>>>

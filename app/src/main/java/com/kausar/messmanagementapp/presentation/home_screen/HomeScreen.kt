@@ -105,7 +105,7 @@ fun HomeScreen(
             Text(text = currentDate, textAlign = TextAlign.Center)
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = if (!newMeal) "Running Meal information" else "Change Meal status and Click Add meal",
+                text = if (!newMeal) "Running Meal information" else "Change Meal status and Click Add meal for adding new meal or Update Meal for update meal information",
                 textAlign = TextAlign.Center
             )
             if (showToast) {
@@ -134,6 +134,49 @@ fun HomeScreen(
                         }
                     },
                     updateMeal = { breakfast, lunch, dinner ->
+                        progMsg = "Updating meal info..."
+                        showToast = true
+                        scope.launch {
+                            calendar.add(Calendar.DATE, 1)
+                            viewModel.update(
+                                MealInfo(
+                                    getDate(calendar),
+                                    getDayName(calendar),
+                                    breakfast,
+                                    lunch,
+                                    dinner
+                                )
+                            ).collectLatest { result ->
+                                when (result) {
+                                    is ResultState.Success -> {
+                                        showToast = false
+                                        context.showToast(result.data)
+                                        calendar.add(Calendar.DATE, -1)
+                                        currentDate = fetchDateAsString(calendar)
+                                        viewModel.getAllMeal()
+                                        newMeal = false
+                                    }
+
+                                    is ResultState.Failure -> {
+                                        showToast = false
+                                        result.message.localizedMessage?.let { msg ->
+                                            context.showToast(
+                                                msg
+                                            )
+                                            calendar.add(Calendar.DATE, -1)
+                                            currentDate = fetchDateAsString(calendar)
+                                            newMeal = false
+                                        }
+                                    }
+
+                                    is ResultState.Loading -> {
+
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    addMeal = { breakfast, lunch, dinner ->
                         progMsg = "Inserting new meal..."
                         showToast = true
                         scope.launch {

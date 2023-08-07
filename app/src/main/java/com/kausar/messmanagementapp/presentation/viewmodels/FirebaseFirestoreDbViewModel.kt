@@ -108,6 +108,8 @@ class FirebaseFirestoreDbViewModel @Inject constructor(
 
     fun insert(meal: MealInfo) = repo.insert(meal)
 
+    fun update(meal: MealInfo) = repo.update(meal)
+
     fun getMealAtDate(date: String) = viewModelScope.launch {
         repo.getMealByDate(date).collectLatest {
             when (it) {
