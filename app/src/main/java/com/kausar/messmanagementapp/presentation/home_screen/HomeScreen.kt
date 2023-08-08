@@ -2,6 +2,7 @@ package com.kausar.messmanagementapp.presentation.home_screen
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,14 +13,18 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Divider
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -51,7 +56,6 @@ import com.kausar.messmanagementapp.utils.fetchDateAsString
 import com.kausar.messmanagementapp.utils.getDate
 import com.kausar.messmanagementapp.utils.getDayName
 import com.kausar.messmanagementapp.utils.showToast
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.util.Calendar
@@ -62,12 +66,22 @@ fun HomeScreen(
 ) {
 
     val calendar = Calendar.getInstance()
-    var currentDate by rememberSaveable {
+    val temp = Calendar.getInstance()
+    temp.add(Calendar.DATE, 1)
+    var today by rememberSaveable {
         mutableStateOf(fetchDateAsString(calendar))
     }
 
+    var presentingDate by rememberSaveable {
+        mutableStateOf(fetchDateAsString(temp))
+    }
+
+    var selectedDate by rememberSaveable {
+        mutableStateOf(getDate(temp))
+    }
+
     LaunchedEffect(key1 = true) {
-        viewModel.getMealAtDate(getDate(calendar))
+        viewModel.getMealForToday()
     }
 
     var newMeal by remember {
@@ -82,6 +96,9 @@ fun HomeScreen(
         mutableStateOf(false)
     }
 
+    var showPopup by remember {
+        mutableStateOf(false)
+    }
 
     val mealInfoState = viewModel.mealInfo.value
     val mealCnt by viewModel.mealCnt.collectAsState()
@@ -102,7 +119,36 @@ fun HomeScreen(
         ) {
 
             Spacer(modifier = Modifier.fillMaxHeight(.1f))
-            Text(text = currentDate, textAlign = TextAlign.Center)
+
+            if (newMeal) {
+                Row(
+                    Modifier
+                        .clickable { showPopup = true }
+                        .border(1.dp, Color.Transparent, RoundedCornerShape(4.dp))
+                        .padding(8.dp)) {
+                    Text(
+                        text = presentingDate,
+                        textAlign = TextAlign.Center
+                    )
+
+                    Spacer(modifier = Modifier.width(16.dp))
+
+                    Icon(imageVector = Icons.Default.Edit, contentDescription = "choose date")
+                }
+                if (showPopup) {
+                    Box(contentAlignment = Alignment.CenterEnd) {
+                        PopUpOption(onDismiss = {
+                            showPopup = !showPopup
+                        }, onSelect = { show, insert ->
+                            showPopup = false
+                            presentingDate = show
+                            selectedDate = insert
+                        })
+                    }
+                }
+            } else {
+                Text(text = today, textAlign = TextAlign.Center)
+            }
             Spacer(modifier = Modifier.height(8.dp))
             if (!newMeal) {
                 Text(
@@ -129,22 +175,21 @@ fun HomeScreen(
                     modifier = Modifier
                         .fillMaxWidth(.9f)
                         .padding(16.dp),
+                    selectedDate = selectedDate,
+                    viewModel = viewModel,
                     onCancel = {
-                        currentDate = fetchDateAsString(calendar)
-                        scope.launch {
-                            delay(100)
-                            newMeal = false
-                        }
+                        newMeal = false
+                        selectedDate = getDate(temp)
+                        presentingDate = fetchDateAsString(temp)
                     },
                     updateMeal = { breakfast, lunch, dinner ->
                         progMsg = "Updating meal info..."
                         showToast = true
                         scope.launch {
-                            calendar.add(Calendar.DATE, 1)
                             viewModel.update(
                                 MealInfo(
-                                    getDate(calendar),
-                                    getDayName(calendar),
+                                    selectedDate,
+                                    getDayName(presentingDate),
                                     breakfast,
                                     lunch,
                                     dinner
@@ -154,9 +199,9 @@ fun HomeScreen(
                                     is ResultState.Success -> {
                                         showToast = false
                                         context.showToast(result.data)
-                                        calendar.add(Calendar.DATE, -1)
-                                        currentDate = fetchDateAsString(calendar)
                                         viewModel.getAllMeal()
+                                        selectedDate = getDate(temp)
+                                        presentingDate = fetchDateAsString(temp)
                                         newMeal = false
                                     }
 
@@ -166,8 +211,8 @@ fun HomeScreen(
                                             context.showToast(
                                                 msg
                                             )
-                                            calendar.add(Calendar.DATE, -1)
-                                            currentDate = fetchDateAsString(calendar)
+                                            selectedDate = getDate(temp)
+                                            presentingDate = fetchDateAsString(temp)
                                             newMeal = false
                                         }
                                     }
@@ -183,11 +228,10 @@ fun HomeScreen(
                         progMsg = "Inserting new meal..."
                         showToast = true
                         scope.launch {
-                            calendar.add(Calendar.DATE, 1)
                             viewModel.insert(
                                 MealInfo(
-                                    getDate(calendar),
-                                    getDayName(calendar),
+                                    selectedDate,
+                                    getDayName(presentingDate),
                                     breakfast,
                                     lunch,
                                     dinner
@@ -197,8 +241,6 @@ fun HomeScreen(
                                     is ResultState.Success -> {
                                         showToast = false
                                         context.showToast(result.data)
-                                        calendar.add(Calendar.DATE, -1)
-                                        currentDate = fetchDateAsString(calendar)
                                         viewModel.getAllMeal()
                                         newMeal = false
                                     }
@@ -209,8 +251,6 @@ fun HomeScreen(
                                             context.showToast(
                                                 msg
                                             )
-                                            calendar.add(Calendar.DATE, -1)
-                                            currentDate = fetchDateAsString(calendar)
                                             newMeal = false
                                         }
                                     }
@@ -264,8 +304,6 @@ fun HomeScreen(
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.BottomEnd) {
                 FloatingActionButton(
                     onClick = {
-                        calendar.add(Calendar.DATE, 1)
-                        currentDate = fetchDateAsString(calendar)
                         newMeal = true
                     },
                     modifier = Modifier.background(Color.Transparent, shape = CircleShape)
@@ -359,6 +397,51 @@ fun CustomCheckBox(
         modifier = modifier,
         checked = isChecked,
         onCheckedChange = { onCheckChange(it) })
+}
+
+@Composable
+fun PopUpOption(onDismiss: () -> Unit, onSelect: (String, String) -> Unit) {
+    var expanded by remember { mutableStateOf(true) }
+
+    val calendar = Calendar.getInstance()
+    val month = calendar[Calendar.MONTH]
+
+    var dates = mutableListOf<String>()
+
+    var firestoreDates = mutableListOf<String>()
+
+    for (i in 1..3) {
+        calendar.add(Calendar.DATE, 1)
+        if (month != calendar[Calendar.MONTH])
+            break
+        val date = fetchDateAsString(calendar)
+        dates.add(date)
+
+        val firestoreDate = getDate(calendar)
+        firestoreDates.add(firestoreDate)
+    }
+
+    DropdownMenu(
+        expanded = expanded,
+        onDismissRequest = {
+            expanded = false
+            onDismiss()
+        }
+    ) {
+
+        repeat(dates.size) {
+            DropdownMenuItem(
+                text = {
+                    Text(text = dates[it])
+                },
+                onClick = {
+                    expanded = false
+                    onSelect(dates[it], firestoreDates[it])
+                }
+            )
+        }
+    }
+
 }
 
 

@@ -27,8 +27,11 @@ class FirebaseFirestoreDbViewModel @Inject constructor(
     private val _res: MutableState<ItemState> = mutableStateOf(ItemState())
     val response: State<ItemState> = _res
 
-    private val _singleMeal: MutableState<SingleMeal> = mutableStateOf(SingleMeal())
-    val mealInfo: State<SingleMeal> = _singleMeal
+    private val _todayMeal: MutableState<SingleMeal> = mutableStateOf(SingleMeal())
+    val mealInfo: State<SingleMeal> = _todayMeal
+
+    private val _newMeal: MutableState<SingleMeal> = mutableStateOf(SingleMeal())
+    val newMealInfo: State<SingleMeal> = _newMeal
 
     private val _cnt = MutableStateFlow(MealCount())
     val mealCnt: StateFlow<MealCount> = _cnt
@@ -39,7 +42,7 @@ class FirebaseFirestoreDbViewModel @Inject constructor(
     fun getAllMeal() {
         calender = Calendar.getInstance()
         today = getDate(calender)
-        viewModelScope.launch {
+        viewModelScope.launch{
             delay(300)
             repo.getAllMeal(today).collectLatest {
                 when (it) {
@@ -80,7 +83,6 @@ class FirebaseFirestoreDbViewModel @Inject constructor(
     }
 
     private fun getMealCnt(meals: List<MealInfo>) {
-
         for (meal in meals) {
             if (meal.breakfast == true) {
                 _cnt.update {
@@ -106,25 +108,22 @@ class FirebaseFirestoreDbViewModel @Inject constructor(
                     )
                 }
             }
-            println("meal date ${meal.date}")
-            println("today $today")
             if (meal.date == today)
                 break
         }
 
     }
 
-
     fun insert(meal: MealInfo) = repo.insert(meal)
 
     fun update(meal: MealInfo) = repo.update(meal)
 
-    fun getMealAtDate(date: String) = viewModelScope.launch {
-        repo.getMealByDate(date).collectLatest {
+    fun getMealForToday() = viewModelScope.launch {
+        repo.getMealByDate(today).collectLatest {
             when (it) {
                 is ResultState.Success -> {
                     it.data?.let { meal ->
-                        _singleMeal.value = SingleMeal(
+                        _todayMeal.value = SingleMeal(
                             meal = meal,
                             success = "Meal fetch successfully!"
                         )
@@ -134,13 +133,44 @@ class FirebaseFirestoreDbViewModel @Inject constructor(
                 }
 
                 is ResultState.Failure -> {
-                    _singleMeal.value = SingleMeal(
+                    _todayMeal.value = SingleMeal(
                         error = it.message?.localizedMessage.toString()
                     )
                 }
 
                 is ResultState.Loading -> {
-                    _singleMeal.value = SingleMeal(
+                    _todayMeal.value = SingleMeal(
+                        isLoading = true
+                    )
+                }
+            }
+        }
+
+    }
+
+    fun getMealAtDate(date: String) = viewModelScope.launch {
+        _newMeal.value = SingleMeal()
+        repo.getMealByDate(date).collectLatest {
+            when (it) {
+                is ResultState.Success -> {
+                    it.data?.let { meal ->
+                        _newMeal.value = SingleMeal(
+                            meal = meal,
+                            success = "Meal fetch successfully!"
+                        )
+
+                    }
+
+                }
+
+                is ResultState.Failure -> {
+                    _newMeal.value = SingleMeal(
+                        error = it.message?.localizedMessage.toString()
+                    )
+                }
+
+                is ResultState.Loading -> {
+                    _newMeal.value = SingleMeal(
                         isLoading = true
                     )
                 }
