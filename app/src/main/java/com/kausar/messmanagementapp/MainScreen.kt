@@ -40,8 +40,12 @@ fun MainScreen(viewModel: MainViewModel) {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
     val isLogin = viewModel.isLoggedIn.value
+    viewModel.getUserName()
+    viewModel.getContactNumber()
 
-    println("main screen islogged in $isLogin")
+//    println("main screen islogged in $isLogin")
+//    println("main screen user name ${viewModel.userName.value}")
+//    println("main screen user contact ${viewModel.contact.value}")
 
     Scaffold(
         topBar = {

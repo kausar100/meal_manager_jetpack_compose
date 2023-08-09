@@ -73,6 +73,8 @@ fun AuthScreen(
         )
     }
 
+    println("is login $isLoginScreen")
+
     Scaffold(
         topBar = {
             CustomTopAppBar(

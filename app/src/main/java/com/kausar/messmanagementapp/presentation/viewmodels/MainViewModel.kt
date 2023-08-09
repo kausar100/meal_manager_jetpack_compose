@@ -28,12 +28,6 @@ class MainViewModel @Inject constructor(
             loginPref.getLoginStatus().collectLatest {
                 _loginStatus.value = it
             }
-            loginPref. getUsername().collectLatest {
-                _user.value = it
-            }
-            loginPref.getContactNumber().collectLatest {
-                _contact.value = it
-            }
         }
     }
 

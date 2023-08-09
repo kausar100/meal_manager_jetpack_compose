@@ -68,7 +68,7 @@ fun HomeScreen(
     val calendar = Calendar.getInstance()
     val temp = Calendar.getInstance()
     temp.add(Calendar.DATE, 1)
-    var today by rememberSaveable {
+    val today by rememberSaveable {
         mutableStateOf(fetchDateAsString(calendar))
     }
 
@@ -406,9 +406,9 @@ fun PopUpOption(onDismiss: () -> Unit, onSelect: (String, String) -> Unit) {
     val calendar = Calendar.getInstance()
     val month = calendar[Calendar.MONTH]
 
-    var dates = mutableListOf<String>()
+    val dates = mutableListOf<String>()
 
-    var firestoreDates = mutableListOf<String>()
+    val firestoreDates = mutableListOf<String>()
 
     for (i in 1..3) {
         calendar.add(Calendar.DATE, 1)
