@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -53,10 +54,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.kausar.messmanagementapp.components.CustomBasicTextField
+import com.kausar.messmanagementapp.components.CustomProgressBar
+import com.kausar.messmanagementapp.presentation.viewmodels.FirebaseStorageViewModel
 import com.kausar.messmanagementapp.presentation.viewmodels.MainViewModel
 
 @Composable
-fun ProfileScreen(mainViewModel: MainViewModel = hiltViewModel()) {
+fun ProfileScreen(
+    mainViewModel: MainViewModel = hiltViewModel(),
+    storageViewModel: FirebaseStorageViewModel = hiltViewModel()
+) {
     val context = LocalContext.current
     val bitmap = remember {
         mutableStateOf<Bitmap?>(null)
@@ -66,7 +72,10 @@ fun ProfileScreen(mainViewModel: MainViewModel = hiltViewModel()) {
         mutableStateOf<Uri?>(null)
     }
 
-    LaunchedEffect(key1 = true){
+    val profilePic = storageViewModel.profile.value
+
+
+    LaunchedEffect(key1 = true) {
         mainViewModel.getUserName()
         mainViewModel.getContactNumber()
     }
@@ -75,12 +84,14 @@ fun ProfileScreen(mainViewModel: MainViewModel = hiltViewModel()) {
         contract = ActivityResultContracts.GetContent(),
         onResult = {
             selectedImage = it
+            storageViewModel.uploadProfilePic(it!!)
         })
 
     Box(
         Modifier
             .fillMaxSize()
-            .padding(16.dp)) {
+            .padding(16.dp)
+    ) {
         Column(
             Modifier
                 .fillMaxSize(),
@@ -115,7 +126,6 @@ fun ProfileScreen(mainViewModel: MainViewModel = hiltViewModel()) {
                     .border(1.dp, color = Color.Gray, shape = CircleShape)
                     .background(color = Color.Transparent, shape = CircleShape)
                     .clip(CircleShape)
-
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -150,6 +160,22 @@ fun ProfileScreen(mainViewModel: MainViewModel = hiltViewModel()) {
 //                },
 //                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
 //            )
+
+            Box(
+                Modifier
+                    .fillMaxHeight()
+                    .fillMaxWidth(.9f),
+                contentAlignment = Alignment.Center
+            ) {
+                selectedImage?.let {
+                    if (profilePic.error.isNotEmpty()) {
+                        Text(profilePic.error, textAlign = TextAlign.Center)
+                    } else if (profilePic.isLoading) {
+                        CustomProgressBar(msg = "Uploading profile pic...")
+                    }
+                }
+
+            }
 
 
         }
