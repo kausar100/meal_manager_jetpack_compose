@@ -7,7 +7,6 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.kausar.messmanagementapp.presentation.AboutScreen
 import com.kausar.messmanagementapp.presentation.SplashScreen
 import com.kausar.messmanagementapp.presentation.auth_screen.AuthScreen
 import com.kausar.messmanagementapp.presentation.auth_screen.OtpVerifyScreen
@@ -73,15 +72,6 @@ fun BottomNavGraph(
                 }
             }
         }
-
-        composable(route = Screen.About.route) {
-            AboutScreen(onLogout = {
-                mainViewModel.saveLoginStatus(false)
-                logoutAndNavigateToLoginPage(navController)
-            })
-
-        }
-
         composable(route = Screen.Splash.route) {
             SplashScreen(onTimeout = {
                 navController.popBackStack()

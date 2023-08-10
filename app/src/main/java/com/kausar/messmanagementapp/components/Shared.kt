@@ -21,7 +21,6 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun CustomProgressBar(msg: String) {
-
     Card(
         elevation = CardDefaults.cardElevation(40.dp),
         shape = RoundedCornerShape(4.dp),

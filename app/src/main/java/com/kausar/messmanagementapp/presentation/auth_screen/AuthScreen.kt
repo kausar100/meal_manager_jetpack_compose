@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material3.ButtonDefaults
@@ -49,6 +50,7 @@ import com.kausar.messmanagementapp.navigation.Screen
 import com.kausar.messmanagementapp.components.CustomOutlinedTextField
 import com.kausar.messmanagementapp.components.CustomToast
 import com.kausar.messmanagementapp.components.CustomTopAppBar
+import com.kausar.messmanagementapp.presentation.AboutScreen
 import com.kausar.messmanagementapp.presentation.viewmodels.MainViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -57,62 +59,78 @@ fun AuthScreen(
     mainViewModel: MainViewModel = hiltViewModel(),
     onSubmit: (String) -> Unit
 ) {
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
-    var screenTitle by rememberSaveable {
-        mutableStateOf(
-            if (mainViewModel.userName.value.isEmpty()) {
-                Screen.SignUp.title
-            } else {
-                Screen.Login.title
+    var showAboutScreen by remember {
+        mutableStateOf(false)
+    }
+
+    Box(Modifier.fillMaxSize()) {
+        if (showAboutScreen) {
+            AboutScreen(onClose = {
+                showAboutScreen = false
+            })
+        } else {
+            val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+            var screenTitle by rememberSaveable {
+                mutableStateOf(
+                    if (mainViewModel.userName.value.isEmpty()) {
+                        Screen.SignUp.title
+                    } else {
+                        Screen.Login.title
+                    }
+                )
             }
-        )
-    }
-    var isLoginScreen by rememberSaveable {
-        mutableStateOf(
-            mainViewModel.userName.value.isNotEmpty()
-        )
-    }
+            var isLoginScreen by rememberSaveable {
+                mutableStateOf(
+                    mainViewModel.userName.value.isNotEmpty()
+                )
+            }
 
-    println("is login $isLoginScreen")
+            Scaffold(
+                topBar = {
+                    CustomTopAppBar(
+                        title = screenTitle.toString(),
+                        showAction = true,
+                        actionIcon = Icons.Default.Info,
+                        onClickAction = {
+                            showAboutScreen = true
+                        },
+                        canNavigateBack = false,
+                        canLogout = false,
+                        scrollBehavior = scrollBehavior
+                    ) {}
+                }
+            ) {
+                AuthScreenContent(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(it),
+                    isLoginScreen = isLoginScreen,
+                    buttonText = screenTitle.toString(),
+                    viewModel = mainViewModel,
+                    toggleScreen = {
+                        when (screenTitle) {
+                            Screen.Login.title -> {
+                                screenTitle = Screen.SignUp.title
+                                isLoginScreen = false
+                            }
 
-    Scaffold(
-        topBar = {
-            CustomTopAppBar(
-                title = screenTitle.toString(),
-                canNavigateBack = false,
-                canLogout = false,
-                scrollBehavior = scrollBehavior
-            ) {}
+                            Screen.SignUp.title -> {
+                                screenTitle = Screen.Login.title
+                                isLoginScreen = true
+                            }
+                        }
+                    },
+                    onSubmit = { phone, name ->
+                        if (mainViewModel.userName.value.isEmpty()) {
+                            mainViewModel.saveUsername(name)
+                            mainViewModel.saveContact(phone)
+                        }
+                        onSubmit(phone)
+                    }
+                )
+            }
+
         }
-    ) {
-        AuthScreenContent(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(it),
-            isLoginScreen = isLoginScreen,
-            buttonText = screenTitle.toString(),
-            viewModel = mainViewModel,
-            toggleScreen = {
-                when (screenTitle) {
-                    Screen.Login.title -> {
-                        screenTitle = Screen.SignUp.title
-                        isLoginScreen = false
-                    }
-
-                    Screen.SignUp.title -> {
-                        screenTitle = Screen.Login.title
-                        isLoginScreen = true
-                    }
-                }
-            },
-            onSubmit = { phone, name ->
-                if (mainViewModel.userName.value.isEmpty()){
-                    mainViewModel.saveUsername(name)
-                    mainViewModel.saveContact(phone)
-                }
-                onSubmit(phone)
-            }
-        )
     }
 
 }
@@ -186,11 +204,11 @@ fun AuthScreenContent(
                 onInputChange = {
                     if (it.length < 11) {
                         contactNo = it
-                    }else if(it.length==11){
+                    } else if (it.length == 11) {
                         contactNo = it
                         keyboardController?.hide()
                         focusManager.clearFocus(true)
-                    }else{
+                    } else {
                         keyboardController?.hide()
                         focusManager.clearFocus(true)
                     }
@@ -248,47 +266,50 @@ fun AuthScreenContent(
                 )
 
             }
-            Box(contentAlignment = Alignment.Center) {
-                CustomToast(
-                    showToast = showToast,
-                    errorMessage = errMsg,
-                    successMessage = successMsg
-                ) {
-                    showToast = false
-                }
-
-                if (isLoginScreen) {
-                    TextButton(onClick = toggleScreen) {
-                        Text(text = buildAnnotatedString {
-                            append("Don't Have an Account! ")
-                            withStyle(
-                                style = SpanStyle(
-                                    color = Color(0xFF3F51B5),
-                                    fontSize = 16.sp
-                                )
-                            ) {
-                                append("Create here...")
-                            }
-                        }, color = Color.Black, fontSize = 16.sp)
+            Box(contentAlignment = Alignment.TopCenter) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    if (isLoginScreen) {
+                        TextButton(onClick = toggleScreen) {
+                            Text(text = buildAnnotatedString {
+                                append("Don't Have an Account! ")
+                                withStyle(
+                                    style = SpanStyle(
+                                        color = Color(0xFF3F51B5),
+                                        fontSize = 16.sp
+                                    )
+                                ) {
+                                    append("Create here...")
+                                }
+                            }, color = Color.Black, fontSize = 16.sp)
+                        }
+                    } else {
+                        TextButton(onClick = toggleScreen) {
+                            Text(text = buildAnnotatedString {
+                                append("Already Have an Account! ")
+                                withStyle(
+                                    style = SpanStyle(
+                                        color = Color(0xFF3F51B5),
+                                        fontSize = 16.sp
+                                    )
+                                ) {
+                                    append("Log in here...")
+                                }
+                            }, color = Color.Black, fontSize = 16.sp)
+                        }
                     }
-                } else {
-                    TextButton(onClick = toggleScreen) {
-                        Text(text = buildAnnotatedString {
-                            append("Already Have an Account! ")
-                            withStyle(
-                                style = SpanStyle(
-                                    color = Color(0xFF3F51B5),
-                                    fontSize = 16.sp
-                                )
-                            ) {
-                                append("Log in here...")
-                            }
-                        }, color = Color.Black, fontSize = 16.sp)
+                    Spacer(modifier = Modifier.height(16.dp))
+                    CustomToast(
+                        showToast = showToast,
+                        errorMessage = errMsg,
+                        successMessage = successMsg
+                    ) {
+                        showToast = false
                     }
                 }
             }
         }
     }
+
 
 }
 
