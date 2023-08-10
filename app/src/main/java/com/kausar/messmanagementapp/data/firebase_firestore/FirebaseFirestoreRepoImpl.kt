@@ -7,7 +7,7 @@ import com.google.firebase.firestore.CollectionReference
 import com.kausar.messmanagementapp.data.model.MealInfo
 import com.kausar.messmanagementapp.data.model.toMap
 import com.kausar.messmanagementapp.data.shared_pref.LoginPreference
-import com.kausar.messmanagementapp.utils.Network
+import com.kausar.messmanagementapp.utils.network_connection.Network
 import com.kausar.messmanagementapp.utils.ResultState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

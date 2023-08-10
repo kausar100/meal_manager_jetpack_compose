@@ -10,12 +10,14 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Snackbar
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
@@ -30,6 +32,8 @@ import com.kausar.messmanagementapp.navigation.Screen
 import com.kausar.messmanagementapp.navigation.logoutAndNavigateToLoginPage
 import com.kausar.messmanagementapp.presentation.auth_screen.AuthViewModel
 import com.kausar.messmanagementapp.presentation.viewmodels.MainViewModel
+import com.kausar.messmanagementapp.utils.network_connection.ConnectionState
+import com.kausar.messmanagementapp.utils.network_connection.connectivityState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -46,6 +50,9 @@ fun MainScreen(viewModel: MainViewModel) {
 //    println("main screen islogged in $isLogin")
 //    println("main screen user name ${viewModel.userName.value}")
 //    println("main screen user contact ${viewModel.contact.value}")
+
+    val connection by connectivityState()
+    val isConnected = (connection === ConnectionState.Available)
 
     Scaffold(
         topBar = {
@@ -84,6 +91,13 @@ fun MainScreen(viewModel: MainViewModel) {
             when (currentRoute(navController)) {
                 BottomBarScreen.Home.route, BottomBarScreen.MealList.route, BottomBarScreen.Profile.route -> {
                     BottomBar(navController = navController)
+                }
+            }
+        },
+        snackbarHost = {
+            if (isConnected.not()) {
+                Snackbar(action = {}, modifier = Modifier.padding(8.dp)) {
+                    Text(text = "There is no internet")
                 }
             }
         }) {

@@ -1,4 +1,4 @@
-package com.kausar.messmanagementapp.utils
+package com.kausar.messmanagementapp.utils.network_connection
 
 import android.content.Context
 import android.net.ConnectivityManager
