@@ -1,11 +1,13 @@
 package com.kausar.messmanagementapp.data.firebase_auth
 
 import android.app.Activity
+import android.content.Context
 import com.google.firebase.FirebaseException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.PhoneAuthCredential
 import com.google.firebase.auth.PhoneAuthOptions
 import com.google.firebase.auth.PhoneAuthProvider
+import com.kausar.messmanagementapp.utils.Network
 import com.kausar.messmanagementapp.utils.ResultState
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -14,7 +16,8 @@ import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 class AuthRepositoryImpl @Inject constructor(
-    private val firebaseAuth: FirebaseAuth
+    private val firebaseAuth: FirebaseAuth,
+    private val context: Context
 ) : AuthRepository {
 
     private var storedVerificationId: String = ""
@@ -53,7 +56,13 @@ class AuthRepositoryImpl @Inject constructor(
             .setCallbacks(onVerificationCallback)
             .build()
 
-        PhoneAuthProvider.verifyPhoneNumber(option)
+
+        if (Network.isNetworkAvailable(context)) {
+            PhoneAuthProvider.verifyPhoneNumber(option)
+        } else {
+            trySend(ResultState.Failure(Exception("Please check your internet connection!")))
+        }
+
 
         awaitClose { close() }
     }
@@ -63,15 +72,21 @@ class AuthRepositoryImpl @Inject constructor(
 
         val credential = PhoneAuthProvider.getCredential(storedVerificationId, otp)
 
-        firebaseAuth.signInWithCredential(credential)
-            .addOnCompleteListener {
-                if (it.isSuccessful) {
-                    trySend(ResultState.Success("OTP Verified Successfully!"))
+        if (Network.isNetworkAvailable(context)) {
+            firebaseAuth.signInWithCredential(credential)
+                .addOnCompleteListener {
+                    if (it.isSuccessful) {
+                        trySend(ResultState.Success("OTP Verified Successfully!"))
+                    }
                 }
-            }
-            .addOnFailureListener {
-                trySend(ResultState.Failure(it))
-            }
+                .addOnFailureListener {
+                    trySend(ResultState.Failure(it))
+                }
+        } else {
+            trySend(ResultState.Failure(Exception("Please check your internet connection!")))
+        }
+
+
 
         awaitClose { close() }
     }
@@ -79,13 +94,19 @@ class AuthRepositoryImpl @Inject constructor(
     override fun logout(): Flow<ResultState<String>> = callbackFlow {
         trySend(ResultState.Loading)
 
-        if (firebaseAuth.currentUser != null) {
-            firebaseAuth.signOut()
-            trySend(ResultState.Success("Successfully log out!"))
-        } else {
-            trySend(ResultState.Failure(Exception("No user found!")))
+        if(Network.isNetworkAvailable(context)){
+            if (firebaseAuth.currentUser != null) {
+                firebaseAuth.signOut()
+                trySend(ResultState.Success("Successfully log out!"))
+            } else {
+                trySend(ResultState.Failure(Exception("No user found!")))
 
+            }
+        }else{
+            trySend(ResultState.Failure(Exception("Please check your internet connection!")))
         }
+
+
         awaitClose { close() }
     }
 

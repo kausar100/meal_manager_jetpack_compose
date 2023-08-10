@@ -92,10 +92,10 @@ fun MealListScreen(
                     if (itemState.isLoading) {
                         CustomProgressBar("Fetching data...")
                     } else if (itemState.error.isNotEmpty()) {
-                        Text(itemState.error)
+                        Text(itemState.error, textAlign = TextAlign.Center)
                     } else {
                         if (itemState.item.isEmpty()) {
-                            Text(text = "Not found any meal history!")
+                            Text(text = "Not found any meal history!", textAlign = TextAlign.Center)
                         }
                     }
 

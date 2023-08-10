@@ -1,11 +1,13 @@
 package com.kausar.messmanagementapp.data.firebase_firestore
 
+import android.content.Context
 import android.os.Build
 import androidx.annotation.RequiresApi
 import com.google.firebase.firestore.CollectionReference
 import com.kausar.messmanagementapp.data.model.MealInfo
 import com.kausar.messmanagementapp.data.model.toMap
 import com.kausar.messmanagementapp.data.shared_pref.LoginPreference
+import com.kausar.messmanagementapp.utils.Network
 import com.kausar.messmanagementapp.utils.ResultState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -20,7 +22,8 @@ import javax.inject.Inject
 
 class FirebaseFirestoreRepoImpl @Inject constructor(
     private val firestoreDb: CollectionReference,
-    private val datastore: LoginPreference
+    private val datastore: LoginPreference,
+    private val context: Context
 ) : FirebaseFirestoreRepo {
 
     var phoneNumber: String = ""
@@ -43,30 +46,36 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
 
         val monthYear = getMonthYear(meal.date!!)
 
-        firestoreDb.document(phoneNumber).collection(monthYear).whereEqualTo("date", meal.date)
-            .get().addOnSuccessListener {
-                it?.let { result ->
-                    if (result.documents.isNotEmpty()) {
-                        trySend(ResultState.Failure(Exception("Data already exists!")))
-                    } else {
-                        val hashMeal = meal.toMap()
+        if (Network.isNetworkAvailable(context)) {
 
-                        firestoreDb.document(phoneNumber).collection(monthYear).add(hashMeal)
-                            .addOnSuccessListener { rst ->
-                                if (rst?.id != null) {
-                                    trySend(
-                                        ResultState.Success(
-                                            "Data Inserted Successfully!"
+            firestoreDb.document(phoneNumber).collection(monthYear).whereEqualTo("date", meal.date)
+                .get().addOnSuccessListener {
+                    it?.let { result ->
+                        if (result.documents.isNotEmpty()) {
+                            trySend(ResultState.Failure(Exception("Data already exists!")))
+                        } else {
+                            val hashMeal = meal.toMap()
+
+                            firestoreDb.document(phoneNumber).collection(monthYear).add(hashMeal)
+                                .addOnSuccessListener { rst ->
+                                    if (rst?.id != null) {
+                                        trySend(
+                                            ResultState.Success(
+                                                "Data Inserted Successfully!"
+                                            )
                                         )
-                                    )
 
+                                    }
+                                }.addOnFailureListener { exp ->
+                                    trySend(ResultState.Failure(exp))
                                 }
-                            }.addOnFailureListener { exp ->
-                                trySend(ResultState.Failure(exp))
-                            }
+                        }
                     }
                 }
-            }
+        } else {
+            trySend(ResultState.Failure(Exception("Please check your internet connection!")))
+        }
+
 
         awaitClose {
             close()
@@ -78,30 +87,36 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
 
         val monthYear = getMonthYear(meal.date!!)
 
-        firestoreDb.document(phoneNumber).collection(monthYear).whereEqualTo("date", meal.date)
-            .get().addOnSuccessListener {
-                it?.let { result ->
-                    if (result.documents.isNotEmpty()) {
-                        val doc = result.documents[0]
-                        val hashMeal = meal.toMap()
-                        doc.reference.update(hashMeal).addOnSuccessListener {
-                            trySend(
-                                ResultState.Success(
-                                    "Data updated Successfully!"
+        if (Network.isNetworkAvailable(context)) {
+            firestoreDb.document(phoneNumber).collection(monthYear).whereEqualTo("date", meal.date)
+                .get().addOnSuccessListener {
+                    it?.let { result ->
+                        if (result.documents.isNotEmpty()) {
+                            val doc = result.documents[0]
+                            val hashMeal = meal.toMap()
+                            doc.reference.update(hashMeal).addOnSuccessListener {
+                                trySend(
+                                    ResultState.Success(
+                                        "Data updated Successfully!"
+                                    )
                                 )
-                            )
 
-                        }.addOnFailureListener { exp ->
-                            trySend(ResultState.Failure(exp))
+                            }.addOnFailureListener { exp ->
+                                trySend(ResultState.Failure(exp))
+                            }
+
+                        } else {
+                            trySend(ResultState.Failure(Exception("Data doesn't exists!")))
                         }
-
-                    } else {
-                        trySend(ResultState.Failure(Exception("Data doesn't exists!")))
                     }
+                }.addOnFailureListener { exp ->
+                    trySend(ResultState.Failure(exp))
                 }
-            }.addOnFailureListener { exp ->
-                trySend(ResultState.Failure(exp))
-            }
+        } else {
+            trySend(ResultState.Failure(Exception("Please check your internet connection!")))
+        }
+
+
 
         awaitClose {
             close()
@@ -114,22 +129,28 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
 
         val monthYear = getMonthYear(date)
 
-        firestoreDb.document(phoneNumber).collection(monthYear).whereEqualTo("date", date)
-            .get().addOnSuccessListener { result ->
-                result?.let {
-                    if (it.documents.size == 0) {
-                        trySend(ResultState.Failure(Exception("Not found any meal for today!")))
-                    } else {
-                        val data = it.documents[0].toObject(MealInfo::class.java)
-                        trySend(ResultState.Success(data))
+        if (Network.isNetworkAvailable(context)) {
+            firestoreDb.document(phoneNumber).collection(monthYear).whereEqualTo("date", date)
+                .get().addOnSuccessListener { result ->
+                    result?.let {
+                        if (it.documents.size == 0) {
+                            trySend(ResultState.Failure(Exception("Not found any meal for today!")))
+                        } else {
+                            val data = it.documents[0].toObject(MealInfo::class.java)
+                            trySend(ResultState.Success(data))
+                        }
+
                     }
 
                 }
+                .addOnFailureListener {
+                    trySend(ResultState.Failure(it))
+                }
+        } else {
+            trySend(ResultState.Failure(Exception("Please check your internet connection!")))
+        }
 
-            }
-            .addOnFailureListener {
-                trySend(ResultState.Failure(it))
-            }
+
         awaitClose {
             close()
         }
@@ -141,25 +162,29 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
 
         val monthYear = getMonthYear(date)
 
-        firestoreDb.document(phoneNumber).collection(monthYear).get()
-            .addOnSuccessListener { result ->
-                val meals = mutableListOf<MealInfo>()
-                for (document in result.documents) {
-                    val meal = document.toObject(MealInfo::class.java)
-                    if (meal != null) {
-                        meals.add(meal)
+        if (Network.isNetworkAvailable(context)) {
+            firestoreDb.document(phoneNumber).collection(monthYear).get()
+                .addOnSuccessListener { result ->
+                    val meals = mutableListOf<MealInfo>()
+                    for (document in result.documents) {
+                        val meal = document.toObject(MealInfo::class.java)
+                        if (meal != null) {
+                            meals.add(meal)
+                        }
                     }
+                    //sort by date ascending
+                    val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
+                    val sortedMeals =
+                        meals.sortedByDescending { LocalDate.parse(it.date, formatter) }
+
+                    trySend(ResultState.Success(sortedMeals))
+
+                }.addOnFailureListener {
+                    trySend(ResultState.Failure(it))
                 }
-                //sort by date ascending
-                val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
-                val sortedMeals =
-                    meals.sortedByDescending { LocalDate.parse(it.date, formatter) }
-
-                trySend(ResultState.Success(sortedMeals))
-
-            }.addOnFailureListener {
-                trySend(ResultState.Failure(it))
-            }
+        } else {
+            trySend(ResultState.Failure(Exception("Please check your internet connection!")))
+        }
 
         awaitClose {
             close()

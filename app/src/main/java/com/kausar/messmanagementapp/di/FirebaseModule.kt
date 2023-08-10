@@ -1,5 +1,6 @@
 package com.kausar.messmanagementapp.di
 
+import android.content.Context
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.ktx.firestore
@@ -25,8 +26,8 @@ object FirebaseModule {
 
     @Provides
     @Singleton
-    fun providesRepositoryImpl(firebaseAuth: FirebaseAuth): AuthRepository {
-        return AuthRepositoryImpl(firebaseAuth)
+    fun providesRepositoryImpl(firebaseAuth: FirebaseAuth, context: Context): AuthRepository {
+        return AuthRepositoryImpl(firebaseAuth,context)
     }
 
     @Provides
@@ -38,6 +39,7 @@ object FirebaseModule {
     @Singleton
     fun providesFirebaseFirestoreDbRepository(
         collectionReference: CollectionReference,
-        loginPreference: LoginPreference
-    ): FirebaseFirestoreRepo = FirebaseFirestoreRepoImpl(collectionReference, loginPreference)
+        loginPreference: LoginPreference,
+        context: Context
+    ): FirebaseFirestoreRepo = FirebaseFirestoreRepoImpl(collectionReference, loginPreference, context)
 }

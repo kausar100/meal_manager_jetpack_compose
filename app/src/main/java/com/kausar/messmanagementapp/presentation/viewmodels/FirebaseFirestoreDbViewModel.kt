@@ -64,7 +64,7 @@ class FirebaseFirestoreDbViewModel @Inject constructor(
 
                     is ResultState.Failure -> {
                         _res.value = ItemState(
-                            error = it.message.toString()
+                            error = it.message.localizedMessage!!.toString()
                         )
                     }
 
@@ -134,7 +134,7 @@ class FirebaseFirestoreDbViewModel @Inject constructor(
 
                 is ResultState.Failure -> {
                     _todayMeal.value = SingleMeal(
-                        error = it.message?.localizedMessage.toString()
+                        error = it.message.localizedMessage!!.toString()
                     )
                 }
 
@@ -165,7 +165,7 @@ class FirebaseFirestoreDbViewModel @Inject constructor(
 
                 is ResultState.Failure -> {
                     _newMeal.value = SingleMeal(
-                        error = it.message?.localizedMessage.toString()
+                        error = it.message.localizedMessage!!.toString()
                     )
                 }
 

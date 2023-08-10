@@ -291,7 +291,7 @@ fun HomeScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     if (mealInfoState.error.isNotEmpty()) {
-                        Text(mealInfoState.error)
+                        Text(mealInfoState.error, textAlign = TextAlign.Center)
                     } else if (mealInfoState.isLoading) {
                         CustomProgressBar(msg = "Fetching meal info...")
                     }
