@@ -84,6 +84,8 @@ class FirebaseFirestoreDbViewModel @Inject constructor(
 
     private fun getMealCnt(meals: List<MealInfo>) {
         for (meal in meals) {
+            if (meal.date == today)
+                break
             if (meal.breakfast == true) {
                 _cnt.update {
                     it.copy(
@@ -108,8 +110,6 @@ class FirebaseFirestoreDbViewModel @Inject constructor(
                     )
                 }
             }
-            if (meal.date == today)
-                break
         }
 
     }
