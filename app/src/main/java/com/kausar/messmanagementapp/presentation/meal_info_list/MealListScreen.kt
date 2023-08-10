@@ -21,6 +21,8 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -36,6 +38,8 @@ import com.kausar.messmanagementapp.components.CustomProgressBar
 import com.kausar.messmanagementapp.data.model.MealInfo
 import com.kausar.messmanagementapp.presentation.viewmodels.FirebaseFirestoreDbViewModel
 import com.kausar.messmanagementapp.utils.fetchCurrentMonthName
+import com.kausar.messmanagementapp.utils.network_connection.ConnectionState
+import com.kausar.messmanagementapp.utils.network_connection.connectivityState
 
 
 @Composable
@@ -46,6 +50,14 @@ fun MealListScreen(
     val itemState = viewModel.response.value
     val listTitle = fetchCurrentMonthName()
 
+    val connection by connectivityState()
+    val isConnected = (connection === ConnectionState.Available)
+
+    if(isConnected && itemState.error.isNotEmpty()){
+        LaunchedEffect(key1 = Unit){
+            viewModel.getAllMeal()
+        }
+    }
 
     Column(
         Modifier

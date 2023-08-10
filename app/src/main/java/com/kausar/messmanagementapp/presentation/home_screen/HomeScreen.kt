@@ -55,6 +55,8 @@ import com.kausar.messmanagementapp.utils.ResultState
 import com.kausar.messmanagementapp.utils.fetchDateAsString
 import com.kausar.messmanagementapp.utils.getDate
 import com.kausar.messmanagementapp.utils.getDayName
+import com.kausar.messmanagementapp.utils.network_connection.ConnectionState
+import com.kausar.messmanagementapp.utils.network_connection.connectivityState
 import com.kausar.messmanagementapp.utils.showToast
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -105,6 +107,14 @@ fun HomeScreen(
 
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
+
+    val connection by connectivityState()
+    val isConnected = (connection === ConnectionState.Available)
+    if(isConnected && mealInfoState.error.isNotEmpty()){
+        LaunchedEffect(key1 = Unit){
+            viewModel.getMealForToday()
+        }
+    }
 
 
     Box(
