@@ -25,8 +25,8 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -44,6 +44,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -53,6 +55,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
+import com.kausar.messmanagementapp.R
 import com.kausar.messmanagementapp.components.CustomBasicTextField
 import com.kausar.messmanagementapp.components.CustomProgressBar
 import com.kausar.messmanagementapp.presentation.viewmodels.FirebaseStorageViewModel
@@ -72,25 +77,32 @@ fun ProfileScreen(
         mutableStateOf<Uri?>(null)
     }
 
-    val profilePic = storageViewModel.profile.value
-
-
     LaunchedEffect(key1 = true) {
         mainViewModel.getUserName()
         mainViewModel.getContactNumber()
+        mainViewModel.getProfilePic()
     }
+
+    val profilePic = storageViewModel.profile.value
+
+    val savePhoto = mainViewModel.photo.value
+
 
     val imagePicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
-        onResult = {
-            selectedImage = it
-            storageViewModel.uploadProfilePic(it!!)
+        onResult = { image ->
+            selectedImage = image
+            selectedImage?.let {
+                storageViewModel.uploadProfilePic(it)
+            }
+
         })
 
     Box(
         Modifier
             .fillMaxSize()
-            .padding(16.dp)
+            .padding(16.dp),
+        contentAlignment = Alignment.Center
     ) {
         Column(
             Modifier
@@ -98,35 +110,79 @@ fun ProfileScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            selectedImage?.let { uri ->
-                if (Build.VERSION.SDK_INT < 28) {
-                    bitmap.value = MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
+            Spacer(modifier = Modifier.fillMaxHeight(.1f))
+            Box(Modifier.fillMaxHeight(.3f), contentAlignment = Alignment.BottomCenter) {
+                selectedImage?.let { uri ->
+                    if (Build.VERSION.SDK_INT < 28) {
+                        bitmap.value =
+                            MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
 
-                } else {
-                    val source = ImageDecoder.createSource(context.contentResolver, uri)
-                    bitmap.value = ImageDecoder.decodeBitmap(source)
-                }
-                bitmap.value?.let { btm ->
-                    Image(
-                        bitmap = btm.asImageBitmap(),
-                        contentDescription = "profile photo",
+                    } else {
+                        val source = ImageDecoder.createSource(context.contentResolver, uri)
+                        bitmap.value = ImageDecoder.decodeBitmap(source)
+                    }
+                    bitmap.value?.let { btm ->
+                        Image(
+                            bitmap = btm.asImageBitmap(),
+                            contentDescription = "profile photo",
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .size(100.dp)
+                                .clip(CircleShape)
+                        )
+
+                    }
+                } ?: if (savePhoto.isNotEmpty()) {
+                    AsyncImage(
+                        model = ImageRequest.Builder(LocalContext.current).data(savePhoto)
+                            .crossfade(true).build(),
+                        placeholder = painterResource(id = R.drawable.ic_person),
+                        contentDescription = stringResource(id = R.string.profile_picture),
                         contentScale = ContentScale.Crop,
                         modifier = Modifier
                             .size(100.dp)
                             .clip(CircleShape)
                     )
 
+                } else {
+                    Icon(
+                        imageVector = Icons.Default.Person,
+                        contentDescription = "profile photo",
+                        tint = Color.Black,
+                        modifier = Modifier
+                            .size(100.dp)
+                            .border(1.dp, color = Color.Gray, shape = CircleShape)
+                            .background(color = Color.Transparent, shape = CircleShape)
+                            .clip(CircleShape)
+                    )
                 }
-            } ?: Icon(
-                imageVector = Icons.Default.Person,
-                contentDescription = "profile photo",
-                tint = Color.Black,
-                modifier = Modifier
-                    .size(100.dp)
-                    .border(1.dp, color = Color.Gray, shape = CircleShape)
-                    .background(color = Color.Transparent, shape = CircleShape)
-                    .clip(CircleShape)
-            )
+
+                Box(
+                    Modifier
+                        .fillMaxWidth(.30f)
+                        .fillMaxHeight(), contentAlignment = Alignment.BottomEnd
+                ) {
+
+                    IconButton(
+                        onClick = { imagePicker.launch("image/*") }, modifier = Modifier
+                            .background(
+                                Color.DarkGray,
+                                CircleShape
+                            )
+                            .size(32.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = "update profile",
+                            tint = Color.White,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
+
+
+                }
+
+            }
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -151,15 +207,6 @@ fun ProfileScreen(
                 },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
             )
-//
-//            UserInfo(
-//                title = "Member type",
-//                info = "Manager",
-//                onInputChange = {
-//
-//                },
-//                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
-//            )
 
             Box(
                 Modifier
@@ -171,29 +218,12 @@ fun ProfileScreen(
                     if (profilePic.error.isNotEmpty()) {
                         Text(profilePic.error, textAlign = TextAlign.Center)
                     } else if (profilePic.isLoading) {
-                        CustomProgressBar(msg = "Uploading profile pic...")
+                        CustomProgressBar(msg = "Uploading pic...")
                     }
                 }
 
             }
 
-
-        }
-
-        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.BottomEnd) {
-            FloatingActionButton(
-                onClick = {
-                    imagePicker.launch("image/*")
-                },
-                modifier = Modifier
-                    .background(Color.Transparent, shape = CircleShape)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Edit,
-                    contentDescription = "update profile",
-                    tint = Color.Black
-                )
-            }
         }
 
     }

@@ -23,6 +23,9 @@ class MainViewModel @Inject constructor(
     private val _contact = mutableStateOf("")
     val contact: State<String> = _contact
 
+    private val _profilePic = mutableStateOf("")
+    val photo: State<String> = _profilePic
+
     init {
         viewModelScope.launch {
             loginPref.getLoginStatus().collectLatest {
@@ -32,7 +35,7 @@ class MainViewModel @Inject constructor(
     }
 
     fun getUserName() = viewModelScope.launch {
-        loginPref. getUsername().collectLatest {
+        loginPref.getUsername().collectLatest {
             _user.value = it
         }
     }
@@ -43,9 +46,16 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    fun saveLoginStatus(status: Boolean) = viewModelScope.launch { loginPref.saveLoginStatus(status) }
+    fun saveLoginStatus(status: Boolean) =
+        viewModelScope.launch { loginPref.saveLoginStatus(status) }
 
     fun saveUsername(username: String) = viewModelScope.launch { loginPref.saveUsername(username) }
 
     fun saveContact(phone: String) = viewModelScope.launch { loginPref.saveContactNumber(phone) }
+
+    fun getProfilePic() = viewModelScope.launch {
+        loginPref.getProfilePic().collectLatest {
+            _profilePic.value = it
+        }
+    }
 }

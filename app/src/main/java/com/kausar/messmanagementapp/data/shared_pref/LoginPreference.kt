@@ -20,4 +20,7 @@ interface LoginPreference {
 
     suspend fun saveContactNumber(contact: String)
     fun getContactNumber(): Flow<String>
+
+    suspend fun saveUserPic(profilePic: String)
+    fun getProfilePic() : Flow<String>
 }

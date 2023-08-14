@@ -11,4 +11,6 @@
     <string name="drawer_info_description">About navigation button</string>
     <string name="drawer_default_meal_setup_description">Default meal navigation button</string>
     <string name="drawer_meal_list_description">meal list navigation button</string>
+
+    <string name="profile_picture">profile photo</string>
 </resources>
