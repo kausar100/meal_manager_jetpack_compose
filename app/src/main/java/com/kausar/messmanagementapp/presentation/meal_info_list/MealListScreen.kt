@@ -54,7 +54,7 @@ fun MealListScreen(
     val isConnected = (connection === ConnectionState.Available)
 
     if(isConnected && itemState.error.isNotEmpty()){
-        LaunchedEffect(key1 = Unit){
+        LaunchedEffect(key1 = true){
             viewModel.getAllMeal()
         }
     }

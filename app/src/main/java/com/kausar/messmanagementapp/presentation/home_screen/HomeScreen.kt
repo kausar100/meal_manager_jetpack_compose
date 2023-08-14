@@ -67,6 +67,7 @@ fun HomeScreen(
     viewModel: FirebaseFirestoreDbViewModel = hiltViewModel(),
 ) {
 
+
     val calendar = Calendar.getInstance()
     val temp = Calendar.getInstance()
     temp.add(Calendar.DATE, 1)
@@ -80,10 +81,6 @@ fun HomeScreen(
 
     var selectedDate by rememberSaveable {
         mutableStateOf(getDate(temp))
-    }
-
-    LaunchedEffect(key1 = true) {
-        viewModel.getMealForToday()
     }
 
     var newMeal by remember {
@@ -102,19 +99,17 @@ fun HomeScreen(
         mutableStateOf(false)
     }
 
+    val connection by connectivityState()
+    val isConnected = (connection === ConnectionState.Available)
+    LaunchedEffect(key1 = isConnected) {
+        viewModel.getMealForToday()
+    }
+
     val mealInfoState = viewModel.mealInfo.value
     val mealCnt by viewModel.mealCnt.collectAsState()
 
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
-
-    val connection by connectivityState()
-    val isConnected = (connection === ConnectionState.Available)
-    if(isConnected && mealInfoState.error.isNotEmpty()){
-        LaunchedEffect(key1 = Unit){
-            viewModel.getMealForToday()
-        }
-    }
 
     Box(
         Modifier
@@ -299,10 +294,10 @@ fun HomeScreen(
                         .fillMaxWidth(.9f),
                     contentAlignment = Alignment.Center
                 ) {
-                    if (mealInfoState.error.isNotEmpty()) {
-                        Text(mealInfoState.error, textAlign = TextAlign.Center)
-                    } else if (mealInfoState.isLoading) {
+                    if (mealInfoState.isLoading) {
                         CustomProgressBar(msg = "Fetching meal info...")
+                    } else if (mealInfoState.error.isNotEmpty()) {
+                        Text(mealInfoState.error, textAlign = TextAlign.Center)
                     }
                 }
 
