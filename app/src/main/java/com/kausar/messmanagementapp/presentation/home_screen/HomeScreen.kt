@@ -51,6 +51,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.kausar.messmanagementapp.components.CustomProgressBar
 import com.kausar.messmanagementapp.data.model.MealInfo
 import com.kausar.messmanagementapp.presentation.viewmodels.FirebaseFirestoreDbViewModel
+import com.kausar.messmanagementapp.presentation.viewmodels.MainViewModel
 import com.kausar.messmanagementapp.utils.ResultState
 import com.kausar.messmanagementapp.utils.fetchDateAsString
 import com.kausar.messmanagementapp.utils.getDate
@@ -64,6 +65,7 @@ import java.util.Calendar
 
 @Composable
 fun HomeScreen(
+    mainViewModel: MainViewModel = hiltViewModel(),
     viewModel: FirebaseFirestoreDbViewModel = hiltViewModel(),
 ) {
 
@@ -104,7 +106,7 @@ fun HomeScreen(
     LaunchedEffect(key1 = isConnected) {
         viewModel.getMealForToday()
     }
-
+    val userPhoto = mainViewModel.photo.value
     val mealInfoState = viewModel.mealInfo.value
     val mealCnt by viewModel.mealCnt.collectAsState()
 
@@ -165,7 +167,7 @@ fun HomeScreen(
                 Box(
                     Modifier
                         .fillMaxHeight()
-                        .fillMaxWidth(.9f),
+                        .fillMaxWidth(1f),
                     contentAlignment = Alignment.Center
                 ) {
 
@@ -177,7 +179,7 @@ fun HomeScreen(
             if (newMeal) {
                 AddNewMeal(
                     modifier = Modifier
-                        .fillMaxWidth(.9f)
+                        .fillMaxWidth(1f)
                         .padding(16.dp),
                     selectedDate = selectedDate,
                     viewModel = viewModel,
@@ -271,7 +273,7 @@ fun HomeScreen(
                 Spacer(modifier = Modifier.height(16.dp))
                 MealSummary(
                     modifier = Modifier
-                        .fillMaxWidth(.9f)
+                        .fillMaxWidth(1f)
                         .padding(horizontal = 8.dp),
                     totalMeal = mealCnt.totalMeal.toString(),
                     numberOfBreakfast = mealCnt.breakfast.toString(),
@@ -282,7 +284,7 @@ fun HomeScreen(
                 if (mealInfoState.success.isNotEmpty()) {
                     MealInformation(
                         modifier = Modifier
-                            .fillMaxWidth(.9f)
+                            .fillMaxWidth(1f)
                             .padding(16.dp),
                         mealInfo = mealInfoState.meal,
                     )
@@ -291,7 +293,7 @@ fun HomeScreen(
                 Box(
                     Modifier
                         .fillMaxHeight()
-                        .fillMaxWidth(.9f),
+                        .fillMaxWidth(1f),
                     contentAlignment = Alignment.Center
                 ) {
                     if (mealInfoState.isLoading) {

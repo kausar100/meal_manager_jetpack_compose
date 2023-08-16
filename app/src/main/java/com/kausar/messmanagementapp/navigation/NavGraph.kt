@@ -39,7 +39,7 @@ fun BottomNavGraph(
         startDestination = startDestination
     ) {
         composable(route = BottomBarScreen.Home.route) {
-            HomeScreen()
+            HomeScreen(mainViewModel)
         }
         composable(route = BottomBarScreen.Profile.route) {
             ProfileScreen(mainViewModel)
