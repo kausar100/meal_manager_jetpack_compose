@@ -25,6 +25,8 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.Button
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -77,6 +79,14 @@ fun ProfileScreen(
         mutableStateOf<Uri?>(null)
     }
 
+    var editable by remember {
+        mutableStateOf(false)
+    }
+
+    var userName by remember {
+        mutableStateOf(mainViewModel.userName.value)
+    }
+
     LaunchedEffect(key1 = true) {
         mainViewModel.getUserName()
         mainViewModel.getContactNumber()
@@ -88,25 +98,23 @@ fun ProfileScreen(
     val savePhoto = mainViewModel.photo.value
 
 
-    val imagePicker = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent(),
-        onResult = { image ->
-            selectedImage = image
-            selectedImage?.let {
-                storageViewModel.uploadProfilePic(it)
-            }
+    val imagePicker =
+        rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent(),
+            onResult = { image ->
+                selectedImage = image
+                selectedImage?.let {
+                    storageViewModel.uploadProfilePic(it)
+                }
 
-        })
+            })
 
     Box(
         Modifier
             .fillMaxSize()
-            .padding(16.dp),
-        contentAlignment = Alignment.Center
+            .padding(16.dp), contentAlignment = Alignment.Center
     ) {
         Column(
-            Modifier
-                .fillMaxSize(),
+            Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
@@ -160,14 +168,14 @@ fun ProfileScreen(
                 Box(
                     Modifier
                         .fillMaxWidth(.30f)
-                        .fillMaxHeight(), contentAlignment = Alignment.BottomEnd
+                        .fillMaxHeight(),
+                    contentAlignment = Alignment.BottomEnd
                 ) {
 
                     IconButton(
                         onClick = { imagePicker.launch("image/*") }, modifier = Modifier
                             .background(
-                                Color.DarkGray,
-                                CircleShape
+                                Color.DarkGray, CircleShape
                             )
                             .size(32.dp)
                     ) {
@@ -199,20 +207,43 @@ fun ProfileScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            if (editable) {
+                UserInfo(
+                    title = "User Name", info = userName, editable = true, onInputChange = {
+                        userName = it
+                    }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
+                )
+            }
+
             UserInfo(
                 title = "Contact Number",
                 info = mainViewModel.contact.value,
-                onInputChange = {
-
-                },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
             )
+
+            UserInfo(
+                title = "Type",
+                info = "Member/Manager",
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            if (editable) {
+                Button(onClick = {
+                    mainViewModel.saveUsername(userName)
+                    editable = false
+
+                }, enabled = userName.isNotEmpty()) {
+                    Text(text = "Save info")
+
+                }
+            }
 
             Box(
                 Modifier
                     .fillMaxHeight()
-                    .fillMaxWidth(.9f),
-                contentAlignment = Alignment.Center
+                    .fillMaxWidth(.9f), contentAlignment = Alignment.Center
             ) {
                 selectedImage?.let {
                     if (profilePic.error.isNotEmpty()) {
@@ -226,6 +257,24 @@ fun ProfileScreen(
 
         }
 
+
+        if (!editable) {
+            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.BottomEnd) {
+                FloatingActionButton(
+                    onClick = {
+                        editable = true
+                    }, modifier = Modifier.background(Color.Transparent, shape = CircleShape)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = "update profile",
+                        tint = Color.Black
+                    )
+                }
+            }
+        }
+
+
     }
 }
 
@@ -234,7 +283,8 @@ fun ProfileScreen(
 fun UserInfo(
     title: String,
     info: String,
-    onInputChange: (String) -> Unit,
+    editable: Boolean = false,
+    onInputChange: (String) -> Unit = {},
     keyboardOptions: KeyboardOptions,
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -245,18 +295,13 @@ fun UserInfo(
             .padding(horizontal = 32.dp, vertical = 8.dp)
     ) {
         Text(
-            text = title,
-            textAlign = TextAlign.Center,
-            fontSize = 20.sp,
-            style = TextStyle(
-                fontWeight = FontWeight.Bold,
-                color = Color.Black,
-                fontFamily = FontFamily.Cursive
+            text = title, textAlign = TextAlign.Center, fontSize = 20.sp, style = TextStyle(
+                fontWeight = FontWeight.Bold, color = Color.Black, fontFamily = FontFamily.Cursive
             )
         )
         Spacer(modifier = Modifier.height(8.dp))
         CustomBasicTextField(
-            readOnly = true,
+            readOnly = !editable,
             input = info,
             onInputChange = onInputChange,
             keyboardOptions = keyboardOptions,

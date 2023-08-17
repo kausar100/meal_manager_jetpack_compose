@@ -24,9 +24,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -34,6 +36,7 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.SpanStyle
@@ -46,22 +49,36 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.kausar.messmanagementapp.navigation.Screen
+import com.kausar.messmanagementapp.components.CustomDropDownMenu
 import com.kausar.messmanagementapp.components.CustomOutlinedTextField
 import com.kausar.messmanagementapp.components.CustomToast
 import com.kausar.messmanagementapp.components.CustomTopAppBar
+import com.kausar.messmanagementapp.data.model.MemberType
+import com.kausar.messmanagementapp.data.model.User
+import com.kausar.messmanagementapp.navigation.Screen
 import com.kausar.messmanagementapp.presentation.AboutScreen
+import com.kausar.messmanagementapp.presentation.viewmodels.FirebaseFirestoreDbViewModel
 import com.kausar.messmanagementapp.presentation.viewmodels.MainViewModel
+import com.kausar.messmanagementapp.utils.ResultState
+import com.kausar.messmanagementapp.utils.showToast
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AuthScreen(
     mainViewModel: MainViewModel = hiltViewModel(),
+    viewModel: FirebaseFirestoreDbViewModel = hiltViewModel(),
     onSubmit: (String) -> Unit
 ) {
     var showAboutScreen by remember {
         mutableStateOf(false)
     }
+
+    val scope = rememberCoroutineScope()
+    val context = LocalContext.current
+
+    val messNamesState = viewModel.messNames.value
 
     Box(Modifier.fillMaxSize()) {
         if (showAboutScreen) {
@@ -72,7 +89,7 @@ fun AuthScreen(
             val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
             var screenTitle by rememberSaveable {
                 mutableStateOf(
-                    if (mainViewModel.userName.value.isEmpty()) {
+                    if (mainViewModel.contact.value.isEmpty()) {
                         Screen.SignUp.title
                     } else {
                         Screen.Login.title
@@ -81,32 +98,31 @@ fun AuthScreen(
             }
             var isLoginScreen by rememberSaveable {
                 mutableStateOf(
-                    mainViewModel.userName.value.isNotEmpty()
+                    mainViewModel.contact.value.isNotEmpty()
                 )
             }
 
-            Scaffold(
-                topBar = {
-                    CustomTopAppBar(
-                        title = screenTitle.toString(),
-                        showAction = true,
-                        actionIcon = Icons.Default.Info,
-                        onClickAction = {
-                            showAboutScreen = true
-                        },
-                        canNavigateBack = false,
-                        canLogout = false,
-                        scrollBehavior = scrollBehavior
-                    ) {}
-                }
-            ) {
-                AuthScreenContent(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(it),
+            Scaffold(topBar = {
+                CustomTopAppBar(
+                    title = screenTitle.toString(),
+                    showAction = true,
+                    actionIcon = Icons.Default.Info,
+                    onClickAction = {
+                        showAboutScreen = true
+                    },
+                    canNavigateBack = false,
+                    canLogout = false,
+                    scrollBehavior = scrollBehavior
+                ) {}
+            }) {
+                AuthScreenContent(modifier = Modifier
+                    .fillMaxSize()
+                    .padding(it),
                     isLoginScreen = isLoginScreen,
                     buttonText = screenTitle.toString(),
                     viewModel = mainViewModel,
+                    firestore = viewModel,
+                    messNames = messNamesState.listOfMess,
                     toggleScreen = {
                         when (screenTitle) {
                             Screen.Login.title -> {
@@ -120,14 +136,36 @@ fun AuthScreen(
                             }
                         }
                     },
-                    onSubmit = { phone, name ->
+                    onSubmit = { phone, name, mess, type ->
                         if (mainViewModel.userName.value.isEmpty()) {
                             mainViewModel.saveUsername(name)
                             mainViewModel.saveContact(phone)
                         }
-                        onSubmit(phone)
-                    }
-                )
+                        scope.launch {
+                            viewModel.registerUser(
+                                User(
+                                    userName = name,
+                                    contactNo = phone,
+                                    userType = type,
+                                    messName = mess
+                                )
+                            ).collectLatest { result ->
+                                when (result) {
+                                    is ResultState.Success -> {
+                                        context.showToast(result.data)
+//                                            onSubmit(phone)
+                                    }
+
+                                    is ResultState.Failure -> {
+                                        context.showToast(result.message.localizedMessage)
+                                    }
+
+                                    is ResultState.Loading -> {}
+                                    else -> {}
+                                }
+                            }
+                        }
+                    })
             }
 
         }
@@ -142,8 +180,10 @@ fun AuthScreenContent(
     isLoginScreen: Boolean = true,
     buttonText: String,
     viewModel: MainViewModel,
+    firestore: FirebaseFirestoreDbViewModel,
     toggleScreen: () -> Unit,
-    onSubmit: (contact: String, name: String) -> Unit,
+    messNames: List<String> = emptyList(),
+    onSubmit: (contact: String, name: String, mess: String, type: String) -> Unit,
 ) {
     val focusManager = LocalFocusManager.current
 
@@ -152,6 +192,18 @@ fun AuthScreenContent(
     }
     var contactNo by remember {
         mutableStateOf(viewModel.contact.value)
+    }
+
+    var memberType by remember {
+        mutableStateOf("")
+    }
+
+    LaunchedEffect(key1 = memberType){
+        firestore.getMessNames()
+    }
+
+    var messName by remember {
+        mutableStateOf("")
     }
 
     var showToast by rememberSaveable {
@@ -164,7 +216,12 @@ fun AuthScreenContent(
         mutableStateOf<String?>(null)
     }
 
+    var onSearch by remember {
+        mutableStateOf(false)
+    }
+
     val keyboardController = LocalSoftwareKeyboardController.current
+    val lisOfMember = listOf(MemberType.Member.name, MemberType.Manager.name)
 
     Column(
         modifier = modifier.padding(16.dp),
@@ -176,6 +233,43 @@ fun AuthScreenContent(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+            if (!isLoginScreen) {
+                CustomDropDownMenu(
+                    title = "Select Member Type",
+                    items = lisOfMember,
+                    selectedItem = memberType,
+                    onSelect = {
+                        memberType = it
+                    })
+            }
+            if (memberType == MemberType.Member.name || memberType == MemberType.Manager.name) {
+                LaunchedEffect(key1 = memberType){
+                    messName = when {
+                        messNames.isNotEmpty() -> messNames[0]
+                        (messNames.isEmpty() && memberType == MemberType.Manager.name) -> ""
+                        else -> "Not found any mess"
+                    }
+                }
+
+                CustomDropDownMenu(
+                    title = if (messNames.isEmpty() && memberType == MemberType.Manager.name) "Enter Mess Name" else "Select Mess Name",
+                    editable = memberType == MemberType.Manager.name,
+                    selectable = messNames.isNotEmpty(),
+                    items = messNames,
+                    selectedItem = messName,
+                    onImeAction = {
+                        messName = it
+                        focusManager.moveFocus(FocusDirection.Down)
+                    },
+                    onChange = {
+                        messName = it
+                    },
+                    onSelect = {
+                        messName = it
+                        focusManager.clearFocus(true)
+                    })
+            }
+
             CustomOutlinedTextField(
                 modifier = Modifier.fillMaxWidth(),
                 input = user,
@@ -187,13 +281,11 @@ fun AuthScreenContent(
                 label = { Text(text = "Name") },
                 prefixIcon = {
                     Icon(
-                        imageVector = Icons.Default.Person,
-                        contentDescription = "user"
+                        imageVector = Icons.Default.Person, contentDescription = "user"
                     )
                 },
                 keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Text,
-                    imeAction = ImeAction.Next
+                    keyboardType = KeyboardType.Text, imeAction = ImeAction.Next
                 )
             ) {
                 focusManager.moveFocus(FocusDirection.Next)
@@ -218,13 +310,11 @@ fun AuthScreenContent(
                 label = { Text(text = "Contact Number") },
                 prefixIcon = {
                     Icon(
-                        imageVector = Icons.Default.Phone,
-                        contentDescription = "contact number"
+                        imageVector = Icons.Default.Phone, contentDescription = "contact number"
                     )
                 },
                 keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Number,
-                    imeAction = ImeAction.Done
+                    keyboardType = KeyboardType.Number, imeAction = ImeAction.Done
                 )
             ) {
                 focusManager.clearFocus(true)
@@ -244,13 +334,24 @@ fun AuthScreenContent(
                         successMsg = null
                         showToast = true
 
-                    } else if (user.isBlank() || user.isEmpty()) {
+                    } else if (!isLoginScreen && (user.isBlank() || user.isEmpty())) {
                         errMsg = "Please enter username"
                         successMsg = null
                         showToast = true
 
+                    } else if (!isLoginScreen && (memberType.isBlank() || memberType.isEmpty())) {
+                        errMsg = "Please choose type of member"
+                        successMsg = null
+                        showToast = true
+
+                    } else if (!isLoginScreen && (messName.isBlank() || messName.isEmpty())) {
+                        errMsg =
+                            if (memberType == MemberType.Member.name) "Please select your mess name" else "Please select/enter your mess name"
+                        successMsg = null
+                        showToast = true
+
                     } else {
-                        onSubmit(contactNo, user)
+                        onSubmit(contactNo, user, messName, memberType)
                     }
 
                 },
@@ -274,8 +375,7 @@ fun AuthScreenContent(
                                 append("Don't Have an Account! ")
                                 withStyle(
                                     style = SpanStyle(
-                                        color = Color(0xFF3F51B5),
-                                        fontSize = 16.sp
+                                        color = Color(0xFF3F51B5), fontSize = 16.sp
                                     )
                                 ) {
                                     append("Create here...")
@@ -288,8 +388,7 @@ fun AuthScreenContent(
                                 append("Already Have an Account! ")
                                 withStyle(
                                     style = SpanStyle(
-                                        color = Color(0xFF3F51B5),
-                                        fontSize = 16.sp
+                                        color = Color(0xFF3F51B5), fontSize = 16.sp
                                     )
                                 ) {
                                     append("Log in here...")
@@ -299,9 +398,7 @@ fun AuthScreenContent(
                     }
                     Spacer(modifier = Modifier.height(16.dp))
                     CustomToast(
-                        showToast = showToast,
-                        errorMessage = errMsg,
-                        successMessage = successMsg
+                        showToast = showToast, errorMessage = errMsg, successMessage = successMsg
                     ) {
                         showToast = false
                     }

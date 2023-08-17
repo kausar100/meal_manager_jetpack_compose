@@ -2,9 +2,7 @@ package com.kausar.messmanagementapp.di
 
 import android.content.Context
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.CollectionReference
-import com.google.firebase.firestore.ktx.firestore
-import com.google.firebase.ktx.Firebase
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import com.kausar.messmanagementapp.data.firebase_auth.AuthRepository
@@ -36,18 +34,18 @@ object FirebaseModule {
 
     @Provides
     @Singleton
-    fun providesFirestoreDb(): CollectionReference =
-        Firebase.firestore.collection("Meal_Information")
+    fun providesFirestoreDb(): FirebaseFirestore =
+        FirebaseFirestore.getInstance()
 
 
     @Provides
     @Singleton
     fun providesFirebaseFirestoreDbRepository(
-        collectionReference: CollectionReference,
+        firestore: FirebaseFirestore,
         loginPreference: LoginPreference,
         context: Context
     ): FirebaseFirestoreRepo =
-        FirebaseFirestoreRepoImpl(collectionReference, loginPreference, context)
+        FirebaseFirestoreRepoImpl(firestore, loginPreference, context)
 
 
     @Provides

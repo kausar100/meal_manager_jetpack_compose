@@ -106,6 +106,7 @@ fun HomeScreen(
     LaunchedEffect(key1 = isConnected) {
         viewModel.getMealForToday()
     }
+
     val userPhoto = mainViewModel.photo.value
     val mealInfoState = viewModel.mealInfo.value
     val mealCnt by viewModel.mealCnt.collectAsState()

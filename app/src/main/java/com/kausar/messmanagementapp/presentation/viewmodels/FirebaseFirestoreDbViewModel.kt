@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kausar.messmanagementapp.data.firebase_firestore.FirebaseFirestoreRepo
 import com.kausar.messmanagementapp.data.model.MealInfo
+import com.kausar.messmanagementapp.data.model.User
 import com.kausar.messmanagementapp.utils.ResultState
 import com.kausar.messmanagementapp.utils.getDate
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -36,13 +37,17 @@ class FirebaseFirestoreDbViewModel @Inject constructor(
     private val _cnt = MutableStateFlow(MealCount())
     val mealCnt: StateFlow<MealCount> = _cnt
 
-    private lateinit var calender : Calendar
+    private lateinit var calender: Calendar
     private var today: String = ""
+
+    private val _messList: MutableState<MessState> = mutableStateOf(MessState())
+    val messNames: State<MessState> = _messList
+
 
     fun getAllMeal() {
         calender = Calendar.getInstance()
         today = getDate(calender)
-        viewModelScope.launch{
+        viewModelScope.launch {
             delay(300)
             repo.getAllMeal(today).collectLatest {
                 when (it) {
@@ -80,6 +85,7 @@ class FirebaseFirestoreDbViewModel @Inject constructor(
 
     init {
         getAllMeal()
+        getMessNames()
     }
 
     private fun getMealCnt(meals: List<MealInfo>) {
@@ -178,6 +184,33 @@ class FirebaseFirestoreDbViewModel @Inject constructor(
         }
     }
 
+    fun registerUser(user: User) = repo.entryUserInfo(user)
+
+    fun getMessNames() = viewModelScope.launch {
+
+        repo.getMessNames().collectLatest {
+            when (it) {
+                is ResultState.Success -> {
+                    _messList.value = MessState(
+                        listOfMess = it.data
+                    )
+                }
+
+                is ResultState.Failure -> {
+                    _messList.value = MessState(
+                        error = it.message.localizedMessage
+                    )
+                }
+
+                is ResultState.Loading -> {
+                    _messList.value = MessState(
+                        isLoading = true
+                    )
+                }
+            }
+        }
+    }
+
     data class ItemState(
         val item: List<MealInfo> = emptyList(),
         val error: String = "",
@@ -196,6 +229,12 @@ class FirebaseFirestoreDbViewModel @Inject constructor(
         val lunch: Double = 0.0,
         val dinner: Double = 0.0,
         val totalMeal: Double = 0.0
+    )
+
+    data class MessState(
+        val listOfMess: List<String> = emptyList(),
+        val error: String = "",
+        val isLoading: Boolean = false
     )
 }
 
