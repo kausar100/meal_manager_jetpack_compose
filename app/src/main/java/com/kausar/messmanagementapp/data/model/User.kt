@@ -5,7 +5,7 @@ import kotlin.reflect.full.memberProperties
 data class User(
     val userName: String = "",
     val contactNo: String = "",
-    val userType: String = MemberType.Member.name,
+    val userType: String = "",
     val messName: String = "",
     val profilePhoto: String = "",
     val messId: String = ""
