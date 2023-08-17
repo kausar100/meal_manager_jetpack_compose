@@ -88,32 +88,42 @@ class FirebaseFirestoreDbViewModel @Inject constructor(
         getMessNames()
     }
 
+    private fun needToStop(mealDate: String): Boolean {
+        val currentDay = mealDate.substring(0, 2).toInt()
+
+        val todayDay = today.substring(0, 2).toInt()
+
+        return currentDay.minus(todayDay) >= 0
+    }
+
     private fun getMealCnt(meals: List<MealInfo>) {
-        for (meal in meals) {
-            if (meal.date == today)
-                break
-            if (meal.breakfast == true) {
-                _cnt.update {
-                    it.copy(
-                        breakfast = it.breakfast.plus(1.0),
-                        totalMeal = it.totalMeal.plus(0.5)
-                    )
+        if (meals.isNotEmpty()) {
+            for (meal in meals) {
+                if (needToStop(meal.date!!))
+                    break
+                if (meal.breakfast == true) {
+                    _cnt.update {
+                        it.copy(
+                            breakfast = it.breakfast.plus(1.0),
+                            totalMeal = it.totalMeal.plus(0.5)
+                        )
+                    }
                 }
-            }
-            if (meal.lunch == true) {
-                _cnt.update {
-                    it.copy(
-                        lunch = it.lunch.plus(1.0),
-                        totalMeal = it.totalMeal.plus(1.0),
-                    )
+                if (meal.lunch == true) {
+                    _cnt.update {
+                        it.copy(
+                            lunch = it.lunch.plus(1.0),
+                            totalMeal = it.totalMeal.plus(1.0),
+                        )
+                    }
                 }
-            }
-            if (meal.dinner == true) {
-                _cnt.update {
-                    it.copy(
-                        dinner = it.dinner.plus(1.0),
-                        totalMeal = it.totalMeal.plus(1.0),
-                    )
+                if (meal.dinner == true) {
+                    _cnt.update {
+                        it.copy(
+                            dinner = it.dinner.plus(1.0),
+                            totalMeal = it.totalMeal.plus(1.0),
+                        )
+                    }
                 }
             }
         }
