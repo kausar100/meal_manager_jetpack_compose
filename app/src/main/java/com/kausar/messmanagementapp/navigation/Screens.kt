@@ -8,7 +8,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 
 sealed class Screen(
     val route: String,
-    val argKey: List<String> = emptyList(),
+    val argKey: String = "",
     val path: String = "",
     val title: String? = null
 ) {
@@ -17,12 +17,12 @@ sealed class Screen(
     object SignUp : Screen(route = "signup_screen", title = "Sign Up")
     object PinVerify : Screen(
         route = "otp_verification_screen",
-        argKey = listOf("phone"),
-        path = "/{phone}",
+        argKey = "info",
+        path = "/{info}",
         title = "OTP Verification"
     ) {
-        fun phoneNumber(phone: String): String {
-            return this.route + "/$phone"
+        fun passInfo(data: String): String {
+            return this.route + "/$data"
         }
     }
 }

@@ -48,19 +48,19 @@ fun BottomNavGraph(
             MealListScreen()
         }
         composable(route = Screen.Login.route) {
-            AuthScreen(mainViewModel) { phone ->
-                navController.navigate(Screen.PinVerify.phoneNumber(phone))
+            AuthScreen(mainViewModel) { info ->
+                navController.navigate(Screen.PinVerify.passInfo(info))
             }
         }
         composable(
             route = Screen.PinVerify.route.plus(Screen.PinVerify.path), arguments = listOf(
-                navArgument(Screen.PinVerify.argKey[0]) {
+                navArgument(Screen.PinVerify.argKey) {
                     type = NavType.StringType
                 },
             )
         ) {
-            val phone = it.arguments?.getString(Screen.PinVerify.argKey[0]) ?: ""
-            OtpVerifyScreen(phoneNumber = phone) {
+            val info = it.arguments?.getString(Screen.PinVerify.argKey) ?: ""
+            OtpVerifyScreen(info = info) {
                 mainViewModel.saveLoginStatus(true)
                 navController.popBackStack()
                 navController.navigate(BottomBarScreen.Home.route) {

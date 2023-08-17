@@ -45,28 +45,35 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.google.gson.Gson
 import com.kausar.messmanagementapp.R
 import com.kausar.messmanagementapp.components.CustomOutlinedTextField
 import com.kausar.messmanagementapp.components.CustomProgressBar
 import com.kausar.messmanagementapp.components.CustomTopAppBar
 import com.kausar.messmanagementapp.components.WelcomeText
+import com.kausar.messmanagementapp.data.model.User
 import com.kausar.messmanagementapp.navigation.Screen
+import com.kausar.messmanagementapp.presentation.viewmodels.FirebaseFirestoreDbViewModel
 import com.kausar.messmanagementapp.utils.ResultState
 import com.kausar.messmanagementapp.utils.showToast
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OtpVerifyScreen(
-    phoneNumber: String,
+    info: String,
     viewModel: AuthViewModel = hiltViewModel(),
-    onSubmit: () -> Unit
+    firestoreViewModel: FirebaseFirestoreDbViewModel = hiltViewModel(),
+    onRegistrationComplete: () -> Unit
 ) {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+
+    val userInformation = Gson().fromJson(info, User::class.java)
 
     var showProgress by rememberSaveable {
         mutableStateOf(false)
@@ -86,7 +93,7 @@ fun OtpVerifyScreen(
 
     LaunchedEffect(key1 = true) {
         viewModel.createUserWithPhoneNumber(
-            phone = phoneNumber,
+            phone = userInformation.contactNo,
             activity = context as Activity
         )
             .collectLatest {
@@ -102,6 +109,7 @@ fun OtpVerifyScreen(
                     }
 
                     is ResultState.Success -> {
+                        delay(1000)
                         showProgress = false
                         context.showToast(it.data)
                     }
@@ -115,7 +123,7 @@ fun OtpVerifyScreen(
             canNavigateBack = false,
             canLogout = false,
             scrollBehavior = scrollBehavior
-        ) {}
+        )
     }) { padding ->
         Box(
             Modifier
@@ -133,7 +141,7 @@ fun OtpVerifyScreen(
                 WelcomeText()
                 Spacer(modifier = Modifier.fillMaxHeight(.1f))
                 Text(
-                    text = "Enter otp sent to $phoneNumber",
+                    text = "Enter otp sent to ${userInformation.contactNo}",
                     textAlign = TextAlign.Center,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
@@ -157,9 +165,33 @@ fun OtpVerifyScreen(
                                 }
 
                                 is ResultState.Success -> {
-                                    showProgress = false
-                                    context.showToast(it.data)
-                                    onSubmit()
+                                    if (userInformation.userType.isEmpty()) {
+                                        //login
+                                        println("need to just login")
+                                        showProgress = false
+                                        context.showToast(it.data)
+                                        onRegistrationComplete()
+                                    } else {
+                                        //registration
+                                        println("need to register")
+                                        firestoreViewModel.registerUser(userInformation)
+                                            .collectLatest { result ->
+                                                when (result) {
+                                                    is ResultState.Success -> {
+                                                        showProgress = false
+                                                        context.showToast(result.data)
+                                                        onRegistrationComplete()
+                                                    }
+
+                                                    is ResultState.Failure -> {
+                                                        showProgress = false
+                                                        context.showToast(result.message.localizedMessage)
+                                                    }
+
+                                                    is ResultState.Loading -> {}
+                                                }
+                                            }
+                                    }
                                 }
                             }
                         }
@@ -200,11 +232,11 @@ fun VerifyPinContent(
             onInputChange = {
                 if (it.length < 6) {
                     onChange(it)
-                }else if(it.length==6){
+                } else if (it.length == 6) {
                     onChange(it)
                     keyboardController?.hide()
                     focusManager.clearFocus(true)
-                }else{
+                } else {
                     keyboardController?.hide()
                     focusManager.clearFocus(true)
                 }

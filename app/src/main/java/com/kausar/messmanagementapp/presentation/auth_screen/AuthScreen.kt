@@ -28,7 +28,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -36,7 +35,6 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.SpanStyle
@@ -49,6 +47,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.google.gson.Gson
 import com.kausar.messmanagementapp.components.CustomDropDownMenu
 import com.kausar.messmanagementapp.components.CustomOutlinedTextField
 import com.kausar.messmanagementapp.components.CustomToast
@@ -59,10 +58,6 @@ import com.kausar.messmanagementapp.navigation.Screen
 import com.kausar.messmanagementapp.presentation.AboutScreen
 import com.kausar.messmanagementapp.presentation.viewmodels.FirebaseFirestoreDbViewModel
 import com.kausar.messmanagementapp.presentation.viewmodels.MainViewModel
-import com.kausar.messmanagementapp.utils.ResultState
-import com.kausar.messmanagementapp.utils.showToast
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -74,9 +69,6 @@ fun AuthScreen(
     var showAboutScreen by remember {
         mutableStateOf(false)
     }
-
-    val scope = rememberCoroutineScope()
-    val context = LocalContext.current
 
     val messNamesState = viewModel.messNames.value
 
@@ -113,7 +105,7 @@ fun AuthScreen(
                     canNavigateBack = false,
                     canLogout = false,
                     scrollBehavior = scrollBehavior
-                ) {}
+                )
             }) {
                 AuthScreenContent(modifier = Modifier
                     .fillMaxSize()
@@ -136,36 +128,25 @@ fun AuthScreen(
                             }
                         }
                     },
+                    onLogin = { phone ->
+                        val newUser = User(
+                            contactNo = phone
+                        )
+                        val json = Gson().toJson(newUser)
+                        onSubmit(json)
+                    },
                     onSubmit = { phone, name, mess, type ->
-                        if (mainViewModel.userName.value.isEmpty()) {
-                            mainViewModel.saveUsername(name)
-                            mainViewModel.saveContact(phone)
-                        }
-                        scope.launch {
-                            viewModel.registerUser(
-                                User(
-                                    userName = name,
-                                    contactNo = phone,
-                                    userType = type,
-                                    messName = mess
-                                )
-                            ).collectLatest { result ->
-                                when (result) {
-                                    is ResultState.Success -> {
-                                        context.showToast(result.data)
-//                                            onSubmit(phone)
-                                    }
+                        val newUser = User(
+                            userName = name,
+                            contactNo = phone,
+                            userType = type,
+                            messName = mess
+                        )
+                        val json = Gson().toJson(newUser)
+                        onSubmit(json)
 
-                                    is ResultState.Failure -> {
-                                        context.showToast(result.message.localizedMessage)
-                                    }
-
-                                    is ResultState.Loading -> {}
-                                    else -> {}
-                                }
-                            }
-                        }
                     })
+
             }
 
         }
@@ -183,6 +164,7 @@ fun AuthScreenContent(
     firestore: FirebaseFirestoreDbViewModel,
     toggleScreen: () -> Unit,
     messNames: List<String> = emptyList(),
+    onLogin: (contact: String) -> Unit,
     onSubmit: (contact: String, name: String, mess: String, type: String) -> Unit,
 ) {
     val focusManager = LocalFocusManager.current
@@ -198,7 +180,7 @@ fun AuthScreenContent(
         mutableStateOf("")
     }
 
-    LaunchedEffect(key1 = memberType){
+    LaunchedEffect(key1 = memberType) {
         firestore.getMessNames()
     }
 
@@ -214,10 +196,6 @@ fun AuthScreenContent(
     }
     var successMsg by rememberSaveable {
         mutableStateOf<String?>(null)
-    }
-
-    var onSearch by remember {
-        mutableStateOf(false)
     }
 
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -243,7 +221,7 @@ fun AuthScreenContent(
                     })
             }
             if (memberType == MemberType.Member.name || memberType == MemberType.Manager.name) {
-                LaunchedEffect(key1 = memberType){
+                LaunchedEffect(key1 = memberType) {
                     messName = when {
                         messNames.isNotEmpty() -> messNames[0]
                         (messNames.isEmpty() && memberType == MemberType.Manager.name) -> ""
@@ -329,29 +307,41 @@ fun AuthScreenContent(
         ) {
             ElevatedButton(
                 onClick = {
-                    if (contactNo.isBlank() || contactNo.isEmpty()) {
-                        errMsg = "PLease enter your contact number"
-                        successMsg = null
-                        showToast = true
+                    if (isLoginScreen) {
+                        if (contactNo.isBlank() || contactNo.isEmpty()) {
+                            errMsg = "PLease enter your contact number"
+                            successMsg = null
+                            showToast = true
 
-                    } else if (!isLoginScreen && (user.isBlank() || user.isEmpty())) {
-                        errMsg = "Please enter username"
-                        successMsg = null
-                        showToast = true
-
-                    } else if (!isLoginScreen && (memberType.isBlank() || memberType.isEmpty())) {
-                        errMsg = "Please choose type of member"
-                        successMsg = null
-                        showToast = true
-
-                    } else if (!isLoginScreen && (messName.isBlank() || messName.isEmpty())) {
-                        errMsg =
-                            if (memberType == MemberType.Member.name) "Please select your mess name" else "Please select/enter your mess name"
-                        successMsg = null
-                        showToast = true
+                        } else {
+                            onLogin(contactNo)
+                        }
 
                     } else {
-                        onSubmit(contactNo, user, messName, memberType)
+                        if (contactNo.isBlank() || contactNo.isEmpty()) {
+                            errMsg = "PLease enter your contact number"
+                            successMsg = null
+                            showToast = true
+
+                        } else if (user.isBlank() || user.isEmpty()) {
+                            errMsg = "Please enter username"
+                            successMsg = null
+                            showToast = true
+
+                        } else if (memberType.isBlank() || memberType.isEmpty()) {
+                            errMsg = "Please choose type of member"
+                            successMsg = null
+                            showToast = true
+
+                        } else if (messName.isBlank() || messName.isEmpty()) {
+                            errMsg =
+                                if (memberType == MemberType.Member.name) "Please select your mess name" else "Please select/enter your mess name"
+                            successMsg = null
+                            showToast = true
+
+                        } else {
+                            onSubmit(contactNo, user, messName, memberType)
+                        }
                     }
 
                 },

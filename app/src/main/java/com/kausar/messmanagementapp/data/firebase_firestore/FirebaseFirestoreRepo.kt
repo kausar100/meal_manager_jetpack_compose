@@ -9,8 +9,6 @@ interface FirebaseFirestoreRepo {
 
     fun entryUserInfo(user: User): Flow<ResultState<String>>
 
-    fun updateUserMessInfo(contact: String, messId: String): Flow<ResultState<String>>
-
     fun getUserInfo(): Flow<ResultState<User?>>
 
     fun getMessNames(): Flow<ResultState<List<String>>>
