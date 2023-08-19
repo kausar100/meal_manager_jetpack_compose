@@ -162,10 +162,11 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
             currentUser?.let {
                 firestore.collection(CollectionRef.userDb).document(currentUser)
                     .get().addOnSuccessListener {
-                        println(it.data.toString())
+                        val user = it.toObject(User::class.java)
+                        trySend(ResultState.Success(user))
                     }
                     .addOnFailureListener {
-
+                        trySend(ResultState.Failure(it))
                     }
             }
 
@@ -207,7 +208,7 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
         }
     }
 
-    override fun insert(meal: MealInfo): Flow<ResultState<String>> = callbackFlow {
+    override fun insertMeal(meal: MealInfo): Flow<ResultState<String>> = callbackFlow {
         trySend(ResultState.Loading)
 
         val monthYear = getMonthYear(meal.date!!)
@@ -268,7 +269,7 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
         }
     }
 
-    override fun update(meal: MealInfo): Flow<ResultState<String>> = callbackFlow {
+    override fun updateMeal(meal: MealInfo): Flow<ResultState<String>> = callbackFlow {
         trySend(ResultState.Loading)
 
         val monthYear = getMonthYear(meal.date!!)

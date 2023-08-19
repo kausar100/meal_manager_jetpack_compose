@@ -26,6 +26,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -87,16 +88,21 @@ fun ProfileScreen(
         mutableStateOf(mainViewModel.userName.value)
     }
 
+    var isLoading by remember {
+        mutableStateOf(false)
+    }
+
+    val userData = mainViewModel.userInfo.value
+
+
     LaunchedEffect(key1 = true) {
-        mainViewModel.getUserName()
-        mainViewModel.getContactNumber()
-        mainViewModel.getProfilePic()
+//        mainViewModel.getUserName()
+//        mainViewModel.getContactNumber()
+//        mainViewModel.getProfilePic()
+        mainViewModel.getUserInfo()
     }
 
     val profilePic = storageViewModel.profile.value
-
-    val savePhoto = mainViewModel.photo.value
-
 
     val imagePicker =
         rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent(),
@@ -140,10 +146,20 @@ fun ProfileScreen(
                         )
 
                     }
-                } ?: if (savePhoto.isNotEmpty()) {
+                } ?: if (userData.profilePhoto.isNotEmpty()) {
                     AsyncImage(
-                        model = ImageRequest.Builder(LocalContext.current).data(savePhoto)
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(userData.profilePhoto)
                             .crossfade(true).build(),
+                        onLoading = {
+                            isLoading = true
+                        },
+                        onSuccess = {
+                            isLoading = false
+                        },
+                        onError = {
+                            isLoading = false
+                        },
                         placeholder = painterResource(id = R.drawable.ic_person),
                         contentDescription = stringResource(id = R.string.profile_picture),
                         contentScale = ContentScale.Crop,
@@ -190,12 +206,16 @@ fun ProfileScreen(
 
                 }
 
+                if (isLoading) {
+                    CircularProgressIndicator()
+                }
+
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                text = mainViewModel.userName.value,
+                text = userData.userName,
                 textAlign = TextAlign.Center,
                 fontSize = 20.sp,
                 style = TextStyle(
@@ -209,21 +229,25 @@ fun ProfileScreen(
 
             if (editable) {
                 UserInfo(
-                    title = "User Name", info = userName, editable = true, onInputChange = {
+                    title = "User Name",
+                    info = userData.userName,
+                    editable = true,
+                    onInputChange = {
                         userName = it
-                    }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
+                    },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
                 )
             }
 
             UserInfo(
                 title = "Contact Number",
-                info = mainViewModel.contact.value,
+                info = userData.contactNo,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
             )
 
             UserInfo(
                 title = "Type",
-                info = "Member/Manager",
+                info = userData.userType,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
             )
 
@@ -256,8 +280,6 @@ fun ProfileScreen(
             }
 
         }
-
-
         if (!editable) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.BottomEnd) {
                 FloatingActionButton(

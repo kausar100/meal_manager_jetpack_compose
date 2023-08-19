@@ -130,9 +130,9 @@ class FirebaseFirestoreDbViewModel @Inject constructor(
 
     }
 
-    fun insert(meal: MealInfo) = repo.insert(meal)
+    fun insert(meal: MealInfo) = repo.insertMeal(meal)
 
-    fun update(meal: MealInfo) = repo.update(meal)
+    fun update(meal: MealInfo) = repo.updateMeal(meal)
 
     fun getMealForToday() = viewModelScope.launch {
         repo.getMealByDate(today).collectLatest {

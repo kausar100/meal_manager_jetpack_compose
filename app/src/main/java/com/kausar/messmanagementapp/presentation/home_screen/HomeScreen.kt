@@ -282,7 +282,7 @@ fun HomeScreen(
                     numberOfDinner = mealCnt.dinner.toString()
                 )
 
-                if (mealInfoState.success.isNotEmpty()) {
+                if (mealInfoState.success.isNotEmpty() && !mealInfoState.isLoading) {
                     MealInformation(
                         modifier = Modifier
                             .fillMaxWidth(1f)

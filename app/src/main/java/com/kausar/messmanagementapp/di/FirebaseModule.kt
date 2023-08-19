@@ -59,7 +59,9 @@ object FirebaseModule {
     @Singleton
     fun providesFirebaseStorageRepoImpl(
         context: Context,
+        auth: FirebaseAuth,
+        firestore: FirebaseFirestore,
         storageReference: StorageReference,
         loginPreference: LoginPreference,
-    ): FirebaseStorageRepo = FirebaseStorageRepoImpl(context, storageReference,loginPreference)
+    ): FirebaseStorageRepo = FirebaseStorageRepoImpl(context, auth, firestore, storageReference,loginPreference)
 }

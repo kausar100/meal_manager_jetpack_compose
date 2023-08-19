@@ -13,9 +13,9 @@ interface FirebaseFirestoreRepo {
 
     fun getMessNames(): Flow<ResultState<List<String>>>
 
-    fun insert(meal: MealInfo): Flow<ResultState<String>>
+    fun insertMeal(meal: MealInfo): Flow<ResultState<String>>
 
-    fun update(meal: MealInfo): Flow<ResultState<String>>
+    fun updateMeal(meal: MealInfo): Flow<ResultState<String>>
 
     fun getMealByDate(date: String): Flow<ResultState<MealInfo?>>
 
