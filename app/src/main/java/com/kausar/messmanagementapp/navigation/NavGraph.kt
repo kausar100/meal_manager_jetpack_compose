@@ -8,7 +8,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.kausar.messmanagementapp.presentation.SplashScreen
-import com.kausar.messmanagementapp.presentation.auth_screen.AuthScreen
+import com.kausar.messmanagementapp.presentation.auth_screen.LoginScreen
+import com.kausar.messmanagementapp.presentation.auth_screen.RegistrationScreen
 import com.kausar.messmanagementapp.presentation.auth_screen.OtpVerifyScreen
 import com.kausar.messmanagementapp.presentation.home_screen.HomeScreen
 import com.kausar.messmanagementapp.presentation.meal_info_list.MealListScreen
@@ -48,7 +49,18 @@ fun BottomNavGraph(
             MealListScreen()
         }
         composable(route = Screen.Login.route) {
-            AuthScreen(mainViewModel) { info ->
+            LoginScreen(gotoRegistrationScreen = {
+                navController.popBackStack()
+                navController.navigate(Screen.SignUp.route)
+            }) { contact, pin ->
+
+            }
+        }
+        composable(route = Screen.SignUp.route) {
+            RegistrationScreen(mainViewModel, gotoLoinScreen = {
+                navController.popBackStack()
+                navController.navigate(Screen.Login.route)
+            }) { info ->
                 navController.navigate(Screen.PinVerify.passInfo(info))
             }
         }

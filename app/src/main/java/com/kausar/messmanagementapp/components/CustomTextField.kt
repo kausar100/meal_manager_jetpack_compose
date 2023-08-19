@@ -22,7 +22,7 @@ fun CustomOutlinedTextField(
     modifier: Modifier = Modifier,
     input: String,
     editable: Boolean = true,
-    onInputChange: (String) -> Unit,
+    onInputChange: (String) -> Unit = {},
     placeholder: @Composable() (() -> Unit)? = null,
     prefixIcon: @Composable() (() -> Unit)? = null,
     showTrailingIcon: Boolean = false,

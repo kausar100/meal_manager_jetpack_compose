@@ -107,7 +107,7 @@ fun HomeScreen(
         viewModel.getMealForToday()
     }
 
-    val userPhoto = mainViewModel.photo.value
+    val userInfo = mainViewModel.userInfo.value
     val mealInfoState = viewModel.mealInfo.value
     val mealCnt by viewModel.mealCnt.collectAsState()
 
