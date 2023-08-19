@@ -180,8 +180,7 @@ fun HomeScreen(
             if (newMeal) {
                 AddNewMeal(
                     modifier = Modifier
-                        .fillMaxWidth(1f)
-                        .padding(16.dp),
+                        .fillMaxWidth(1f),
                     selectedDate = selectedDate,
                     viewModel = viewModel,
                     onCancel = {
@@ -282,7 +281,7 @@ fun HomeScreen(
                     numberOfDinner = mealCnt.dinner.toString()
                 )
 
-                if (mealInfoState.success.isNotEmpty() && !mealInfoState.isLoading) {
+                if (mealInfoState.success.isNotEmpty()) {
                     MealInformation(
                         modifier = Modifier
                             .fillMaxWidth(1f)

@@ -84,140 +84,146 @@ fun AddNewMeal(
                     dinner = false
                 }
             }
-
-            if(!mealInfoState.isLoading){
-                Column(
-                    modifier = modifier.fillMaxHeight(.8f),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Top
+            Column(
+                modifier = modifier
+                    .fillMaxHeight(.7f)
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Top
+            ) {
+                Row(
+                    modifier = Modifier
+                        .padding(horizontal = 8.dp, vertical = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Row(
-                        modifier = Modifier
-                            .padding(horizontal = 8.dp, vertical = 4.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Text(
-                            text = "Meal time",
-                            style = MaterialTheme.typography.titleMedium.copy(
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 16.sp
-                            )
+                    Text(
+                        text = "Meal time",
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp
                         )
-                        Spacer(modifier = Modifier.weight(1f))
-                        Text(
-                            text = "Meal status",
-                            style = MaterialTheme.typography.titleMedium.copy(
-                                fontWeight = FontWeight.Bold,
-                                letterSpacing = 1.sp
-                            )
+                    )
+                    Spacer(modifier = Modifier.weight(1f))
+                    Text(
+                        text = "Meal status",
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 1.sp
                         )
+                    )
 
-                    }
-                    Row(
-                        modifier = Modifier
-                            .border(
-                                width = 1.dp, color = Color.Gray, shape = RoundedCornerShape(4.dp)
-                            )
-                            .padding(horizontal = 8.dp, vertical = 0.dp)
-                            .weight(2f)
+                }
+                Row(
+                    modifier = Modifier
+                        .border(
+                            width = 1.dp, color = Color.Gray, shape = RoundedCornerShape(4.dp)
+                        )
+                        .padding(horizontal = 8.dp, vertical = 0.dp)
+                        .weight(2f)
+                ) {
+                    val title = listOf("Breakfast", "Lunch", "Dinner")
+                    Column(
+                        Modifier.fillMaxHeight(),
+                        verticalArrangement = Arrangement.SpaceEvenly
                     ) {
-                        val title = listOf("Breakfast", "Lunch", "Dinner")
-                        Column(
-                            Modifier.fillMaxHeight(),
-                            verticalArrangement = Arrangement.SpaceEvenly
-                        ) {
-                            repeat(title.size) {
-                                Text(text = title[it], textAlign = TextAlign.Center)
-                            }
+                        repeat(title.size) {
+                            Text(text = title[it], textAlign = TextAlign.Center)
                         }
-                        Spacer(modifier = Modifier.weight(1f))
-                        Column(
-                            Modifier.fillMaxHeight(),
-                            verticalArrangement = Arrangement.SpaceEvenly
-                        ) {
-                            CustomCheckBox(isEnabled = edit or toUpdate, isChecked = breakFast, onCheckChange = {
+                    }
+                    Spacer(modifier = Modifier.weight(1f))
+                    Column(
+                        Modifier.fillMaxHeight(),
+                        verticalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        CustomCheckBox(
+                            isEnabled = edit or toUpdate,
+                            isChecked = breakFast,
+                            onCheckChange = {
                                 breakFast = it
                             })
-                            CustomCheckBox(isEnabled = edit or toUpdate, isChecked = lunch, onCheckChange = {
+                        CustomCheckBox(
+                            isEnabled = edit or toUpdate,
+                            isChecked = lunch,
+                            onCheckChange = {
                                 lunch = it
                             })
-                            CustomCheckBox(isEnabled = edit or toUpdate, isChecked = dinner, onCheckChange = {
+                        CustomCheckBox(
+                            isEnabled = edit or toUpdate,
+                            isChecked = dinner,
+                            onCheckChange = {
                                 dinner = it
                             })
-                        }
                     }
-                    Spacer(Modifier.height(16.dp))
-                    AnimatedVisibility(visible = !toUpdate) {
-                        ElevatedButton(
-                            onClick = {
-                                addMeal(breakFast, lunch, dinner)
-                            }, shape = RoundedCornerShape(4.dp), colors = ButtonDefaults.buttonColors(
-                                containerColor = Color(0xFF222B83),
-                                contentColor = Color.White,
-                            ),
-                            modifier = Modifier.fillMaxWidth(1f)
-                        ) {
-                            Text(
-                                text = "Add Meal",
-                                letterSpacing = 2.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                    }
-                    AnimatedVisibility(visible = toUpdate) {
-                        ElevatedButton(
-                            onClick = {
-                                updateMeal(breakFast, lunch, dinner)
-                            }, shape = RoundedCornerShape(4.dp), colors = ButtonDefaults.buttonColors(
-                                containerColor = Color(0xFF222B83),
-                                contentColor = Color.White,
-                            ),
-                            modifier = Modifier.fillMaxWidth(1f)
-                        ) {
-                            Text(
-                                text = "Update Meal",
-                                letterSpacing = 2.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-
-                    }
-                    Spacer(Modifier.height(8.dp))
-                    OutlinedButton(
-                        onClick = onCancel, shape = RoundedCornerShape(4.dp),
+                }
+                Spacer(Modifier.height(16.dp))
+                AnimatedVisibility(visible = !toUpdate) {
+                    ElevatedButton(
+                        onClick = {
+                            addMeal(breakFast, lunch, dinner)
+                        }, shape = RoundedCornerShape(4.dp), colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFF222B83),
+                            contentColor = Color.White,
+                        ),
                         modifier = Modifier.fillMaxWidth(1f)
                     ) {
                         Text(
-                            text = "Cancel",
+                            text = "Add Meal",
                             letterSpacing = 2.sp,
                             fontWeight = FontWeight.Bold
                         )
                     }
                 }
-                if (!toUpdate) {
-                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.BottomEnd) {
-                        FloatingActionButton(
-                            onClick = {
-                                toUpdate = true
-
-                            },
-                            modifier = Modifier.background(Color.Transparent, shape = CircleShape)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Edit,
-                                contentDescription = "update meal",
-                                tint = Color.Black
-                            )
-                        }
+                AnimatedVisibility(visible = toUpdate) {
+                    ElevatedButton(
+                        onClick = {
+                            updateMeal(breakFast, lunch, dinner)
+                        }, shape = RoundedCornerShape(4.dp), colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFF222B83),
+                            contentColor = Color.White,
+                        ),
+                        modifier = Modifier.fillMaxWidth(1f)
+                    ) {
+                        Text(
+                            text = "Update Meal",
+                            letterSpacing = 2.sp,
+                            fontWeight = FontWeight.Bold
+                        )
                     }
 
                 }
+                Spacer(Modifier.height(8.dp))
+                OutlinedButton(
+                    onClick = onCancel, shape = RoundedCornerShape(4.dp),
+                    modifier = Modifier.fillMaxWidth(1f)
+                ) {
+                    Text(
+                        text = "Cancel",
+                        letterSpacing = 2.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             }
+            if (!toUpdate) {
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.BottomEnd) {
+                    FloatingActionButton(
+                        onClick = {
+                            toUpdate = true
+                        },
+                        modifier = Modifier.background(Color.Transparent, shape = CircleShape)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = "update meal",
+                            tint = Color.Black
+                        )
+                    }
+                }
 
-        } else if (mealInfoState.isLoading) {
+            }
+        }
+        if (mealInfoState.isLoading) {
             CustomProgressBar(msg = "Fetching meal info...")
         }
     }
-
 
 }

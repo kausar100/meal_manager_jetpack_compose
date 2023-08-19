@@ -25,9 +25,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -80,14 +78,6 @@ fun ProfileScreen(
         mutableStateOf<Uri?>(null)
     }
 
-    var editable by remember {
-        mutableStateOf(false)
-    }
-
-    var userName by remember {
-        mutableStateOf(mainViewModel.userName.value)
-    }
-
     var isLoading by remember {
         mutableStateOf(false)
     }
@@ -96,9 +86,6 @@ fun ProfileScreen(
 
 
     LaunchedEffect(key1 = true) {
-//        mainViewModel.getUserName()
-//        mainViewModel.getContactNumber()
-//        mainViewModel.getProfilePic()
         mainViewModel.getUserInfo()
     }
 
@@ -114,190 +101,151 @@ fun ProfileScreen(
 
             })
 
-    Box(
+    Column(
         Modifier
             .fillMaxSize()
-            .padding(16.dp), contentAlignment = Alignment.Center
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
-        Column(
-            Modifier.fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Spacer(modifier = Modifier.fillMaxHeight(.1f))
-            Box(Modifier.fillMaxHeight(.3f), contentAlignment = Alignment.BottomCenter) {
-                selectedImage?.let { uri ->
-                    if (Build.VERSION.SDK_INT < 28) {
-                        bitmap.value =
-                            MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
+        Spacer(modifier = Modifier.fillMaxHeight(.1f))
+        Box(Modifier.fillMaxHeight(.3f), contentAlignment = Alignment.BottomCenter) {
+            selectedImage?.let { uri ->
+                if (Build.VERSION.SDK_INT < 28) {
+                    bitmap.value =
+                        MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
 
-                    } else {
-                        val source = ImageDecoder.createSource(context.contentResolver, uri)
-                        bitmap.value = ImageDecoder.decodeBitmap(source)
-                    }
-                    bitmap.value?.let { btm ->
-                        Image(
-                            bitmap = btm.asImageBitmap(),
-                            contentDescription = "profile photo",
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier
-                                .size(100.dp)
-                                .clip(CircleShape)
-                        )
-
-                    }
-                } ?: if (userData.profilePhoto.isNotEmpty()) {
-                    AsyncImage(
-                        model = ImageRequest.Builder(LocalContext.current)
-                            .data(userData.profilePhoto)
-                            .crossfade(true).build(),
-                        onLoading = {
-                            isLoading = true
-                        },
-                        onSuccess = {
-                            isLoading = false
-                        },
-                        onError = {
-                            isLoading = false
-                        },
-                        placeholder = painterResource(id = R.drawable.ic_person),
-                        contentDescription = stringResource(id = R.string.profile_picture),
+                } else {
+                    val source = ImageDecoder.createSource(context.contentResolver, uri)
+                    bitmap.value = ImageDecoder.decodeBitmap(source)
+                }
+                bitmap.value?.let { btm ->
+                    Image(
+                        bitmap = btm.asImageBitmap(),
+                        contentDescription = "profile photo",
                         contentScale = ContentScale.Crop,
                         modifier = Modifier
                             .size(100.dp)
                             .clip(CircleShape)
                     )
 
-                } else {
-                    Icon(
-                        imageVector = Icons.Default.Person,
-                        contentDescription = "profile photo",
-                        tint = Color.Black,
-                        modifier = Modifier
-                            .size(100.dp)
-                            .border(1.dp, color = Color.Gray, shape = CircleShape)
-                            .background(color = Color.Transparent, shape = CircleShape)
-                            .clip(CircleShape)
-                    )
                 }
-
-                Box(
-                    Modifier
-                        .fillMaxWidth(.30f)
-                        .fillMaxHeight(),
-                    contentAlignment = Alignment.BottomEnd
-                ) {
-
-                    IconButton(
-                        onClick = { imagePicker.launch("image/*") }, modifier = Modifier
-                            .background(
-                                Color.DarkGray, CircleShape
-                            )
-                            .size(32.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Edit,
-                            contentDescription = "update profile",
-                            tint = Color.White,
-                            modifier = Modifier.size(24.dp)
-                        )
-                    }
-
-
-                }
-
-                if (isLoading) {
-                    CircularProgressIndicator()
-                }
-
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Text(
-                text = userData.userName,
-                textAlign = TextAlign.Center,
-                fontSize = 20.sp,
-                style = TextStyle(
-                    fontWeight = FontWeight.Bold,
-                    color = Color.Black,
-                    fontFamily = FontFamily.Cursive
-                )
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            if (editable) {
-                UserInfo(
-                    title = "User Name",
-                    info = userData.userName,
-                    editable = true,
-                    onInputChange = {
-                        userName = it
+            } ?: if (userData.profilePhoto.isNotEmpty()) {
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(userData.profilePhoto)
+                        .crossfade(true).build(),
+                    onLoading = {
+                        isLoading = true
                     },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
+                    onSuccess = {
+                        isLoading = false
+                    },
+                    onError = {
+                        isLoading = false
+                    },
+                    placeholder = painterResource(id = R.drawable.ic_person),
+                    contentDescription = stringResource(id = R.string.profile_picture),
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .size(100.dp)
+                        .clip(CircleShape)
                 )
-            }
 
-            UserInfo(
-                title = "Contact Number",
-                info = userData.contactNo,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
-            )
-
-            UserInfo(
-                title = "Type",
-                info = userData.userType,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            if (editable) {
-                Button(onClick = {
-                    mainViewModel.saveUsername(userName)
-                    editable = false
-
-                }, enabled = userName.isNotEmpty()) {
-                    Text(text = "Save info")
-
-                }
+            } else {
+                Icon(
+                    imageVector = Icons.Default.Person,
+                    contentDescription = "profile photo",
+                    tint = Color.Black,
+                    modifier = Modifier
+                        .size(100.dp)
+                        .border(1.dp, color = Color.Gray, shape = CircleShape)
+                        .background(color = Color.Transparent, shape = CircleShape)
+                        .clip(CircleShape)
+                )
             }
 
             Box(
                 Modifier
-                    .fillMaxHeight()
-                    .fillMaxWidth(.9f), contentAlignment = Alignment.Center
+                    .fillMaxWidth(.30f)
+                    .fillMaxHeight(),
+                contentAlignment = Alignment.BottomEnd
             ) {
-                selectedImage?.let {
-                    if (profilePic.error.isNotEmpty()) {
-                        Text(profilePic.error, textAlign = TextAlign.Center)
-                    } else if (profilePic.isLoading) {
-                        CustomProgressBar(msg = "Uploading pic...")
-                    }
-                }
 
-            }
-
-        }
-        if (!editable) {
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.BottomEnd) {
-                FloatingActionButton(
-                    onClick = {
-                        editable = true
-                    }, modifier = Modifier.background(Color.Transparent, shape = CircleShape)
+                IconButton(
+                    onClick = { imagePicker.launch("image/*") }, modifier = Modifier
+                        .background(
+                            Color.DarkGray, CircleShape
+                        )
+                        .size(32.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Default.Edit,
                         contentDescription = "update profile",
-                        tint = Color.Black
+                        tint = Color.White,
+                        modifier = Modifier.size(24.dp)
                     )
                 }
+
+
             }
+
+            if (isLoading) {
+                CircularProgressIndicator()
+            }
+
         }
 
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(
+            text = userData.userName,
+            textAlign = TextAlign.Center,
+            fontSize = 20.sp,
+            style = TextStyle(
+                fontWeight = FontWeight.Bold,
+                color = Color.Black,
+                fontFamily = FontFamily.Cursive
+            )
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        UserInfo(
+            title = "Contact Number",
+            info = userData.contactNo,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
+        )
+
+        UserInfo(
+            title = "Mess Name",
+            info = userData.messName,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
+        )
+
+        UserInfo(
+            title = "Type",
+            info = userData.userType,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
+        )
+
+        Box(
+            Modifier
+                .fillMaxHeight()
+                .fillMaxWidth(.9f), contentAlignment = Alignment.Center
+        ) {
+            selectedImage?.let {
+                if (profilePic.error.isNotEmpty()) {
+                    Text(profilePic.error, textAlign = TextAlign.Center)
+                } else if (profilePic.isLoading) {
+                    CustomProgressBar(msg = "Uploading pic...")
+                }
+            }
+
+        }
 
     }
+
 }
 
 @OptIn(ExperimentalComposeUiApi::class)
