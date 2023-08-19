@@ -64,7 +64,7 @@ import com.kausar.messmanagementapp.presentation.viewmodels.MainViewModel
 fun RegistrationScreen(
     mainViewModel: MainViewModel = hiltViewModel(),
     viewModel: FirebaseFirestoreDbViewModel = hiltViewModel(),
-    gotoLoinScreen:()->Unit,
+    gotoLoinScreen: () -> Unit,
     onSubmit: (String) -> Unit
 ) {
     var showAboutScreen by remember {
@@ -98,7 +98,7 @@ fun RegistrationScreen(
                     .fillMaxSize()
                     .padding(it),
                     viewModel = mainViewModel,
-                    toggleScreen=gotoLoinScreen,
+                    toggleScreen = gotoLoinScreen,
                     firestore = viewModel,
                     messNames = messNamesState.listOfMess,
                     onSubmit = { phone, name, mess, type ->
@@ -109,7 +109,7 @@ fun RegistrationScreen(
                             messName = mess
                         )
                         val json = Gson().toJson(newUser)
-            //                        onSubmit(json)
+                        onSubmit(json)
                     })
 
             }
@@ -132,10 +132,10 @@ fun RegistrationScreenContent(
     val focusManager = LocalFocusManager.current
 
     var user by remember {
-        mutableStateOf(viewModel.userName.value)
+        mutableStateOf("")
     }
     var contactNo by remember {
-        mutableStateOf(viewModel.contact.value)
+        mutableStateOf("")
     }
 
     var memberType by remember {

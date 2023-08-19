@@ -44,7 +44,6 @@ fun MainScreen(viewModel: MainViewModel) {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
     val isLogin = viewModel.isLoggedIn.value
-    viewModel.getUserName()
     viewModel.getContactNumber()
 
     val connection by connectivityState()

@@ -72,7 +72,7 @@ fun BottomNavGraph(
             )
         ) {
             val info = it.arguments?.getString(Screen.PinVerify.argKey) ?: ""
-            OtpVerifyScreen(info = info) {
+            OtpVerifyScreen(info = info, mainViewModel) {
                 mainViewModel.saveLoginStatus(true)
                 navController.popBackStack()
                 navController.navigate(BottomBarScreen.Home.route) {

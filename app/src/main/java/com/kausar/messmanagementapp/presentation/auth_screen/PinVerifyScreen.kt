@@ -54,6 +54,7 @@ import com.kausar.messmanagementapp.components.WelcomeText
 import com.kausar.messmanagementapp.data.model.User
 import com.kausar.messmanagementapp.navigation.Screen
 import com.kausar.messmanagementapp.presentation.viewmodels.FirebaseFirestoreDbViewModel
+import com.kausar.messmanagementapp.presentation.viewmodels.MainViewModel
 import com.kausar.messmanagementapp.utils.ResultState
 import com.kausar.messmanagementapp.utils.showToast
 import kotlinx.coroutines.Dispatchers
@@ -65,6 +66,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun OtpVerifyScreen(
     info: String,
+    mainViewModel: MainViewModel,
     viewModel: AuthViewModel = hiltViewModel(),
     firestoreViewModel: FirebaseFirestoreDbViewModel = hiltViewModel(),
     onRegistrationComplete: () -> Unit
@@ -113,6 +115,8 @@ fun OtpVerifyScreen(
                         showProgress = false
                         context.showToast(it.data)
                     }
+
+                    else -> {}
                 }
             }
     }
@@ -180,6 +184,7 @@ fun OtpVerifyScreen(
                                                     is ResultState.Success -> {
                                                         showProgress = false
                                                         context.showToast(result.data)
+                                                        mainViewModel.saveContact(userInformation.contactNo)
                                                         onRegistrationComplete()
                                                     }
 
@@ -189,10 +194,13 @@ fun OtpVerifyScreen(
                                                     }
 
                                                     is ResultState.Loading -> {}
+                                                    else -> {}
                                                 }
                                             }
                                     }
                                 }
+
+                                else -> {}
                             }
                         }
                     }

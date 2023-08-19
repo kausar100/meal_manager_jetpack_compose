@@ -94,7 +94,7 @@ fun LoginScreen(
                     firestore = viewModel,
                     toggleScreen = gotoRegistrationScreen,
                     onLogin = { phone, pin ->
-            //                        onSubmit(phone, pin)
+                    //                        onSubmit(phone, pin)
                     })
 
             }
@@ -245,6 +245,7 @@ fun LoginScreenContent(
                 )
 
             }
+
             Box(contentAlignment = Alignment.TopCenter) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     TextButton(onClick = toggleScreen) {
