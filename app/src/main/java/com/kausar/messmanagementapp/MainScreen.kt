@@ -46,6 +46,8 @@ fun MainScreen(viewModel: MainViewModel) {
     val isLogin = viewModel.isLoggedIn.value
     viewModel.getContactNumber()
 
+    println("mainscreen login $isLogin")
+
     val connection by connectivityState()
     val isConnected = (connection === ConnectionState.Available)
 

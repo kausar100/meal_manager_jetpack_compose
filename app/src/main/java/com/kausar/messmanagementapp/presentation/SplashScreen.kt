@@ -19,6 +19,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -41,17 +42,18 @@ fun SplashScreen(onTimeout: () -> Unit) {
         mutableStateOf(false)
     }
 
+    val currentOnTimeout by rememberUpdatedState(newValue = onTimeout)
+
     val alphaAnim = animateFloatAsState(
         targetValue = if (startAnimation) 1f else 0f,
-        animationSpec = tween(durationMillis = 1000)
+        animationSpec = tween(durationMillis = 500)
     )
 
     LaunchedEffect(Unit) {
         startAnimation = true
         delay(SplashWaitTime)
-        onTimeout()
+        currentOnTimeout()
     }
-
     Splash(alpha = alphaAnim.value)
 }
 
