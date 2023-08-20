@@ -11,7 +11,6 @@ import com.kausar.messmanagementapp.data.firebase_firestore.FirebaseFirestoreRep
 import com.kausar.messmanagementapp.data.firebase_firestore.FirebaseFirestoreRepoImpl
 import com.kausar.messmanagementapp.data.firebase_storage.FirebaseStorageRepo
 import com.kausar.messmanagementapp.data.firebase_storage.FirebaseStorageRepoImpl
-import com.kausar.messmanagementapp.data.shared_pref.LoginPreference
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -61,6 +60,5 @@ object FirebaseModule {
         auth: FirebaseAuth,
         firestore: FirebaseFirestore,
         storageReference: StorageReference,
-        loginPreference: LoginPreference,
-    ): FirebaseStorageRepo = FirebaseStorageRepoImpl(context, auth, firestore, storageReference,loginPreference)
+    ): FirebaseStorageRepo = FirebaseStorageRepoImpl(context, auth, firestore, storageReference)
 }

@@ -33,8 +33,11 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
     }
 
     private fun getMonthYear(date: String): String {
-        val month = date.substring(startIndex = 3, endIndex = date.length)
-        return month.replace("/", "_")
+        date.isNotEmpty().let {
+            val month = date.substring(startIndex = 3, endIndex = date.length)
+            return month.replace("/", "_")
+        }
+
     }
 
     override fun entryUserInfo(user: User): Flow<ResultState<String>> = callbackFlow {
@@ -154,31 +157,16 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
 
     }
 
-    private fun getMessMembers(messId: String) {
-        firestore.collection(CollectionRef.userDb).whereEqualTo("messId", messId)
-            .get()
-            .addOnSuccessListener {
-                for (user in it.documents) {
-                    println(user.reference.firestore.toString())
-//                    println(user.data.toString())
-                }
-            }
-            .addOnFailureListener {
-                println("failed to get user")
-            }
-
-    }
-
     override fun getUserInfo(): Flow<ResultState<User?>> = callbackFlow {
         trySend(ResultState.Loading)
         if (Network.isNetworkAvailable(context)) {
+
             val currentUser = firebaseAuth.currentUser?.uid
             currentUser?.let {
                 firestore.collection(CollectionRef.userDb).document(currentUser)
                     .get().addOnSuccessListener {
                         val user = it.toObject(User::class.java)
                         user?.let {
-                            getMessMembers(user.messId)
                             trySend(ResultState.Success(user))
                         }
 
@@ -217,6 +205,46 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
                     trySend(ResultState.Failure(it))
                 }
 
+        } else {
+            trySend(ResultState.Failure(Exception("Please check your internet connection!")))
+        }
+
+        awaitClose {
+            close()
+        }
+    }
+
+    override fun getMemberList(): Flow<ResultState<List<User>?>> = callbackFlow {
+        trySend(ResultState.Loading)
+
+        if (Network.isNetworkAvailable(context)) {
+            val currentUser = firebaseAuth.currentUser?.uid
+            currentUser?.let {
+                firestore.collection(CollectionRef.userDb).document(currentUser)
+                    .get().addOnSuccessListener {
+                        val user = it.toObject(User::class.java)
+                        user?.let {
+                            firestore.collection(CollectionRef.userDb)
+                                .whereEqualTo("messId", user.messId)
+                                .get()
+                                .addOnSuccessListener {res->
+                                    val listOfMessMembers = mutableListOf<User?>()
+                                    for (info in res.documents) {
+                                        val data = info.toObject(User::class.java)
+                                        listOfMessMembers.add(data)
+                                    }
+                                    trySend(ResultState.Success(listOfMessMembers as List<User>))
+                                }
+                                .addOnFailureListener {exp ->
+                                    trySend(ResultState.Failure(exp))
+                                }
+                        }
+
+                    }
+                    .addOnFailureListener {
+                        trySend(ResultState.Failure(it))
+                    }
+            }
         } else {
             trySend(ResultState.Failure(Exception("Please check your internet connection!")))
         }
@@ -315,16 +343,17 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
                                             if (result.documents.isNotEmpty()) {
                                                 val doc = result.documents[0]
                                                 val hashMeal = meal.toMap()
-                                                doc.reference.update(hashMeal).addOnSuccessListener {
-                                                    trySend(
-                                                        ResultState.Success(
-                                                            "Data updated Successfully!"
+                                                doc.reference.update(hashMeal)
+                                                    .addOnSuccessListener {
+                                                        trySend(
+                                                            ResultState.Success(
+                                                                "Data updated Successfully!"
+                                                            )
                                                         )
-                                                    )
 
-                                                }.addOnFailureListener { exp ->
-                                                    trySend(ResultState.Failure(exp))
-                                                }
+                                                    }.addOnFailureListener { exp ->
+                                                        trySend(ResultState.Failure(exp))
+                                                    }
 
                                             } else {
                                                 trySend(ResultState.Failure(Exception("Data doesn't exists!")))
@@ -409,12 +438,10 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    override fun getAllMeal(date: String): Flow<ResultState<List<MealInfo>>> = callbackFlow {
+    override fun getAllMeal(date: String, currentUser: String?): Flow<ResultState<List<MealInfo>>> = callbackFlow {
         trySend(ResultState.Loading)
 
         val monthYear = getMonthYear(date)
-        val currentUser = firebaseAuth.currentUser?.uid
-
 
         if (Network.isNetworkAvailable(context)) {
             currentUser?.let {

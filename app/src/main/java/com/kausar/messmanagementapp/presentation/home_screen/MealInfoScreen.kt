@@ -16,7 +16,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kausar.messmanagementapp.presentation.viewmodels.FirebaseFirestoreDbViewModel
@@ -46,14 +45,9 @@ fun MealSummary(
 ) {
     Column(
         modifier = modifier.padding(8.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Text(
-            text = "Number of meal until today",
-            fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center
-        )
-        Spacer(modifier = Modifier.height(16.dp))
         Row(
             Modifier
                 .fillMaxWidth()
@@ -100,8 +94,8 @@ fun MealSummary(
             horizontalArrangement = Arrangement.Center
         ) {
             Text(text = "Breakfast(0.5)", fontSize = 12.sp, fontWeight = FontWeight.ExtraBold)
-            Text(text = "Lunch(1.0)", fontSize = 12.sp, fontWeight = FontWeight.ExtraBold)
-            Text(text = "Dinner(1.0)", fontSize = 12.sp, fontWeight = FontWeight.ExtraBold)
+            Text(text = " Lunch(1.0)", fontSize = 12.sp, fontWeight = FontWeight.ExtraBold)
+            Text(text = " Dinner(1.0)", fontSize = 12.sp, fontWeight = FontWeight.ExtraBold)
         }
 
 

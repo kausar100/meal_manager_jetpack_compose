@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -173,7 +172,7 @@ fun HomeScreen(
                 Text(text = today, textAlign = TextAlign.Center)
             }
             Spacer(modifier = Modifier.height(8.dp))
-            if(!newMeal) {
+            if (!newMeal) {
                 ListItem(headlineText = {
                     Text(text = userInfo.messName)
                 },
@@ -265,7 +264,7 @@ fun HomeScreen(
                                     is ResultState.Success -> {
                                         showToast = false
                                         context.showToast(result.data)
-                                        viewModel.getAllMeal()
+                                        viewModel.getAllMeal(userInfo.userId)
                                         selectedDate = getDate(temp)
                                         presentingDate = fetchDateAsString(temp)
                                         newMeal = false
@@ -307,7 +306,7 @@ fun HomeScreen(
                                     is ResultState.Success -> {
                                         showToast = false
                                         context.showToast(result.data)
-                                        viewModel.getAllMeal()
+                                        viewModel.getAllMeal(userInfo.userId)
                                         newMeal = false
                                     }
 
@@ -382,7 +381,7 @@ fun HomeScreen(
                     title = {
                         Text(text = "Number of Meal")
                     },
-                    shape = RoundedCornerShape(4.dp),
+                    shape = RoundedCornerShape(8.dp),
                     text = {
                         MealInfoScreen(firestore = viewModel)
                     },
@@ -391,7 +390,7 @@ fun HomeScreen(
 
                             onClick = {
                                 showMealInfoScreen = false
-                            }, modifier = Modifier.widthIn(min = 100.dp)
+                            },
                         ) {
                             Text("OK")
                         }

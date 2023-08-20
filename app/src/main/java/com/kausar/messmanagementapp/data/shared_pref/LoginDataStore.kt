@@ -22,9 +22,7 @@ class LoginDataStore @Inject constructor(
 
     object KEYS {
         val KEY_IS_LOGGED_IN = booleanPreferencesKey("is_logged_in")
-        val KEY_USERNAME = stringPreferencesKey("username")
         val KEY_CONTACT_NUMBER = stringPreferencesKey("contact_number")
-        val KEY_PROFILE_PICTURE = stringPreferencesKey("profile_picture")
     }
 
     override fun getLoginStatus(): Flow<Boolean> {
@@ -44,22 +42,6 @@ class LoginDataStore @Inject constructor(
         }
     }
 
-    override suspend fun saveUsername(name: String) {
-        context.dataStore.edit { preference ->
-            preference[KEYS.KEY_USERNAME] = name
-        }
-    }
-
-    override fun getUsername(): Flow<String> {
-        return context.dataStore.data
-            .catch {
-                emit(emptyPreferences())
-            }
-            .map { preference ->
-                preference[KEYS.KEY_USERNAME] ?: ""
-            }
-    }
-
     override suspend fun saveContactNumber(contact: String) {
         context.dataStore.edit { preference ->
             preference[KEYS.KEY_CONTACT_NUMBER] = contact
@@ -73,22 +55,6 @@ class LoginDataStore @Inject constructor(
             }
             .map { preference ->
                 preference[KEYS.KEY_CONTACT_NUMBER] ?: ""
-            }
-    }
-
-    override suspend fun saveUserPic(profilePic: String) {
-        context.dataStore.edit { preference ->
-            preference[KEYS.KEY_PROFILE_PICTURE] = profilePic
-        }
-    }
-
-    override fun getProfilePic(): Flow<String> {
-        return context.dataStore.data
-            .catch {
-                emit(emptyPreferences())
-            }
-            .map { preference ->
-                preference[KEYS.KEY_PROFILE_PICTURE] ?: ""
             }
     }
 

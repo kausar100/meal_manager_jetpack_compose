@@ -29,7 +29,7 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     mainViewModel = hiltViewModel()
-                    if (mainViewModel.userName.value.isNotEmpty()) {
+                    if (mainViewModel.contact.value.isNotEmpty()) {
                         setupWorker()
                     }
                     MainScreen(mainViewModel)

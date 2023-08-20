@@ -13,11 +13,13 @@ interface FirebaseFirestoreRepo {
 
     fun getMessNames(): Flow<ResultState<List<String>>>
 
+    fun getMemberList(): Flow<ResultState<List<User>?>>
+
     fun insertMeal(meal: MealInfo): Flow<ResultState<String>>
 
     fun updateMeal(meal: MealInfo): Flow<ResultState<String>>
 
     fun getMealByDate(date: String): Flow<ResultState<MealInfo?>>
 
-    fun getAllMeal(date: String): Flow<ResultState<List<MealInfo>>>
+    fun getAllMeal(date: String, currentUser: String? = null): Flow<ResultState<List<MealInfo>>>
 }

@@ -46,7 +46,7 @@ fun BottomNavGraph(
             ProfileScreen(mainViewModel)
         }
         composable(route = BottomBarScreen.MealList.route) {
-            MealListScreen()
+            MealListScreen(mainViewModel)
         }
         composable(route = Screen.Login.route) {
             LoginScreen(mainViewModel, gotoRegistrationScreen = {

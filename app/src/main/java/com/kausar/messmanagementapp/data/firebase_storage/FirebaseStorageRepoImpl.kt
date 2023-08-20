@@ -6,33 +6,24 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.StorageReference
 import com.kausar.messmanagementapp.data.firebase_firestore.FirebaseFirestoreRepoImpl
-import com.kausar.messmanagementapp.data.shared_pref.LoginPreference
 import com.kausar.messmanagementapp.utils.ResultState
 import com.kausar.messmanagementapp.utils.network_connection.Network
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 class FirebaseStorageRepoImpl @Inject constructor(
     private val context: Context,
     private val auth: FirebaseAuth,
     private val firestore: FirebaseFirestore,
-    private val storageReference: StorageReference,
-    private val datastore: LoginPreference
+    private val storageReference: StorageReference
 ) : FirebaseStorageRepo {
 
     private var downloadUri: Uri? = null
 
     private fun saveUri(picUri: Uri?) {
         picUri?.let {
-            CoroutineScope(Dispatchers.IO).launch {
-                datastore.saveUserPic(it.toString())
-            }
-
             if (Network.isNetworkAvailable(context)) {
                 val currentUser = auth.currentUser?.uid
                 currentUser?.let {

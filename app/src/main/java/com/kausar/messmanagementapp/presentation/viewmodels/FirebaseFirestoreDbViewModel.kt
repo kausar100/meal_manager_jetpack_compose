@@ -37,55 +37,108 @@ class FirebaseFirestoreDbViewModel @Inject constructor(
     private val _cnt = MutableStateFlow(MealCount())
     val mealCnt: StateFlow<MealCount> = _cnt
 
-    private lateinit var calender: Calendar
-    private var today: String = ""
+    private val calender: Calendar
+        get() = Calendar.getInstance()
+
+    private val today: String
+        get() = getDate(calender)
 
     private val _messList: MutableState<MessState> = mutableStateOf(MessState())
     val messNames: State<MessState> = _messList
 
+    private val _memberList: MutableState<MemberState> = mutableStateOf(MemberState())
+    val memberInfo: State<MemberState> = _memberList
 
-    fun getAllMeal() {
-        calender = Calendar.getInstance()
-        today = getDate(calender)
+    fun getAllMeal(userId: String) {
         viewModelScope.launch {
-            delay(300)
-            repo.getAllMeal(today).collectLatest {
-                when (it) {
-                    is ResultState.Success -> {
-                        _res.value = ItemState(
-                            item = it.data
-                        )
-                        _cnt.update { cnt ->
-                            cnt.copy(
-                                breakfast = 0.0,
-                                lunch = 0.0,
-                                dinner = 0.0,
-                                totalMeal = 0.0
-                            )
+            delay(500)
+               repo.getAllMeal(today, userId).collectLatest {
+                        when (it) {
+                            is ResultState.Success -> {
+                                _res.value = ItemState(
+                                    item = it.data
+                                )
+                                _cnt.update { cnt ->
+                                    cnt.copy(
+                                        breakfast = 0.0,
+                                        lunch = 0.0,
+                                        dinner = 0.0,
+                                        totalMeal = 0.0
+                                    )
+                                }
+                                val meals = it.data.asReversed()
+                                getMealCnt(meals)
+                            }
+
+                            is ResultState.Failure -> {
+                                _res.value = ItemState(
+                                    error = it.message.localizedMessage!!.toString()
+                                )
+                            }
+
+                            is ResultState.Loading -> {
+                                _res.value = ItemState(
+                                    isLoading = true
+                                )
+                            }
                         }
-                        val meals = it.data.asReversed()
-                        getMealCnt(meals)
-                    }
+            }
+        }
+    }
 
-                    is ResultState.Failure -> {
-                        _res.value = ItemState(
-                            error = it.message.localizedMessage!!.toString()
-                        )
-                    }
+    fun getMealByUserId(userId: String) = viewModelScope.launch {
+        repo.getAllMeal(today, userId).collectLatest {
+            when (it) {
+                is ResultState.Success -> {
+                    _res.value = ItemState(
+                        item = it.data
+                    )
+                }
 
-                    is ResultState.Loading -> {
-                        _res.value = ItemState(
-                            isLoading = true
-                        )
-                    }
+                is ResultState.Failure -> {
+                    _res.value = ItemState(
+                        error = it.message.localizedMessage!!.toString()
+                    )
+                }
+
+                is ResultState.Loading -> {
+                    _res.value = ItemState(
+                        isLoading = true
+                    )
                 }
             }
         }
     }
 
     init {
-        getAllMeal()
         getMessNames()
+        getMembers()
+    }
+
+    fun getMembers() {
+        viewModelScope.launch {
+            repo.getMemberList().collectLatest { result ->
+                when (result) {
+                    is ResultState.Success -> {
+                        _memberList.value = MemberState(
+                            listOfMember = result.data ?: emptyList()
+                        )
+                    }
+
+                    is ResultState.Failure -> {
+                        _memberList.value = MemberState(
+                            error = result.message.localizedMessage
+                        )
+                    }
+
+                    is ResultState.Loading -> {
+                        _memberList.value = MemberState(
+                            isLoading = true
+                        )
+                    }
+                }
+            }
+        }
     }
 
     private fun needToStop(mealDate: String): Boolean {
@@ -243,6 +296,12 @@ class FirebaseFirestoreDbViewModel @Inject constructor(
 
     data class MessState(
         val listOfMess: List<String> = emptyList(),
+        val error: String = "",
+        val isLoading: Boolean = false
+    )
+
+    data class MemberState(
+        val listOfMember: List<User> = emptyList(),
         val error: String = "",
         val isLoading: Boolean = false
     )
