@@ -101,6 +101,10 @@ fun MealListScreen(
         mutableStateOf(false)
     }
 
+    var memberInfo by remember {
+        mutableStateOf(User())
+    }
+
     val scope = rememberCoroutineScope()
 
     Column(
@@ -126,7 +130,7 @@ fun MealListScreen(
             MealListInfo(itemState = itemState)
         } else {
             if (showList) {
-                ShowUser(userInfo = userInfo, true) {
+                ShowUser(userInfo = memberInfo, true) {
                     showList = false
                 }
                 Text(
@@ -153,6 +157,7 @@ fun MealListScreen(
                                     scope.launch {
                                         viewModel.getMealByUserId(user.userId)
                                         delay(500)
+                                        memberInfo = user
                                         showList = true
                                     }
                                 }
