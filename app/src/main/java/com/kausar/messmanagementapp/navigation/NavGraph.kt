@@ -49,11 +49,11 @@ fun BottomNavGraph(
             MealListScreen()
         }
         composable(route = Screen.Login.route) {
-            LoginScreen(gotoRegistrationScreen = {
+            LoginScreen(mainViewModel, gotoRegistrationScreen = {
                 navController.popBackStack()
                 navController.navigate(Screen.SignUp.route)
-            }) { contact, pin ->
-
+            }) { info ->
+                navController.navigate(Screen.PinVerify.passInfo(info))
             }
         }
         composable(route = Screen.SignUp.route) {

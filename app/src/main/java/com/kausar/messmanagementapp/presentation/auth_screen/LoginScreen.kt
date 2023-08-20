@@ -13,7 +13,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ElevatedButton
@@ -46,9 +45,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.google.gson.Gson
 import com.kausar.messmanagementapp.components.CustomOutlinedTextField
 import com.kausar.messmanagementapp.components.CustomToast
 import com.kausar.messmanagementapp.components.CustomTopAppBar
+import com.kausar.messmanagementapp.data.model.User
 import com.kausar.messmanagementapp.navigation.Screen
 import com.kausar.messmanagementapp.presentation.AboutScreen
 import com.kausar.messmanagementapp.presentation.viewmodels.FirebaseFirestoreDbViewModel
@@ -59,8 +60,8 @@ import com.kausar.messmanagementapp.presentation.viewmodels.MainViewModel
 fun LoginScreen(
     mainViewModel: MainViewModel = hiltViewModel(),
     viewModel: FirebaseFirestoreDbViewModel = hiltViewModel(),
-    gotoRegistrationScreen: ()->Unit,
-    onSubmit: (String, String) -> Unit
+    gotoRegistrationScreen: () -> Unit,
+    onSubmit: (String) -> Unit
 ) {
     var showAboutScreen by remember {
         mutableStateOf(false)
@@ -93,8 +94,12 @@ fun LoginScreen(
                     viewModel = mainViewModel,
                     firestore = viewModel,
                     toggleScreen = gotoRegistrationScreen,
-                    onLogin = { phone, pin ->
-                    //                        onSubmit(phone, pin)
+                    onLogin = { phone ->
+                        val newUser = User(
+                            contactNo = phone
+                        )
+                        val json = Gson().toJson(newUser)
+                        onSubmit(json)
                     })
 
             }
@@ -109,18 +114,14 @@ fun LoginScreen(
 fun LoginScreenContent(
     modifier: Modifier = Modifier,
     viewModel: MainViewModel,
-    toggleScreen: ()->Unit,
+    toggleScreen: () -> Unit,
     firestore: FirebaseFirestoreDbViewModel,
-    onLogin: (contact: String, pin: String) -> Unit,
+    onLogin: (contact: String) -> Unit,
 ) {
     val focusManager = LocalFocusManager.current
 
     var contactNo by remember {
         mutableStateOf(viewModel.contact.value)
-    }
-
-    var pinNo by remember {
-        mutableStateOf("")
     }
 
     var showToast by rememberSaveable {
@@ -175,36 +176,6 @@ fun LoginScreenContent(
             ) {
                 focusManager.moveFocus(FocusDirection.Next)
             }
-
-            CustomOutlinedTextField(
-                modifier = Modifier.fillMaxWidth(),
-                input = pinNo,
-                onInputChange = {
-                    if (it.length < 4) {
-                        pinNo = it
-                    } else if (it.length == 4) {
-                        pinNo = it
-                        keyboardController?.hide()
-                        focusManager.clearFocus(true)
-                    } else {
-                        keyboardController?.hide()
-                        focusManager.clearFocus(true)
-                    }
-
-                },
-                placeholder = { Text(text = "Enter your pin number") },
-                label = { Text(text = "Pin Number") },
-                prefixIcon = {
-                    Icon(
-                        imageVector = Icons.Default.Lock, contentDescription = "pin number"
-                    )
-                },
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Number, imeAction = ImeAction.Done
-                )
-            ) {
-                focusManager.clearFocus(true)
-            }
         }
 
         Spacer(modifier = Modifier.height(32.dp))
@@ -220,14 +191,8 @@ fun LoginScreenContent(
                         successMsg = null
                         showToast = true
 
-                    }
-                    else if (pinNo.isBlank() || pinNo.isEmpty()) {
-                        errMsg = "PLease enter your pin number"
-                        successMsg = null
-                        showToast = true
-
                     } else {
-                        onLogin(contactNo, pinNo)
+                        onLogin(contactNo)
                     }
 
                 },
@@ -272,14 +237,10 @@ fun LoginScreenContent(
         }
     }
 
-
 }
 
 @Preview(showBackground = true)
 @Composable
 fun PreviewLoginScreen() {
-    LoginScreen(gotoRegistrationScreen = {},
-        onSubmit = { c, p ->
-
-    })
+    LoginScreen(gotoRegistrationScreen = { /*TODO*/ }, onSubmit = {})
 }

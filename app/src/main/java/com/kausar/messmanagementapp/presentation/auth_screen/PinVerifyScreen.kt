@@ -115,8 +115,6 @@ fun OtpVerifyScreen(
                         showProgress = false
                         context.showToast(it.data)
                     }
-
-                    else -> {}
                 }
             }
     }
@@ -174,6 +172,7 @@ fun OtpVerifyScreen(
                                         println("need to just login")
                                         showProgress = false
                                         context.showToast(it.data)
+                                        mainViewModel.saveContact(userInformation.contactNo)
                                         onRegistrationComplete()
                                     } else {
                                         //registration
@@ -194,13 +193,10 @@ fun OtpVerifyScreen(
                                                     }
 
                                                     is ResultState.Loading -> {}
-                                                    else -> {}
                                                 }
                                             }
                                     }
                                 }
-
-                                else -> {}
                             }
                         }
                     }
