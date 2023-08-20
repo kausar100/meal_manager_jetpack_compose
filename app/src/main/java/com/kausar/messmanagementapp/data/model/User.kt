@@ -8,7 +8,8 @@ data class User(
     val userType: String = "",
     val messName: String = "",
     val profilePhoto: String = "",
-    val messId: String = ""
+    val messId: String = "",
+    val userId: String = ""
 )
 
 fun User.toMap(): Map<String, Any?> = User::class.memberProperties.associate {

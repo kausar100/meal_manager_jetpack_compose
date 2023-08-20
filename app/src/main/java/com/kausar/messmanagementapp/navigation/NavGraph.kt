@@ -85,13 +85,13 @@ fun BottomNavGraph(
             }
         }
         composable(route = Screen.Splash.route) {
-            SplashScreen(onTimeout = {
+            SplashScreen {
                 navController.popBackStack()
                 if (isLoggedIn) {
                     navController.navigate(BottomBarScreen.Home.route)
                 } else
                     navController.navigate(Screen.Login.route)
-            })
+            }
 
         }
 

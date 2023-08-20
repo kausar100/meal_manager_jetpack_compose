@@ -11,7 +11,6 @@ import com.kausar.messmanagementapp.data.model.MemberType
 import com.kausar.messmanagementapp.data.model.Mess
 import com.kausar.messmanagementapp.data.model.User
 import com.kausar.messmanagementapp.data.model.toMap
-import com.kausar.messmanagementapp.data.shared_pref.LoginPreference
 import com.kausar.messmanagementapp.utils.ResultState
 import com.kausar.messmanagementapp.utils.network_connection.Network
 import kotlinx.coroutines.channels.awaitClose
@@ -23,7 +22,6 @@ import javax.inject.Inject
 
 class FirebaseFirestoreRepoImpl @Inject constructor(
     private val firestore: FirebaseFirestore,
-    private val datastore: LoginPreference,
     private val firebaseAuth: FirebaseAuth,
     private val context: Context
 ) : FirebaseFirestoreRepo {
@@ -69,7 +67,7 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
 
                             currentUser?.let {
                                 //new userinfo entry
-                                val userInfo = user.copy(messId = currentUser)
+                                val userInfo = user.copy(messId = currentUser, userId = currentUser)
                                 val ref =
                                     firestore.collection(CollectionRef.userDb).document(currentUser)
 
@@ -118,13 +116,14 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
                     .addOnSuccessListener {
                         if (it.documents.isNotEmpty()) {
                             val mess = it.documents[0].toObject<Mess>()
-                            //add mess_id
-                            val userInfo = user.copy(messId = mess!!.messId).toMap()
 
                             val currentUser = firebaseAuth.currentUser?.uid
 
                             currentUser?.let {
                                 //new userinfo entry
+                                val userInfo =
+                                    user.copy(messId = mess!!.messId, userId = currentUser).toMap()
+
                                 val ref =
                                     firestore.collection(CollectionRef.userDb).document(currentUser)
                                 ref.set(userInfo)
@@ -155,6 +154,21 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
 
     }
 
+    private fun getMessMembers(messId: String) {
+        firestore.collection(CollectionRef.userDb).whereEqualTo("messId", messId)
+            .get()
+            .addOnSuccessListener {
+                for (user in it.documents) {
+                    println(user.reference.firestore.toString())
+//                    println(user.data.toString())
+                }
+            }
+            .addOnFailureListener {
+                println("failed to get user")
+            }
+
+    }
+
     override fun getUserInfo(): Flow<ResultState<User?>> = callbackFlow {
         trySend(ResultState.Loading)
         if (Network.isNetworkAvailable(context)) {
@@ -163,7 +177,11 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
                 firestore.collection(CollectionRef.userDb).document(currentUser)
                     .get().addOnSuccessListener {
                         val user = it.toObject(User::class.java)
-                        trySend(ResultState.Success(user))
+                        user?.let {
+                            getMessMembers(user.messId)
+                            trySend(ResultState.Success(user))
+                        }
+
                     }
                     .addOnFailureListener {
                         trySend(ResultState.Failure(it))
@@ -222,37 +240,42 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
                     .addOnSuccessListener { data ->
                         data?.let {
                             val user = data.toObject(User::class.java)
-                            firestore.collection(CollectionRef.mealDb).document(user!!.messName)
-                                .collection(monthYear).whereEqualTo("date", meal.date).get()
-                                .addOnSuccessListener {
-                                    it?.let { result ->
-                                        if (result.documents.isNotEmpty()) {
-                                            trySend(ResultState.Failure(Exception("Data already exists!")))
-                                        } else {
-                                            val hashMeal = meal.toMap()
+                            user?.let {
+                                firestore.collection(CollectionRef.mealDb).document(user.messName)
+                                    .collection(user.messId).document(currentUser)
+                                    .collection(monthYear).whereEqualTo("date", meal.date).get()
+                                    .addOnSuccessListener {
+                                        it?.let { result ->
+                                            if (result.documents.isNotEmpty()) {
+                                                trySend(ResultState.Failure(Exception("Data already exists!")))
+                                            } else {
+                                                val hashMeal = meal.toMap()
 
-                                            firestore.collection(CollectionRef.mealDb)
-                                                .document(user.messName)
-                                                .collection(monthYear).add(hashMeal)
-                                                .addOnSuccessListener { rst ->
-                                                    if (rst?.id != null) {
-                                                        trySend(
-                                                            ResultState.Success(
-                                                                "Data Inserted Successfully!"
+                                                firestore.collection(CollectionRef.mealDb)
+                                                    .document(user.messName)
+                                                    .collection(user.messId).document(currentUser)
+                                                    .collection(monthYear).add(hashMeal)
+                                                    .addOnSuccessListener { rst ->
+                                                        if (rst?.id != null) {
+                                                            trySend(
+                                                                ResultState.Success(
+                                                                    "Data Inserted Successfully!"
+                                                                )
                                                             )
-                                                        )
 
+                                                        }
+                                                    }.addOnFailureListener { exp ->
+                                                        trySend(ResultState.Failure(exp))
                                                     }
-                                                }.addOnFailureListener { exp ->
-                                                    trySend(ResultState.Failure(exp))
-                                                }
+                                            }
                                         }
-                                    }
 
-                                }
-                                .addOnFailureListener { exp ->
-                                    trySend(ResultState.Failure(exp))
-                                }
+                                    }
+                                    .addOnFailureListener { exp ->
+                                        trySend(ResultState.Failure(exp))
+                                    }
+                            }
+
                         }
 
                     }
@@ -283,31 +306,35 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
                     .addOnSuccessListener { data ->
                         data?.let {
                             val user = data.toObject(User::class.java)
-                            firestore.collection(CollectionRef.mealDb).document(user!!.messName)
-                                .collection(monthYear).whereEqualTo("date", meal.date)
-                                .get().addOnSuccessListener {
-                                    it?.let { result ->
-                                        if (result.documents.isNotEmpty()) {
-                                            val doc = result.documents[0]
-                                            val hashMeal = meal.toMap()
-                                            doc.reference.update(hashMeal).addOnSuccessListener {
-                                                trySend(
-                                                    ResultState.Success(
-                                                        "Data updated Successfully!"
+                            user?.let {
+                                firestore.collection(CollectionRef.mealDb).document(user.messName)
+                                    .collection(user.messId).document(currentUser)
+                                    .collection(monthYear).whereEqualTo("date", meal.date)
+                                    .get().addOnSuccessListener {
+                                        it?.let { result ->
+                                            if (result.documents.isNotEmpty()) {
+                                                val doc = result.documents[0]
+                                                val hashMeal = meal.toMap()
+                                                doc.reference.update(hashMeal).addOnSuccessListener {
+                                                    trySend(
+                                                        ResultState.Success(
+                                                            "Data updated Successfully!"
+                                                        )
                                                     )
-                                                )
 
-                                            }.addOnFailureListener { exp ->
-                                                trySend(ResultState.Failure(exp))
+                                                }.addOnFailureListener { exp ->
+                                                    trySend(ResultState.Failure(exp))
+                                                }
+
+                                            } else {
+                                                trySend(ResultState.Failure(Exception("Data doesn't exists!")))
                                             }
-
-                                        } else {
-                                            trySend(ResultState.Failure(Exception("Data doesn't exists!")))
                                         }
+                                    }.addOnFailureListener { exp ->
+                                        trySend(ResultState.Failure(exp))
                                     }
-                                }.addOnFailureListener { exp ->
-                                    trySend(ResultState.Failure(exp))
-                                }
+                            }
+
                         }
 
                     }
@@ -341,24 +368,28 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
                     .addOnSuccessListener { data ->
                         data?.let {
                             val user = data.toObject(User::class.java)
-                            firestore.collection(CollectionRef.mealDb).document(user!!.messName)
-                                .collection(monthYear).whereEqualTo("date", date)
-                                .get().addOnSuccessListener { result ->
-                                    result?.let {
-                                        if (it.documents.size == 0) {
-                                            trySend(ResultState.Failure(Exception("Not found any meal for today!")))
-                                        } else {
-                                            val mealInformation =
-                                                it.documents[0].toObject(MealInfo::class.java)
-                                            trySend(ResultState.Success(mealInformation))
+                            user?.let {
+                                firestore.collection(CollectionRef.mealDb).document(user.messName)
+                                    .collection(user.messId).document(currentUser)
+                                    .collection(monthYear).whereEqualTo("date", date)
+                                    .get().addOnSuccessListener { result ->
+                                        result?.let {
+                                            if (it.documents.size == 0) {
+                                                trySend(ResultState.Failure(Exception("Not found any meal for today!")))
+                                            } else {
+                                                val mealInformation =
+                                                    it.documents[0].toObject(MealInfo::class.java)
+                                                trySend(ResultState.Success(mealInformation))
+                                            }
+
                                         }
 
                                     }
+                                    .addOnFailureListener {
+                                        trySend(ResultState.Failure(it))
+                                    }
+                            }
 
-                                }
-                                .addOnFailureListener {
-                                    trySend(ResultState.Failure(it))
-                                }
                         }
 
                     }
@@ -392,32 +423,36 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
                     .addOnSuccessListener { data ->
                         data?.let {
                             val user = data.toObject(User::class.java)
-                            firestore.collection(CollectionRef.mealDb).document(user!!.messName)
-                                .collection(monthYear).get()
-                                .addOnSuccessListener { result ->
-                                    val meals = mutableListOf<MealInfo>()
-                                    for (document in result.documents) {
-                                        val meal = document.toObject(MealInfo::class.java)
-                                        if (meal != null) {
-                                            meals.add(meal)
+                            user?.let {
+                                firestore.collection(CollectionRef.mealDb).document(user.messName)
+                                    .collection(user.messId).document(currentUser)
+                                    .collection(monthYear).get()
+                                    .addOnSuccessListener { result ->
+                                        val meals = mutableListOf<MealInfo>()
+                                        for (document in result.documents) {
+                                            val meal = document.toObject(MealInfo::class.java)
+                                            if (meal != null) {
+                                                meals.add(meal)
+                                            }
                                         }
+                                        //sort by date ascending
+                                        val formatter: DateTimeFormatter =
+                                            DateTimeFormatter.ofPattern("dd/MM/yyyy")
+                                        val sortedMeals =
+                                            meals.sortedByDescending {
+                                                LocalDate.parse(
+                                                    it.date,
+                                                    formatter
+                                                )
+                                            }
+
+                                        trySend(ResultState.Success(sortedMeals))
+
+                                    }.addOnFailureListener {
+                                        trySend(ResultState.Failure(it))
                                     }
-                                    //sort by date ascending
-                                    val formatter: DateTimeFormatter =
-                                        DateTimeFormatter.ofPattern("dd/MM/yyyy")
-                                    val sortedMeals =
-                                        meals.sortedByDescending {
-                                            LocalDate.parse(
-                                                it.date,
-                                                formatter
-                                            )
-                                        }
+                            }
 
-                                    trySend(ResultState.Success(sortedMeals))
-
-                                }.addOnFailureListener {
-                                    trySend(ResultState.Failure(it))
-                                }
                         }
 
                     }

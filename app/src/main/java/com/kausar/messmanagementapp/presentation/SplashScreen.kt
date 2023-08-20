@@ -19,7 +19,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -34,26 +33,25 @@ import androidx.compose.ui.unit.dp
 import com.kausar.messmanagementapp.R
 import kotlinx.coroutines.delay
 
-private const val SplashWaitTime: Long = 2000
+private const val SplashWaitTime: Long = 1000
 
 @Composable
-fun SplashScreen(onTimeout: () -> Unit, modifier: Modifier = Modifier) {
+fun SplashScreen(onTimeout: () -> Unit) {
     var startAnimation by remember {
         mutableStateOf(false)
     }
 
-    val currentOnTimeout by rememberUpdatedState(newValue = onTimeout)
-
     val alphaAnim = animateFloatAsState(
         targetValue = if (startAnimation) 1f else 0f,
-        animationSpec = tween(durationMillis = 2000)
+        animationSpec = tween(durationMillis = 1000)
     )
 
     LaunchedEffect(Unit) {
         startAnimation = true
         delay(SplashWaitTime)
-        currentOnTimeout()
+        onTimeout()
     }
+
     Splash(alpha = alphaAnim.value)
 }
 

@@ -42,11 +42,10 @@ object FirebaseModule {
     @Singleton
     fun providesFirebaseFirestoreDbRepository(
         firestore: FirebaseFirestore,
-        loginPreference: LoginPreference,
         auth: FirebaseAuth,
         context: Context
     ): FirebaseFirestoreRepo =
-        FirebaseFirestoreRepoImpl(firestore, loginPreference, auth, context)
+        FirebaseFirestoreRepoImpl(firestore, auth, context)
 
 
     @Provides

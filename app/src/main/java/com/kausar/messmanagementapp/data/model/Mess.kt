@@ -6,7 +6,7 @@ data class Mess (
     val messName: String = "",
     val messId: String = "",
     val managerContactNumber: String = "",
-    val profilePhoto: String = "",
+    val profilePhoto: String = ""
 )
 
 fun Mess.toMap(): Map<String, Any?> = Mess::class.memberProperties.associate {
