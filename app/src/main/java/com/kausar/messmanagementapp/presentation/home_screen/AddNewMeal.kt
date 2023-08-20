@@ -86,7 +86,7 @@ fun AddNewMeal(
             }
             Column(
                 modifier = modifier
-                    .fillMaxHeight(.7f)
+                    .fillMaxHeight()
                     .padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Top

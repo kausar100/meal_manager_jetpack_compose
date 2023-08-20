@@ -13,25 +13,30 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -40,14 +45,21 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
+import com.kausar.messmanagementapp.R
 import com.kausar.messmanagementapp.components.CustomProgressBar
 import com.kausar.messmanagementapp.data.model.MealInfo
 import com.kausar.messmanagementapp.presentation.viewmodels.FirebaseFirestoreDbViewModel
@@ -63,13 +75,12 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.util.Calendar
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     mainViewModel: MainViewModel = hiltViewModel(),
     viewModel: FirebaseFirestoreDbViewModel = hiltViewModel(),
 ) {
-
-
     val calendar = Calendar.getInstance()
     val temp = Calendar.getInstance()
     temp.add(Calendar.DATE, 1)
@@ -101,6 +112,10 @@ fun HomeScreen(
         mutableStateOf(false)
     }
 
+    var showMealInfoScreen by remember {
+        mutableStateOf(false)
+    }
+
     val connection by connectivityState()
     val isConnected = (connection === ConnectionState.Available)
     LaunchedEffect(key1 = isConnected) {
@@ -108,8 +123,8 @@ fun HomeScreen(
     }
 
     val userInfo = mainViewModel.userInfo.value
+
     val mealInfoState = viewModel.mealInfo.value
-    val mealCnt by viewModel.mealCnt.collectAsState()
 
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
@@ -119,6 +134,7 @@ fun HomeScreen(
             .fillMaxSize()
             .padding(16.dp),
     ) {
+
         Column(
             Modifier
                 .fillMaxSize(),
@@ -157,10 +173,53 @@ fun HomeScreen(
                 Text(text = today, textAlign = TextAlign.Center)
             }
             Spacer(modifier = Modifier.height(8.dp))
-            if (!newMeal) {
-                Text(
-                    text = "Running Meal information",
-                    textAlign = TextAlign.Center
+            if(!newMeal) {
+                ListItem(headlineText = {
+                    Text(text = userInfo.messName)
+                },
+                    modifier = Modifier
+                        .padding(16.dp)
+                        .border(1.dp, Color.Gray, RoundedCornerShape(4.dp))
+                        .clickable {
+                            showMealInfoScreen = true
+                        },
+                    leadingContent = {
+                        if (userInfo.profilePhoto.isNotEmpty()) {
+                            AsyncImage(
+                                model = ImageRequest.Builder(LocalContext.current)
+                                    .data(userInfo.profilePhoto)
+                                    .crossfade(true).build(),
+                                placeholder = painterResource(id = R.drawable.ic_person),
+                                contentDescription = stringResource(id = R.string.profile_picture),
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier
+                                    .size(50.dp)
+                                    .clip(CircleShape)
+                            )
+
+                        } else {
+                            Icon(
+                                imageVector = Icons.Default.Person,
+                                contentDescription = "profile",
+                                tint = Color.Black,
+                                modifier = Modifier
+                                    .size(50.dp)
+                                    .border(1.dp, color = Color.Gray, shape = CircleShape)
+                                    .background(color = Color.Transparent, shape = CircleShape)
+                                    .clip(CircleShape)
+                            )
+                        }
+
+                    },
+                    trailingContent = {
+                        IconButton(onClick = { showMealInfoScreen = true }) {
+                            Icon(
+                                imageVector = Icons.Default.Info,
+                                contentDescription = "count_meal"
+                            )
+                        }
+                    },
+                    overlineText = { Text(text = userInfo.userName) }
                 )
             }
 
@@ -180,6 +239,7 @@ fun HomeScreen(
             if (newMeal) {
                 AddNewMeal(
                     modifier = Modifier
+                        .fillMaxHeight(.80f)
                         .fillMaxWidth(1f),
                     selectedDate = selectedDate,
                     viewModel = viewModel,
@@ -270,25 +330,14 @@ fun HomeScreen(
                     }
                 )
             } else {
-                Spacer(modifier = Modifier.height(16.dp))
-                MealSummary(
-                    modifier = Modifier
-                        .fillMaxWidth(1f)
-                        .padding(horizontal = 8.dp),
-                    totalMeal = mealCnt.totalMeal.toString(),
-                    numberOfBreakfast = mealCnt.breakfast.toString(),
-                    numberOfLunch = mealCnt.lunch.toString(),
-                    numberOfDinner = mealCnt.dinner.toString()
-                )
-
                 if (mealInfoState.success.isNotEmpty()) {
                     MealInformation(
                         modifier = Modifier
                             .fillMaxWidth(1f)
+                            .fillMaxHeight(.7f)
                             .padding(16.dp),
                         mealInfo = mealInfoState.meal,
                     )
-
                 }
                 Box(
                     Modifier
@@ -301,6 +350,7 @@ fun HomeScreen(
                     } else if (mealInfoState.error.isNotEmpty()) {
                         Text(mealInfoState.error, textAlign = TextAlign.Center)
                     }
+
                 }
 
             }
@@ -323,6 +373,37 @@ fun HomeScreen(
             }
         }
 
+        if (showMealInfoScreen) {
+            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.BottomCenter) {
+                AlertDialog(
+                    onDismissRequest = {
+                        showMealInfoScreen = false
+                    },
+                    title = {
+                        Text(text = "Number of Meal")
+                    },
+                    shape = RoundedCornerShape(4.dp),
+                    text = {
+                        MealInfoScreen(firestore = viewModel)
+                    },
+                    confirmButton = {
+                        Button(
+
+                            onClick = {
+                                showMealInfoScreen = false
+                            }, modifier = Modifier.widthIn(min = 100.dp)
+                        ) {
+                            Text("OK")
+                        }
+                    },
+                    dismissButton = {
+
+                    }
+                )
+            }
+
+        }
+
     }
 }
 
@@ -336,7 +417,7 @@ fun MealInformation(
     var dinner by rememberSaveable { mutableStateOf(mealInfo?.dinner ?: false) }
 
     Column(
-        modifier = modifier.fillMaxHeight(.8f),
+        modifier = modifier.fillMaxHeight(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
     ) {
@@ -448,87 +529,6 @@ fun PopUpOption(onDismiss: () -> Unit, onSelect: (String, String) -> Unit) {
         }
     }
 
-}
-
-
-@Composable
-fun MealSummary(
-    modifier: Modifier,
-    totalMeal: String,
-    numberOfBreakfast: String,
-    numberOfLunch: String,
-    numberOfDinner: String
-) {
-    Card(
-        elevation = CardDefaults.elevatedCardElevation(),
-        shape = RoundedCornerShape(4.dp),
-        modifier = modifier.padding(8.dp)
-    ) {
-        Column(
-            Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                text = "Number of meal until Today",
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center
-            )
-            Divider(Modifier.height(1.dp), color = Color.Gray)
-            Row(
-                Modifier
-                    .fillMaxWidth()
-                    .padding(2.dp)
-            ) {
-                Text(text = "Total Meal", fontWeight = FontWeight.Bold)
-                Spacer(modifier = Modifier.weight(1f))
-                Text(text = totalMeal, fontWeight = FontWeight.Bold)
-            }
-            Row(
-                Modifier
-                    .fillMaxWidth()
-                    .padding(2.dp)
-            ) {
-                Text(text = "Number of BreakFast")
-                Spacer(modifier = Modifier.weight(1f))
-                Text(text = numberOfBreakfast)
-            }
-
-            Row(
-                Modifier
-                    .fillMaxWidth()
-                    .padding(2.dp)
-            ) {
-                Text(text = "Number of Lunch")
-                Spacer(modifier = Modifier.weight(1f))
-                Text(text = numberOfLunch)
-            }
-
-            Row(
-                Modifier
-                    .fillMaxWidth()
-                    .padding(2.dp)
-            ) {
-                Text(text = "Number of Dinner")
-                Spacer(modifier = Modifier.weight(1f))
-                Text(text = numberOfDinner)
-            }
-            Divider(Modifier.height(1.dp), color = Color.Gray)
-            Row(
-                Modifier
-                    .fillMaxWidth()
-                    .padding(2.dp),
-                horizontalArrangement = Arrangement.Center
-            ) {
-                Text(text = "Breakfast(0.5)", fontSize = 12.sp, fontWeight = FontWeight.ExtraBold)
-                Text(text = "Lunch(1.0)", fontSize = 12.sp, fontWeight = FontWeight.ExtraBold)
-                Text(text = "Dinner(1.0)", fontSize = 12.sp, fontWeight = FontWeight.ExtraBold)
-            }
-
-
-        }
-    }
 }
 
 @Preview

@@ -34,6 +34,7 @@ class MainViewModel @Inject constructor(
     val userInfo: State<User> = _userProfile
 
     init {
+        getUserInfo()
         viewModelScope.launch {
             loginPref.getLoginStatus().collectLatest {
                 _loginStatus.value = it
