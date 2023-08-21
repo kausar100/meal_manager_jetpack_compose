@@ -21,23 +21,36 @@ import androidx.compose.ui.unit.sp
 import com.kausar.messmanagementapp.presentation.viewmodels.FirebaseFirestoreDbViewModel
 
 @Composable
-fun MealInfoScreen(firestore: FirebaseFirestoreDbViewModel) {
-
-    val mealCnt by firestore.mealCnt.collectAsState()
-
-    MealSummary(
-        modifier = Modifier
-            .fillMaxWidth(1f),
-        totalMeal = mealCnt.totalMeal.toString(),
-        numberOfBreakfast = mealCnt.breakfast.toString(),
-        numberOfLunch = mealCnt.lunch.toString(),
-        numberOfDinner = mealCnt.dinner.toString()
-    )
+fun MealInfoScreen(firestore: FirebaseFirestoreDbViewModel, currentUser: Boolean = true) {
+    if (currentUser) {
+        val mealCnt by firestore.mealCnt.collectAsState()
+        MealSummary(
+            modifier = Modifier
+                .fillMaxWidth(1f),
+            currentUser = true,
+            totalMeal = mealCnt.totalMeal.toString(),
+            numberOfBreakfast = mealCnt.breakfast.toString(),
+            numberOfLunch = mealCnt.lunch.toString(),
+            numberOfDinner = mealCnt.dinner.toString()
+        )
+    } else {
+        val mealCnt by firestore.singleMealCnt.collectAsState()
+        MealSummary(
+            modifier = Modifier
+                .fillMaxWidth(1f),
+            currentUser = false,
+            totalMeal = mealCnt.totalMeal.toString(),
+            numberOfBreakfast = mealCnt.breakfast.toString(),
+            numberOfLunch = mealCnt.lunch.toString(),
+            numberOfDinner = mealCnt.dinner.toString()
+        )
+    }
 }
 
 @Composable
 fun MealSummary(
     modifier: Modifier,
+    currentUser: Boolean,
     totalMeal: String,
     numberOfBreakfast: String,
     numberOfLunch: String,
@@ -46,7 +59,7 @@ fun MealSummary(
     Column(
         modifier = modifier.padding(8.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = if (currentUser) Arrangement.spacedBy(16.dp) else Arrangement.SpaceEvenly
     ) {
         Row(
             Modifier
