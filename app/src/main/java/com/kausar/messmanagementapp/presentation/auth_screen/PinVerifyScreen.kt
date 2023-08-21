@@ -92,6 +92,34 @@ fun OtpVerifyScreen(
     var otp by rememberSaveable {
         mutableStateOf("")
     }
+    if (resendOtp) {
+        LaunchedEffect(key1 = true) {
+            viewModel.resendOtp(
+                phone = userInformation.contactNo,
+                activity = context as Activity
+            ).collectLatest {
+                when (it) {
+                    is ResultState.Loading -> {
+                        progressMsg = "Sending otp..."
+                        showProgress = true
+                    }
+
+                    is ResultState.Failure -> {
+                        resendOtp = false
+                        showProgress = false
+                        it.message.message?.let { msg -> context.showToast(msg) }
+                    }
+
+                    is ResultState.Success -> {
+                        resendOtp = false
+                        delay(1000)
+                        showProgress = false
+                        context.showToast(it.data)
+                    }
+                }
+            }
+        }
+    }
 
     LaunchedEffect(key1 = true) {
         viewModel.createUserWithPhoneNumber(
@@ -189,7 +217,10 @@ fun OtpVerifyScreen(
 
                                                     is ResultState.Failure -> {
                                                         showProgress = false
-                                                        context.showToast(result.message.localizedMessage)
+                                                        context.showToast(
+                                                            result.message.localizedMessage
+                                                                ?: "Some error occur"
+                                                        )
                                                     }
 
                                                     is ResultState.Loading -> {}

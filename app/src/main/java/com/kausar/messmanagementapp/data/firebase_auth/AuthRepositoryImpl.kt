@@ -21,7 +21,7 @@ class AuthRepositoryImpl @Inject constructor(
 ) : AuthRepository {
 
     private var storedVerificationId: String = ""
-//    private lateinit var resendToken: PhoneAuthProvider.ForceResendingToken
+    private lateinit var resendToken: PhoneAuthProvider.ForceResendingToken
 
     override fun createUserWithPhone(
         phoneNumber: String,
@@ -42,6 +42,7 @@ class AuthRepositoryImpl @Inject constructor(
                     super.onCodeSent(verificationId, token)
                     trySend(ResultState.Success("OTP Sent Successfully!"))
                     storedVerificationId = verificationId
+                    resendToken = token
                 }
 
                 override fun onVerificationCompleted(p0: PhoneAuthCredential) {
@@ -63,6 +64,47 @@ class AuthRepositoryImpl @Inject constructor(
             trySend(ResultState.Failure(Exception("Please check your internet connection!")))
         }
 
+
+        awaitClose { close() }
+    }
+
+    override fun resendOtp(phoneNumber: String, activity: Activity): Flow<ResultState<String>> = callbackFlow {
+        trySend(ResultState.Loading)
+
+        val onVerificationCallback =
+            object : PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
+                override fun onVerificationFailed(e: FirebaseException) {
+                    trySend(ResultState.Failure(e))
+                }
+
+                override fun onCodeSent(
+                    verificationId: String,
+                    token: PhoneAuthProvider.ForceResendingToken
+                ) {
+                    super.onCodeSent(verificationId, token)
+                    trySend(ResultState.Success("OTP Sent Successfully!"))
+                    storedVerificationId = verificationId
+                    resendToken = token
+                }
+
+                override fun onVerificationCompleted(p0: PhoneAuthCredential) {
+                    TODO("Not yet implemented")
+                }
+            }
+
+        val option = PhoneAuthOptions.newBuilder(firebaseAuth)
+            .setPhoneNumber("+88$phoneNumber")
+            .setTimeout(60L, TimeUnit.SECONDS)
+            .setActivity(activity)
+            .setCallbacks(onVerificationCallback)
+            .setForceResendingToken(resendToken)
+            .build()
+
+        if (Network.isNetworkAvailable(context)) {
+            PhoneAuthProvider.verifyPhoneNumber(option)
+        } else {
+            trySend(ResultState.Failure(Exception("Please check your internet connection!")))
+        }
 
         awaitClose { close() }
     }
@@ -109,6 +151,5 @@ class AuthRepositoryImpl @Inject constructor(
 
         awaitClose { close() }
     }
-
 
 }

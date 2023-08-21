@@ -10,6 +10,11 @@ interface AuthRepository {
         activity: Activity
     ): Flow<ResultState<String>>
 
+    fun resendOtp(
+        phoneNumber: String,
+        activity: Activity
+    ): Flow<ResultState<String>>
+
     fun signWithCredential(otp: String) : Flow<ResultState<String>>
 
     fun logout(): Flow<ResultState<String>>

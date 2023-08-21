@@ -16,6 +16,11 @@ class AuthViewModel @Inject constructor(
         activity: Activity
     ) = repository.createUserWithPhone(phoneNumber = phone, activity = activity)
 
+    fun resendOtp(
+        phone: String,
+        activity: Activity
+    ) = repository.resendOtp(phoneNumber = phone, activity = activity)
+
     fun signInWithCredential(code: String) = repository.signWithCredential(code)
 
 
