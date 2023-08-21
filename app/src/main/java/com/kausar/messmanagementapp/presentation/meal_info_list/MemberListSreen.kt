@@ -250,7 +250,8 @@ fun MealInfoTable(itemState: FirebaseFirestoreDbViewModel.ItemState) {
     val mealListTitle = listOf("Date", "Day", "B", "L", "D")
     Column(
         Modifier
-            .fillMaxHeight(.95f)
+            .padding(horizontal = 16.dp)
+            .border(1.dp, Color.Gray, RoundedCornerShape(8.dp))
     ) {
         if (itemState.item.isNotEmpty()) {
             val mealResponseList = itemState.item
@@ -419,7 +420,7 @@ fun ShowUser(
             Row() {
                 IconButton(onClick = onClickUser) {
                     Icon(
-                        imageVector = if(expand) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                        imageVector = if (expand) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
                         contentDescription = "show_hide_list"
                     )
                 }
