@@ -19,6 +19,8 @@ interface FirebaseFirestoreRepo {
 
     fun updateMeal(meal: MealInfo): Flow<ResultState<String>>
 
+    fun getAppUser(): Flow<ResultState<List<User>?>>
+
     fun getMealByDate(date: String): Flow<ResultState<MealInfo?>>
 
     fun getAllMeal(date: String, currentUser: String? = null): Flow<ResultState<List<MealInfo>>>

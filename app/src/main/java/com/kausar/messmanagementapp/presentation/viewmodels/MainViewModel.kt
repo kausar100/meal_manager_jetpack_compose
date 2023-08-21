@@ -27,8 +27,13 @@ class MainViewModel @Inject constructor(
     private val _userProfile = mutableStateOf(User())
     val userInfo: State<User> = _userProfile
 
+    private val _listOfAppUser = mutableStateOf(listOf<User>())
+    val appUser: State<List<User>> = _listOfAppUser
+
+
     init {
         getUserInfo()
+        getAppUser()
         getContactNumber()
         viewModelScope.launch {
             loginPref.getLoginStatus().collectLatest {
@@ -59,7 +64,42 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    fun getContactNumber() = viewModelScope.launch {
+    fun isAppUser(phone: String): Boolean {
+        var status = false
+        if (appUser.value.isNotEmpty()) {
+            for (user in appUser.value) {
+                println("app user contact number ${user.contactNo}")
+                if (user.contactNo == phone) {
+                    status = true
+                    break
+                }
+            }
+        }
+        return status
+    }
+
+    private fun getAppUser() = viewModelScope.launch {
+        firestoreRepo.getAppUser().collectLatest { res ->
+            when (res) {
+                is ResultState.Success -> {
+                    res.data?.let {
+                        _listOfAppUser.value = res.data
+                    }
+                }
+
+                is ResultState.Failure -> {
+                    println(res.message.localizedMessage)
+                }
+
+                is ResultState.Loading -> {
+
+                }
+            }
+
+        }
+    }
+
+    private fun getContactNumber() = viewModelScope.launch {
         loginPref.getContactNumber().collectLatest {
             _contact.value = it
         }

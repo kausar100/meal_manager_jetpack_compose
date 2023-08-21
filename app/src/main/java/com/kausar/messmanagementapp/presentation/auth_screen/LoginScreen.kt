@@ -52,14 +52,12 @@ import com.kausar.messmanagementapp.components.CustomTopAppBar
 import com.kausar.messmanagementapp.data.model.User
 import com.kausar.messmanagementapp.navigation.Screen
 import com.kausar.messmanagementapp.presentation.AboutScreen
-import com.kausar.messmanagementapp.presentation.viewmodels.FirebaseFirestoreDbViewModel
 import com.kausar.messmanagementapp.presentation.viewmodels.MainViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(
     mainViewModel: MainViewModel = hiltViewModel(),
-    viewModel: FirebaseFirestoreDbViewModel = hiltViewModel(),
     gotoRegistrationScreen: () -> Unit,
     onSubmit: (String) -> Unit
 ) {
@@ -88,19 +86,19 @@ fun LoginScreen(
                     scrollBehavior = scrollBehavior
                 )
             }) {
-                LoginScreenContent(modifier = Modifier
-                    .fillMaxSize()
-                    .padding(it),
+                LoginScreenContent(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(it),
                     viewModel = mainViewModel,
-                    firestore = viewModel,
-                    toggleScreen = gotoRegistrationScreen,
-                    onLogin = { phone ->
-                        val newUser = User(
-                            contactNo = phone
-                        )
-                        val json = Gson().toJson(newUser)
-                        onSubmit(json)
-                    })
+                    toggleScreen = gotoRegistrationScreen
+                ) { phone ->
+                    val newUser = User(
+                        contactNo = phone
+                    )
+                    val json = Gson().toJson(newUser)
+                    onSubmit(json)
+                }
 
             }
 
@@ -115,7 +113,6 @@ fun LoginScreenContent(
     modifier: Modifier = Modifier,
     viewModel: MainViewModel,
     toggleScreen: () -> Unit,
-    firestore: FirebaseFirestoreDbViewModel,
     onLogin: (contact: String) -> Unit,
 ) {
     val focusManager = LocalFocusManager.current
@@ -192,7 +189,15 @@ fun LoginScreenContent(
                         showToast = true
 
                     } else {
-                        onLogin(contactNo)
+                        val result = viewModel.isAppUser(contactNo)
+                        if (result){
+                            onLogin(contactNo)
+                        }else{
+                            errMsg = "Please sign up to use this app!"
+                            successMsg = null
+                            showToast = true
+                        }
+
                     }
 
                 },
@@ -242,5 +247,5 @@ fun LoginScreenContent(
 @Preview(showBackground = true)
 @Composable
 fun PreviewLoginScreen() {
-    LoginScreen(gotoRegistrationScreen = { /*TODO*/ }, onSubmit = {})
+    LoginScreen(gotoRegistrationScreen = { /*TODO*/ }) {}
 }

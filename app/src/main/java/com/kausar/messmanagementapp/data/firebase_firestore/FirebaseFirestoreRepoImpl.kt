@@ -228,12 +228,15 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
                                 .whereEqualTo("messId", user.messId)
                                 .get()
                                 .addOnSuccessListener {res->
-                                    val listOfMessMembers = mutableListOf<User?>()
+                                    val listOfMessMembers = mutableListOf<User>()
                                     for (info in res.documents) {
                                         val data = info.toObject(User::class.java)
-                                        listOfMessMembers.add(data)
+                                        data?.let {
+                                            listOfMessMembers.add(data)
+                                        }
+
                                     }
-                                    trySend(ResultState.Success(listOfMessMembers as List<User>))
+                                    trySend(ResultState.Success(listOfMessMembers))
                                 }
                                 .addOnFailureListener {exp ->
                                     trySend(ResultState.Failure(exp))
@@ -381,6 +384,34 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
             close()
         }
 
+    }
+
+    override fun getAppUser(): Flow<ResultState<List<User>?>> = callbackFlow{
+        trySend(ResultState.Loading)
+
+        if (Network.isNetworkAvailable(context)) {
+            firestore.collection(CollectionRef.userDb).get()
+                .addOnSuccessListener { result ->
+                    val lisOfUser = mutableListOf<User>()
+                    for (document in result.documents) {
+                        val user = document.toObject(User::class.java)
+                        user?.let {
+                            lisOfUser.add(user)
+                        }
+                    }
+                    trySend(ResultState.Success(lisOfUser))
+
+                }.addOnFailureListener {
+                    trySend(ResultState.Failure(it))
+                }
+
+        } else {
+            trySend(ResultState.Failure(Exception("Please check your internet connection!")))
+        }
+
+        awaitClose {
+            close()
+        }
     }
 
     override fun getMealByDate(date: String): Flow<ResultState<MealInfo?>> = callbackFlow {
