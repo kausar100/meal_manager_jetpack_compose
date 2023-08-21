@@ -27,7 +27,6 @@ fun MealInfoScreen(firestore: FirebaseFirestoreDbViewModel, currentUser: Boolean
         MealSummary(
             modifier = Modifier
                 .fillMaxWidth(1f),
-            currentUser = true,
             totalMeal = mealCnt.totalMeal.toString(),
             numberOfBreakfast = mealCnt.breakfast.toString(),
             numberOfLunch = mealCnt.lunch.toString(),
@@ -38,7 +37,6 @@ fun MealInfoScreen(firestore: FirebaseFirestoreDbViewModel, currentUser: Boolean
         MealSummary(
             modifier = Modifier
                 .fillMaxWidth(1f),
-            currentUser = false,
             totalMeal = mealCnt.totalMeal.toString(),
             numberOfBreakfast = mealCnt.breakfast.toString(),
             numberOfLunch = mealCnt.lunch.toString(),
@@ -50,7 +48,6 @@ fun MealInfoScreen(firestore: FirebaseFirestoreDbViewModel, currentUser: Boolean
 @Composable
 fun MealSummary(
     modifier: Modifier,
-    currentUser: Boolean,
     totalMeal: String,
     numberOfBreakfast: String,
     numberOfLunch: String,
@@ -59,7 +56,7 @@ fun MealSummary(
     Column(
         modifier = modifier.padding(8.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = if (currentUser) Arrangement.spacedBy(16.dp) else Arrangement.SpaceEvenly
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Row(
             Modifier

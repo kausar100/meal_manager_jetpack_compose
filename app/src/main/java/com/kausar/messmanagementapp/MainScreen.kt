@@ -26,6 +26,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.kausar.messmanagementapp.components.CustomTopAppBar
+import com.kausar.messmanagementapp.data.model.MemberType
 import com.kausar.messmanagementapp.navigation.BottomBarScreen
 import com.kausar.messmanagementapp.navigation.BottomNavGraph
 import com.kausar.messmanagementapp.navigation.Screen
@@ -45,8 +46,7 @@ fun MainScreen(viewModel: MainViewModel) {
 
     val isLogin = viewModel.isLoggedIn.value
     viewModel.getContactNumber()
-
-    println("mainscreen login $isLogin")
+    viewModel.getUserInfo()
 
     val connection by connectivityState()
     val isConnected = (connection === ConnectionState.Available)
@@ -56,6 +56,7 @@ fun MainScreen(viewModel: MainViewModel) {
             when (currentRoute(navController)) {
                 BottomBarScreen.Home.route,
                 BottomBarScreen.MealList.route,
+                BottomBarScreen.MemberList.route,
                 BottomBarScreen.Profile.route -> {
                     CustomTopAppBar(
                         title = when (currentRoute(navController)) {
@@ -69,6 +70,10 @@ fun MainScreen(viewModel: MainViewModel) {
 
                             BottomBarScreen.Profile.route -> {
                                 BottomBarScreen.Profile.title
+                            }
+
+                            BottomBarScreen.MemberList.route -> {
+                                BottomBarScreen.MemberList.title
                             }
 
                             else -> {
@@ -86,8 +91,8 @@ fun MainScreen(viewModel: MainViewModel) {
         },
         bottomBar = {
             when (currentRoute(navController)) {
-                BottomBarScreen.Home.route, BottomBarScreen.MealList.route, BottomBarScreen.Profile.route -> {
-                    BottomBar(navController = navController)
+                BottomBarScreen.Home.route, BottomBarScreen.MealList.route, BottomBarScreen.Profile.route, BottomBarScreen.MemberList.route -> {
+                    BottomBar(navController = navController, mainViewModel = viewModel)
                 }
             }
         },
@@ -125,11 +130,15 @@ fun currentRoute(navController: NavController): String? {
 }
 
 @Composable
-fun BottomBar(navController: NavHostController) {
-    val screens = listOf(
+fun BottomBar(navController: NavHostController, mainViewModel: MainViewModel) {
+
+    val screens = mutableListOf(
         BottomBarScreen.Home, BottomBarScreen.MealList, BottomBarScreen.Profile
     )
 
+    if(mainViewModel.userInfo.value.userType == MemberType.Manager.name){
+        screens.add(2,BottomBarScreen.MemberList)
+    }
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination

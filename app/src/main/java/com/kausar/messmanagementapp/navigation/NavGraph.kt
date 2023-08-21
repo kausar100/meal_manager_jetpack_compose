@@ -13,6 +13,7 @@ import com.kausar.messmanagementapp.presentation.auth_screen.RegistrationScreen
 import com.kausar.messmanagementapp.presentation.auth_screen.OtpVerifyScreen
 import com.kausar.messmanagementapp.presentation.home_screen.HomeScreen
 import com.kausar.messmanagementapp.presentation.meal_info_list.MealListScreen
+import com.kausar.messmanagementapp.presentation.meal_info_list.MemberListScreen
 import com.kausar.messmanagementapp.presentation.profile_screen.ProfileScreen
 import com.kausar.messmanagementapp.presentation.viewmodels.MainViewModel
 
@@ -47,6 +48,9 @@ fun BottomNavGraph(
         }
         composable(route = BottomBarScreen.MealList.route) {
             MealListScreen(mainViewModel)
+        }
+        composable(route = BottomBarScreen.MemberList.route) {
+            MemberListScreen(mainViewModel)
         }
         composable(route = Screen.Login.route) {
             LoginScreen(mainViewModel, gotoRegistrationScreen = {
