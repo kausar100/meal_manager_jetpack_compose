@@ -61,6 +61,7 @@ import com.kausar.messmanagementapp.components.CustomProgressBar
 import com.kausar.messmanagementapp.data.model.MealInfo
 import com.kausar.messmanagementapp.data.model.MemberType
 import com.kausar.messmanagementapp.data.model.User
+import com.kausar.messmanagementapp.presentation.home_screen.MealInfoScreen
 import com.kausar.messmanagementapp.presentation.viewmodels.FirebaseFirestoreDbViewModel
 import com.kausar.messmanagementapp.presentation.viewmodels.MainViewModel
 import com.kausar.messmanagementapp.utils.fetchCurrentMonthName
@@ -76,13 +77,23 @@ fun MealListScreen(
     viewModel: FirebaseFirestoreDbViewModel = hiltViewModel(),
 ) {
 
+
     val itemState = viewModel.response.value
     val memberState = viewModel.memberInfo.value
     val userInfo = mainViewModel.userInfo.value
 
-    if (userInfo.userType == MemberType.Member.name) {
-        LaunchedEffect(key1 = true) {
-            viewModel.getMealByUserId(userInfo.userId)
+
+    LaunchedEffect(key1 = true) {
+        if (userInfo.userType.isNotEmpty()) {
+            if (userInfo.userType == MemberType.Member.name && itemState.item.isEmpty()) {
+                viewModel.getAllMeal(userInfo.userId)
+            } else {
+                if (memberState.listOfMember.isEmpty()) {
+                    viewModel.getMembers()
+                }
+            }
+        } else {
+            mainViewModel.getUserInfo()
         }
     }
 
@@ -91,9 +102,24 @@ fun MealListScreen(
     val connection by connectivityState()
     val isConnected = (connection === ConnectionState.Available)
 
-    if (isConnected && itemState.error.isNotEmpty()) {
-        LaunchedEffect(key1 = true) {
-            viewModel.getMembers()
+    //when internet available and previously not fetch any data
+    if (userInfo.userType.isEmpty()) {
+        LaunchedEffect(key1 = isConnected) {
+            if(isConnected){
+                mainViewModel.getUserInfo()
+            }
+        }
+    }
+
+    LaunchedEffect(key1 = isConnected){
+        if (userInfo.userType == MemberType.Member.name) {
+            if (itemState.error.isNotEmpty() && isConnected) {
+                viewModel.getAllMeal(userInfo.userId)
+            }
+        } else {
+            if (memberState.error.isNotEmpty() && isConnected) {
+                viewModel.getMembers()
+            }
         }
     }
 
@@ -130,6 +156,7 @@ fun MealListScreen(
             MealListInfo(itemState = itemState)
         } else {
             if (showList) {
+                MealInfoScreen(firestore = viewModel)
                 ShowUser(userInfo = memberInfo, true) {
                     showList = false
                 }
@@ -171,17 +198,36 @@ fun MealListScreen(
                             .fillMaxWidth(.9f),
                         contentAlignment = Alignment.Center
                     ) {
-                        if (memberState.isLoading) {
-                            CustomProgressBar("Fetching data...")
-                        } else if (itemState.error.isNotEmpty()) {
-                            Text(itemState.error, textAlign = TextAlign.Center)
-                        } else {
-                            if (itemState.item.isEmpty()) {
-                                Text(
-                                    text = "Not found any member!",
-                                    textAlign = TextAlign.Center
-                                )
+                        if (userInfo.userType == MemberType.Member.name) {
+                            if (itemState.isLoading) {
+                                CustomProgressBar("Fetching data...")
+                            } else if (itemState.error.isNotEmpty()) {
+                                Text(itemState.error, textAlign = TextAlign.Center)
+                            } else {
+                                if (itemState.item.isEmpty()) {
+                                    Text(
+                                        text = "No meal history found!",
+                                        textAlign = TextAlign.Center
+                                    )
+                                }
+
                             }
+
+                        } else {
+                            if (memberState.isLoading) {
+                                CustomProgressBar("Fetching data...")
+                            } else if (memberState.error.isNotEmpty()) {
+                                Text(memberState.error, textAlign = TextAlign.Center)
+                            } else {
+                                if (memberState.listOfMember.isEmpty()) {
+                                    Text(
+                                        text = "Mess member not found!",
+                                        textAlign = TextAlign.Center
+                                    )
+                                }
+
+                            }
+
                         }
 
                     }

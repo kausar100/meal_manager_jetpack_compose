@@ -115,15 +115,18 @@ fun HomeScreen(
         mutableStateOf(false)
     }
 
+    val userInfo = mainViewModel.userInfo.value
+    val mealInfoState = viewModel.mealInfo.value
+
     val connection by connectivityState()
     val isConnected = (connection === ConnectionState.Available)
-    LaunchedEffect(key1 = isConnected) {
-        viewModel.getMealForToday()
+
+    if (userInfo.userType.isEmpty()) {
+        LaunchedEffect(key1 = isConnected) {
+            viewModel.getMealForToday()
+            mainViewModel.getUserInfo()
+        }
     }
-
-    val userInfo = mainViewModel.userInfo.value
-
-    val mealInfoState = viewModel.mealInfo.value
 
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
@@ -173,53 +176,58 @@ fun HomeScreen(
             }
             Spacer(modifier = Modifier.height(8.dp))
             if (!newMeal) {
-                ListItem(headlineText = {
-                    Text(text = userInfo.messName)
-                },
-                    modifier = Modifier
-                        .padding(16.dp)
-                        .border(1.dp, Color.Gray, RoundedCornerShape(4.dp))
-                        .clickable {
-                            showMealInfoScreen = true
+                if (userInfo.userType.isNotEmpty()) {
+                    LaunchedEffect(key1 = true){
+                        viewModel.getAllMeal(userInfo.userId)
+                    }
+                    ListItem(headlineText = {
+                        Text(text = userInfo.messName)
+                    },
+                        modifier = Modifier
+                            .padding(16.dp)
+                            .border(1.dp, Color.Gray, RoundedCornerShape(4.dp))
+                            .clickable {
+                                showMealInfoScreen = true
+                            },
+                        leadingContent = {
+                            if (userInfo.profilePhoto.isNotEmpty()) {
+                                AsyncImage(
+                                    model = ImageRequest.Builder(LocalContext.current)
+                                        .data(userInfo.profilePhoto)
+                                        .crossfade(true).build(),
+                                    placeholder = painterResource(id = R.drawable.ic_person),
+                                    contentDescription = stringResource(id = R.string.profile_picture),
+                                    contentScale = ContentScale.Crop,
+                                    modifier = Modifier
+                                        .size(50.dp)
+                                        .clip(CircleShape)
+                                )
+
+                            } else {
+                                Icon(
+                                    imageVector = Icons.Default.Person,
+                                    contentDescription = "profile",
+                                    tint = Color.Black,
+                                    modifier = Modifier
+                                        .size(50.dp)
+                                        .border(1.dp, color = Color.Gray, shape = CircleShape)
+                                        .background(color = Color.Transparent, shape = CircleShape)
+                                        .clip(CircleShape)
+                                )
+                            }
+
                         },
-                    leadingContent = {
-                        if (userInfo.profilePhoto.isNotEmpty()) {
-                            AsyncImage(
-                                model = ImageRequest.Builder(LocalContext.current)
-                                    .data(userInfo.profilePhoto)
-                                    .crossfade(true).build(),
-                                placeholder = painterResource(id = R.drawable.ic_person),
-                                contentDescription = stringResource(id = R.string.profile_picture),
-                                contentScale = ContentScale.Crop,
-                                modifier = Modifier
-                                    .size(50.dp)
-                                    .clip(CircleShape)
-                            )
-
-                        } else {
-                            Icon(
-                                imageVector = Icons.Default.Person,
-                                contentDescription = "profile",
-                                tint = Color.Black,
-                                modifier = Modifier
-                                    .size(50.dp)
-                                    .border(1.dp, color = Color.Gray, shape = CircleShape)
-                                    .background(color = Color.Transparent, shape = CircleShape)
-                                    .clip(CircleShape)
-                            )
-                        }
-
-                    },
-                    trailingContent = {
-                        IconButton(onClick = { showMealInfoScreen = true }) {
-                            Icon(
-                                imageVector = Icons.Default.Info,
-                                contentDescription = "count_meal"
-                            )
-                        }
-                    },
-                    overlineText = { Text(text = userInfo.userName) }
-                )
+                        trailingContent = {
+                            IconButton(onClick = { showMealInfoScreen = true }) {
+                                Icon(
+                                    imageVector = Icons.Default.Info,
+                                    contentDescription = "count_meal"
+                                )
+                            }
+                        },
+                        overlineText = { Text(text = userInfo.userName) }
+                    )
+                }
             }
 
             if (showToast) {
