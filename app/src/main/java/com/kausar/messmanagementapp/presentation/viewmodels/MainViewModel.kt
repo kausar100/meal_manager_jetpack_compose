@@ -71,6 +71,7 @@ class MainViewModel @Inject constructor(
                 println("app user contact number ${user.contactNo}")
                 if (user.contactNo == phone) {
                     status = true
+                    _userProfile.value = user
                     break
                 }
             }

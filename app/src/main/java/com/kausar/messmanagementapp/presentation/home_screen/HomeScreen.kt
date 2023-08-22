@@ -61,6 +61,7 @@ import coil.request.ImageRequest
 import com.kausar.messmanagementapp.R
 import com.kausar.messmanagementapp.components.CustomProgressBar
 import com.kausar.messmanagementapp.data.model.MealInfo
+import com.kausar.messmanagementapp.data.model.User
 import com.kausar.messmanagementapp.presentation.viewmodels.FirebaseFirestoreDbViewModel
 import com.kausar.messmanagementapp.presentation.viewmodels.MainViewModel
 import com.kausar.messmanagementapp.utils.ResultState
@@ -74,7 +75,6 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.util.Calendar
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     mainViewModel: MainViewModel = hiltViewModel(),
@@ -172,64 +172,21 @@ fun HomeScreen(
                     }
                 }
             } else {
-                Text(text = today, textAlign = TextAlign.Center)
-            }
-            Spacer(modifier = Modifier.height(8.dp))
-            if (!newMeal) {
                 if (userInfo.userType.isNotEmpty()) {
-                    LaunchedEffect(key1 = true){
+                    LaunchedEffect(key1 = true) {
                         viewModel.getAllMeal(userInfo.userId)
                     }
-                    ListItem(headlineText = {
-                        Text(text = userInfo.messName)
-                    },
-                        modifier = Modifier
-                            .padding(16.dp)
-                            .border(1.dp, Color.Gray, RoundedCornerShape(4.dp))
-                            .clickable {
-                                showMealInfoScreen = true
-                            },
-                        leadingContent = {
-                            if (userInfo.profilePhoto.isNotEmpty()) {
-                                AsyncImage(
-                                    model = ImageRequest.Builder(LocalContext.current)
-                                        .data(userInfo.profilePhoto)
-                                        .crossfade(true).build(),
-                                    placeholder = painterResource(id = R.drawable.ic_person),
-                                    contentDescription = stringResource(id = R.string.profile_picture),
-                                    contentScale = ContentScale.Crop,
-                                    modifier = Modifier
-                                        .size(50.dp)
-                                        .clip(CircleShape)
-                                )
+                    CustomListTile(
+                        userData = userInfo
+                    ) {
+                        showMealInfoScreen = true
 
-                            } else {
-                                Icon(
-                                    imageVector = Icons.Default.Person,
-                                    contentDescription = "profile",
-                                    tint = Color.Black,
-                                    modifier = Modifier
-                                        .size(50.dp)
-                                        .border(1.dp, color = Color.Gray, shape = CircleShape)
-                                        .background(color = Color.Transparent, shape = CircleShape)
-                                        .clip(CircleShape)
-                                )
-                            }
-
-                        },
-                        trailingContent = {
-                            IconButton(onClick = { showMealInfoScreen = true }) {
-                                Icon(
-                                    imageVector = Icons.Default.Info,
-                                    contentDescription = "count_meal"
-                                )
-                            }
-                        },
-                        overlineText = { Text(text = userInfo.userName) }
-                    )
+                    }
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(text = today, textAlign = TextAlign.Center)
                 }
             }
-
+            Spacer(modifier = Modifier.height(8.dp))
             if (showToast) {
                 Box(
                     Modifier
@@ -346,20 +303,7 @@ fun HomeScreen(
                         mealInfo = mealInfoState.meal,
                     )
                 }
-                Box(
-                    Modifier
-                        .fillMaxHeight()
-                        .fillMaxWidth(1f),
-                    contentAlignment = Alignment.Center
-                ) {
-                    if (mealInfoState.isLoading) {
-                        CustomProgressBar(msg = "Fetching meal info...")
-                    } else if (mealInfoState.error.isNotEmpty()) {
-                        Text(mealInfoState.error, textAlign = TextAlign.Center)
-                    }
-
-                }
-
+                ShowMessage(mealInfoState)
             }
 
         }
@@ -381,37 +325,113 @@ fun HomeScreen(
         }
 
         if (showMealInfoScreen) {
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.BottomCenter) {
-                AlertDialog(
-                    onDismissRequest = {
-                        showMealInfoScreen = false
-                    },
-                    title = {
-                        Text(text = "Number of Meal")
-                    },
-                    shape = RoundedCornerShape(8.dp),
-                    text = {
-                        MealInfoScreen(firestore = viewModel)
-                    },
-                    confirmButton = {
-                        Button(
-
-                            onClick = {
-                                showMealInfoScreen = false
-                            },
-                        ) {
-                            Text("OK")
-                        }
-                    },
-                    dismissButton = {
-
-                    }
-                )
-            }
+            ShowMealInformationDialog(onDismiss = {
+                showMealInfoScreen = false
+            }, firestore = viewModel)
 
         }
 
     }
+}
+
+@Composable
+fun ShowMealInformationDialog(onDismiss: () -> Unit, firestore: FirebaseFirestoreDbViewModel) {
+    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.BottomCenter) {
+        AlertDialog(
+            onDismissRequest = onDismiss,
+            title = {
+                Text(text = "Number of Meal")
+            },
+            shape = RoundedCornerShape(8.dp),
+            text = {
+                MealInfoScreen(firestore = firestore)
+            },
+            confirmButton = {
+                Button(
+
+                    onClick = onDismiss,
+                ) {
+                    Text("OK")
+                }
+            },
+            dismissButton = {
+
+            }
+        )
+    }
+
+}
+
+@Composable
+fun ShowMessage(mealInfoState: FirebaseFirestoreDbViewModel.SingleMeal) {
+    Box(
+        Modifier
+            .fillMaxHeight()
+            .fillMaxWidth(1f),
+        contentAlignment = Alignment.Center
+    ) {
+        if (mealInfoState.isLoading) {
+            CustomProgressBar(msg = "Fetching meal info...")
+        } else if (mealInfoState.error.isNotEmpty()) {
+            Text(mealInfoState.error, textAlign = TextAlign.Center)
+        }
+
+    }
+
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun CustomListTile(userData: User, onClickInfo: () -> Unit) {
+    ListItem(
+        headlineText = {
+            Text(text = userData.messName, fontWeight = FontWeight.Bold)
+        },
+        modifier = Modifier
+            .padding(16.dp)
+            .border(1.dp, Color.Gray, RoundedCornerShape(4.dp))
+            .clickable {
+                onClickInfo()
+            },
+        leadingContent = {
+            if (userData.profilePhoto.isNotEmpty()) {
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(userData.profilePhoto)
+                        .crossfade(true).build(),
+                    placeholder = painterResource(id = R.drawable.ic_person),
+                    contentDescription = stringResource(id = R.string.profile_picture),
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .size(50.dp)
+                        .clip(CircleShape)
+                )
+
+            } else {
+                Icon(
+                    imageVector = Icons.Default.Person,
+                    contentDescription = "profile",
+                    tint = Color.Black,
+                    modifier = Modifier
+                        .size(50.dp)
+                        .border(1.dp, color = Color.Gray, shape = CircleShape)
+                        .background(color = Color.Transparent, shape = CircleShape)
+                        .clip(CircleShape)
+                )
+            }
+
+        },
+        trailingContent = {
+            IconButton(onClick = onClickInfo) {
+                Icon(
+                    imageVector = Icons.Default.Info,
+                    contentDescription = "count_meal"
+                )
+            }
+        },
+        supportingText = { Text(text = userData.userType, fontWeight = FontWeight.Bold) },
+    )
+
 }
 
 @Composable

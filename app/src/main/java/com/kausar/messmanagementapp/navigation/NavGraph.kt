@@ -7,6 +7,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.kausar.messmanagementapp.data.model.MemberType
 import com.kausar.messmanagementapp.presentation.SplashScreen
 import com.kausar.messmanagementapp.presentation.auth_screen.LoginScreen
 import com.kausar.messmanagementapp.presentation.auth_screen.RegistrationScreen
@@ -47,10 +48,11 @@ fun BottomNavGraph(
             ProfileScreen(mainViewModel)
         }
         composable(route = BottomBarScreen.MealList.route) {
-            MealListScreen(mainViewModel)
-        }
-        composable(route = BottomBarScreen.MemberList.route) {
-            MemberListScreen(mainViewModel)
+            if (mainViewModel.userInfo.value.userType == MemberType.Member.name){
+                MealListScreen(mainViewModel)
+            }else{
+                MemberListScreen(mainViewModel = mainViewModel)
+            }
         }
         composable(route = Screen.Login.route) {
             LoginScreen(mainViewModel, gotoRegistrationScreen = {

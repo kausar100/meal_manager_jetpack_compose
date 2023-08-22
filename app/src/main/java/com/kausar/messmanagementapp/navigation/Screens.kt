@@ -41,13 +41,7 @@ sealed class BottomBarScreen(
 
     object MealList : BottomBarScreen(
         route = "meal_list",
-        title = "Meal History",
-        icon = Icons.Default.List
-    )
-
-    object MemberList : BottomBarScreen(
-        route = "member_list",
-        title = "Mess Members",
+        title = "Meal Information",
         icon = Icons.Default.List
     )
 
