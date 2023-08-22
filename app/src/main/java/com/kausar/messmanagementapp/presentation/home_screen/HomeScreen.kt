@@ -128,6 +128,10 @@ fun HomeScreen(
         }
     }
 
+    LaunchedEffect(key1 = userInfo.profilePhoto) {
+        mainViewModel.getUserInfo()
+    }
+
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
 

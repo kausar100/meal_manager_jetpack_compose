@@ -63,6 +63,7 @@ import com.kausar.messmanagementapp.components.CustomBasicTextField
 import com.kausar.messmanagementapp.components.CustomProgressBar
 import com.kausar.messmanagementapp.presentation.viewmodels.FirebaseStorageViewModel
 import com.kausar.messmanagementapp.presentation.viewmodels.MainViewModel
+import com.kausar.messmanagementapp.utils.showToast
 
 @Composable
 fun ProfileScreen(
@@ -101,82 +102,87 @@ fun ProfileScreen(
 
             })
 
-    Column(
-        Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Spacer(modifier = Modifier.fillMaxHeight(.1f))
-        Box(Modifier.fillMaxHeight(.3f), contentAlignment = Alignment.BottomCenter) {
-            selectedImage?.let { uri ->
-                if (Build.VERSION.SDK_INT < 28) {
-                    bitmap.value =
-                        MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
+    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
 
+        Column(
+            Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Spacer(modifier = Modifier.fillMaxHeight(.1f))
+            Box(Modifier.fillMaxHeight(.3f), contentAlignment = Alignment.Center) {
+
+                if (isLoading) {
+                    CircularProgressIndicator()
+                }
+                if (selectedImage != null) {
+                    if (Build.VERSION.SDK_INT < 28) {
+                        bitmap.value =
+                            MediaStore.Images.Media.getBitmap(
+                                context.contentResolver,
+                                selectedImage
+                            )
+
+                    } else {
+                        val source =
+                            ImageDecoder.createSource(context.contentResolver, selectedImage!!)
+                        bitmap.value = ImageDecoder.decodeBitmap(source)
+                    }
+                    bitmap.value?.let { btm ->
+                        Image(
+                            bitmap = btm.asImageBitmap(),
+                            contentDescription = "profile photo",
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .size(100.dp)
+                                .clip(CircleShape)
+                        )
+
+                    }
                 } else {
-                    val source = ImageDecoder.createSource(context.contentResolver, uri)
-                    bitmap.value = ImageDecoder.decodeBitmap(source)
-                }
-                bitmap.value?.let { btm ->
-                    Image(
-                        bitmap = btm.asImageBitmap(),
-                        contentDescription = "profile photo",
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .size(100.dp)
-                            .clip(CircleShape)
-                    )
+                    if (userData.profilePhoto.isNotEmpty()) {
+                        AsyncImage(
+                            model = ImageRequest.Builder(LocalContext.current)
+                                .data(userData.profilePhoto)
+                                .crossfade(true).build(),
+                            onLoading = {
+                                isLoading = true
+                            },
+                            onSuccess = {
+                                isLoading = false
+                            },
+                            onError = {
+                                isLoading = false
+                            },
+                            placeholder = painterResource(id = R.drawable.ic_person),
+                            contentDescription = stringResource(id = R.string.profile_picture),
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .size(100.dp)
+                                .clip(CircleShape)
+                        )
+
+                    } else {
+                        Icon(
+                            imageVector = Icons.Default.Person,
+                            contentDescription = "profile photo",
+                            tint = Color.Black,
+                            modifier = Modifier
+                                .size(100.dp)
+                                .border(1.dp, color = Color.Gray, shape = CircleShape)
+                                .background(color = Color.Transparent, shape = CircleShape)
+                                .clip(CircleShape)
+                        )
+                    }
 
                 }
-            } ?: if (userData.profilePhoto.isNotEmpty()) {
-                AsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(userData.profilePhoto)
-                        .crossfade(true).build(),
-                    onLoading = {
-                        isLoading = true
-                    },
-                    onSuccess = {
-                        isLoading = false
-                    },
-                    onError = {
-                        isLoading = false
-                    },
-                    placeholder = painterResource(id = R.drawable.ic_person),
-                    contentDescription = stringResource(id = R.string.profile_picture),
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .size(100.dp)
-                        .clip(CircleShape)
-                )
-
-            } else {
-                Icon(
-                    imageVector = Icons.Default.Person,
-                    contentDescription = "profile photo",
-                    tint = Color.Black,
-                    modifier = Modifier
-                        .size(100.dp)
-                        .border(1.dp, color = Color.Gray, shape = CircleShape)
-                        .background(color = Color.Transparent, shape = CircleShape)
-                        .clip(CircleShape)
-                )
-            }
-
-            Box(
-                Modifier
-                    .fillMaxWidth(.30f)
-                    .fillMaxHeight(),
-                contentAlignment = Alignment.BottomEnd
-            ) {
-
                 IconButton(
                     onClick = { imagePicker.launch("image/*") }, modifier = Modifier
-                        .background(
-                            Color.DarkGray, CircleShape
-                        )
+                        .align(Alignment.BottomEnd)
+                        .padding(bottom = 16.dp, start = 16.dp)
+                        .background(Color.DarkGray, CircleShape)
                         .size(32.dp)
                 ) {
                     Icon(
@@ -187,64 +193,51 @@ fun ProfileScreen(
                     )
                 }
 
-
             }
 
-            if (isLoading) {
-                CircularProgressIndicator()
-            }
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text(
+                text = userData.userName,
+                textAlign = TextAlign.Center,
+                fontSize = 20.sp,
+                style = TextStyle(
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black,
+                    fontFamily = FontFamily.Cursive
+                )
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            UserInfo(
+                title = "Contact Number",
+                info = userData.contactNo,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
+            )
+
+            UserInfo(
+                title = "Mess Name",
+                info = userData.messName,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
+            )
+
+            UserInfo(
+                title = "Type",
+                info = userData.userType,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
+            )
 
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Text(
-            text = userData.userName,
-            textAlign = TextAlign.Center,
-            fontSize = 20.sp,
-            style = TextStyle(
-                fontWeight = FontWeight.Bold,
-                color = Color.Black,
-                fontFamily = FontFamily.Cursive
-            )
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        UserInfo(
-            title = "Contact Number",
-            info = userData.contactNo,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
-        )
-
-        UserInfo(
-            title = "Mess Name",
-            info = userData.messName,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
-        )
-
-        UserInfo(
-            title = "Type",
-            info = userData.userType,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
-        )
-
-        Box(
-            Modifier
-                .fillMaxHeight()
-                .fillMaxWidth(.9f), contentAlignment = Alignment.Center
-        ) {
-            selectedImage?.let {
-                if (profilePic.error.isNotEmpty()) {
-                    Text(profilePic.error, textAlign = TextAlign.Center)
-                } else if (profilePic.isLoading) {
-                    CustomProgressBar(msg = "Uploading pic...")
-                }
-            }
-
+        if (profilePic.error.isNotEmpty()) {
+            context.showToast(profilePic.error)
+        } else if (profilePic.isLoading) {
+            CustomProgressBar(msg = "Uploading pic...")
         }
 
     }
+
 
 }
 

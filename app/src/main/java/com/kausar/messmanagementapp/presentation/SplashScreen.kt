@@ -34,7 +34,7 @@ import androidx.compose.ui.unit.dp
 import com.kausar.messmanagementapp.R
 import kotlinx.coroutines.delay
 
-private const val SplashWaitTime: Long = 1500
+private const val SplashWaitTime: Long = 1000
 
 @Composable
 fun SplashScreen(onTimeout: () -> Unit) {
@@ -46,7 +46,7 @@ fun SplashScreen(onTimeout: () -> Unit) {
 
     val alphaAnim = animateFloatAsState(
         targetValue = if (startAnimation) 1f else 0f,
-        animationSpec = tween(durationMillis = 1000)
+        animationSpec = tween(durationMillis = 800)
     )
 
     LaunchedEffect(Unit) {
