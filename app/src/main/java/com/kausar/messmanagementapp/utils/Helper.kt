@@ -11,9 +11,26 @@ fun fetchDateAsString(calendar: Calendar): String {
     return "$dayName, $dayOfMonth/${month + 1}/$year"
 }
 
-fun getDayName(date: String) : String{
+fun getDayName(date: String): String {
     val start = date.indexOf(',')
-    return date.substring(0,start)
+    return date.substring(0, start)
+}
+
+fun getDateList(date: String): List<String> {
+    val lisOfDate = mutableListOf<String>()
+    val day = date.substring(0, 2)
+
+    repeat(day.toInt()) {
+        var curr = "0"
+        if ((it + 1) < 10) {
+            curr += (it + 1).toString()
+        } else {
+            curr = (it + 1).toString()
+        }
+        lisOfDate.add(curr)
+    }
+
+    return lisOfDate
 }
 
 
@@ -40,9 +57,9 @@ fun getDayName(calendar: Calendar): String {
     return day
 }
 
-fun fetchCurrentMonthName():String{
+fun fetchCurrentMonthName(): String {
     val calendar = Calendar.getInstance()
-    val month =  when(calendar[Calendar.MONTH]){
+    val month = when (calendar[Calendar.MONTH]) {
         0 -> "January"
         1 -> "February"
         2 -> "March"
