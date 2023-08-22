@@ -395,7 +395,7 @@ fun ShowUser(
                         .data(userInfo.profilePhoto)
                         .crossfade(true).build(),
                     placeholder = painterResource(id = R.drawable.ic_person),
-                    contentDescription = stringResource(id = R.string.profile_picture),
+                    contentDescription = stringResource(id = R.string.mess_picture),
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .size(50.dp)

@@ -1,6 +1,7 @@
 package com.kausar.messmanagementapp.data.firebase_firestore
 
 import com.kausar.messmanagementapp.data.model.MealInfo
+import com.kausar.messmanagementapp.data.model.Mess
 import com.kausar.messmanagementapp.data.model.User
 import com.kausar.messmanagementapp.utils.ResultState
 import kotlinx.coroutines.flow.Flow
@@ -9,19 +10,19 @@ interface FirebaseFirestoreRepo {
 
     fun entryUserInfo(user: User): Flow<ResultState<String>>
 
-    fun getUserInfo(): Flow<ResultState<User?>>
+    fun getCurrentUserInfo(): Flow<ResultState<User?>>
 
-    fun getMessNames(): Flow<ResultState<List<String>>>
+    fun getMessNames(): Flow<ResultState<List<Mess>>>
 
     fun getMemberList(): Flow<ResultState<List<User>?>>
 
-    fun insertMeal(meal: MealInfo): Flow<ResultState<String>>
+    fun insertCurrentUserMeal(meal: MealInfo): Flow<ResultState<String>>
 
-    fun updateMeal(meal: MealInfo): Flow<ResultState<String>>
+    fun updateCurrentUserMeal(meal: MealInfo): Flow<ResultState<String>>
 
     fun getAppUser(): Flow<ResultState<List<User>?>>
 
-    fun getMealByDate(date: String): Flow<ResultState<MealInfo?>>
+    fun getCurrentUserMealByDay(date: String): Flow<ResultState<MealInfo?>>
 
-    fun getAllMeal(date: String, currentUser: String? = null): Flow<ResultState<List<MealInfo>>>
+    fun getUserMealByMonth(date: String, currentUser: String? = null): Flow<ResultState<List<MealInfo>>>
 }

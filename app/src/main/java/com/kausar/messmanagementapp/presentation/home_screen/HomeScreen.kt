@@ -20,8 +20,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
@@ -121,15 +121,11 @@ fun HomeScreen(
     val connection by connectivityState()
     val isConnected = (connection === ConnectionState.Available)
 
-    if (userInfo.userType.isEmpty()) {
-        LaunchedEffect(key1 = isConnected) {
-            viewModel.getMealForToday()
+    LaunchedEffect(key1 = isConnected){
+        if(userInfo.userType.isEmpty()){
             mainViewModel.getUserInfo()
         }
-    }
-
-    LaunchedEffect(key1 = userInfo.profilePhoto) {
-        mainViewModel.getUserInfo()
+        viewModel.getMealForToday()
     }
 
     val scope = rememberCoroutineScope()
@@ -178,10 +174,12 @@ fun HomeScreen(
             } else {
                 if (userInfo.userType.isNotEmpty()) {
                     LaunchedEffect(key1 = true) {
+                        mainViewModel.getMessProfilePic(userInfo.messId, userInfo.messName)
                         viewModel.getAllMeal(userInfo.userId)
                     }
                     CustomListTile(
-                        userData = userInfo
+                        userData = userInfo,
+                        picture = mainViewModel.messPicture.value
                     ) {
                         showMealInfoScreen = true
 
@@ -386,7 +384,8 @@ fun ShowMessage(mealInfoState: FirebaseFirestoreDbViewModel.SingleMeal) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CustomListTile(userData: User, onClickInfo: () -> Unit) {
+fun CustomListTile(userData: User, picture: String, onClickInfo: () -> Unit) {
+
     ListItem(
         headlineText = {
             Text(text = userData.messName, fontWeight = FontWeight.Bold)
@@ -398,13 +397,13 @@ fun CustomListTile(userData: User, onClickInfo: () -> Unit) {
                 onClickInfo()
             },
         leadingContent = {
-            if (userData.profilePhoto.isNotEmpty()) {
+            if (picture.isNotEmpty()) {
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
-                        .data(userData.profilePhoto)
+                        .data(picture)
                         .crossfade(true).build(),
-                    placeholder = painterResource(id = R.drawable.ic_person),
-                    contentDescription = stringResource(id = R.string.profile_picture),
+                    placeholder = painterResource(id = R.drawable.ic_home),
+                    contentDescription = stringResource(id = R.string.mess_picture),
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .size(50.dp)
@@ -413,7 +412,7 @@ fun CustomListTile(userData: User, onClickInfo: () -> Unit) {
 
             } else {
                 Icon(
-                    imageVector = Icons.Default.Person,
+                    imageVector = Icons.Default.Home,
                     contentDescription = "profile",
                     tint = Color.Black,
                     modifier = Modifier

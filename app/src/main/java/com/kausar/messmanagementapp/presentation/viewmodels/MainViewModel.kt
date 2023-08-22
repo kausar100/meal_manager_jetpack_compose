@@ -1,10 +1,12 @@
 package com.kausar.messmanagementapp.presentation.viewmodels
 
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kausar.messmanagementapp.data.firebase_firestore.FirebaseFirestoreRepo
+import com.kausar.messmanagementapp.data.model.Mess
 import com.kausar.messmanagementapp.data.model.User
 import com.kausar.messmanagementapp.data.shared_pref.LoginDataStore
 import com.kausar.messmanagementapp.utils.ResultState
@@ -28,13 +30,20 @@ class MainViewModel @Inject constructor(
     val userInfo: State<User> = _userProfile
 
     private val _listOfAppUser = mutableStateOf(listOf<User>())
-    val appUser: State<List<User>> = _listOfAppUser
+    private val appUser: State<List<User>> = _listOfAppUser
+
+    private val _messList: MutableState<MessState> = mutableStateOf(MessState())
+    val messNames: State<MessState> = _messList
+
+    private val _messPic = mutableStateOf("")
+    val messPicture: State<String> = _messPic
 
 
     init {
+        getContactNumber()
         getUserInfo()
         getAppUser()
-        getContactNumber()
+        getMessNames()
         viewModelScope.launch {
             loginPref.getLoginStatus().collectLatest {
                 _loginStatus.value = it
@@ -42,9 +51,34 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    fun getMessNames() = viewModelScope.launch {
+
+        firestoreRepo.getMessNames().collectLatest {
+            when (it) {
+                is ResultState.Success -> {
+                    _messList.value = MessState(
+                        listOfMess = it.data
+                    )
+                }
+
+                is ResultState.Failure -> {
+                    _messList.value = MessState(
+                        error = it.message.localizedMessage
+                    )
+                }
+
+                is ResultState.Loading -> {
+                    _messList.value = MessState(
+                        isLoading = true
+                    )
+                }
+            }
+        }
+    }
+
     fun getUserInfo() {
         viewModelScope.launch {
-            firestoreRepo.getUserInfo().collectLatest { res ->
+            firestoreRepo.getCurrentUserInfo().collectLatest { res ->
                 when (res) {
                     is ResultState.Success -> {
                         res.data?.let {
@@ -79,6 +113,16 @@ class MainViewModel @Inject constructor(
         return status
     }
 
+    fun getMessProfilePic(messId: String, messName: String) {
+        for (mess in messNames.value.listOfMess) {
+            if (mess.messId == messId && mess.messName == messName) {
+                _messPic.value = mess.profilePhoto
+                println("mess pic link ${_messPic.value}")
+                break
+            }
+        }
+    }
+
     private fun getAppUser() = viewModelScope.launch {
         firestoreRepo.getAppUser().collectLatest { res ->
             when (res) {
@@ -110,4 +154,11 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch { loginPref.saveLoginStatus(status) }
 
     fun saveContact(phone: String) = viewModelScope.launch { loginPref.saveContactNumber(phone) }
+
+
+    data class MessState(
+        val listOfMess: List<Mess> = emptyList(),
+        val error: String = "",
+        val isLoading: Boolean = false
+    )
 }

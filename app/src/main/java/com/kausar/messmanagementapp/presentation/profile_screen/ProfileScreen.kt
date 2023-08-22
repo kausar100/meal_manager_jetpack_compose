@@ -157,7 +157,7 @@ fun ProfileScreen(
                                 isLoading = false
                             },
                             placeholder = painterResource(id = R.drawable.ic_person),
-                            contentDescription = stringResource(id = R.string.profile_picture),
+                            contentDescription = stringResource(id = R.string.mess_picture),
                             contentScale = ContentScale.Crop,
                             modifier = Modifier
                                 .size(100.dp)
@@ -237,7 +237,6 @@ fun ProfileScreen(
         }
 
     }
-
 
 }
 

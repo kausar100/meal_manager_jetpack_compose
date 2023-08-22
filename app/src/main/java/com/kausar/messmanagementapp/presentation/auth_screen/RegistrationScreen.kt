@@ -71,7 +71,7 @@ fun RegistrationScreen(
         mutableStateOf(false)
     }
 
-    val messNamesState = viewModel.messNames.value
+    val messNamesState = mainViewModel.messNames.value
 
     Box(Modifier.fillMaxSize()) {
         if (showAboutScreen) {
@@ -94,13 +94,19 @@ fun RegistrationScreen(
                     scrollBehavior = scrollBehavior
                 )
             }) {
+                val listOfMess = mutableListOf<String>()
+
+                repeat(messNamesState.listOfMess.size) { index ->
+                    listOfMess.add(messNamesState.listOfMess[index].messName)
+                }
+
                 RegistrationScreenContent(modifier = Modifier
                     .fillMaxSize()
                     .padding(it),
                     viewModel = mainViewModel,
                     toggleScreen = gotoLoinScreen,
                     firestore = viewModel,
-                    messNames = messNamesState.listOfMess,
+                    messNames = listOfMess,
                     onSubmit = { phone, name, mess, type ->
                         val newUser = User(
                             userName = name,
@@ -143,7 +149,7 @@ fun RegistrationScreenContent(
     }
 
     LaunchedEffect(key1 = memberType) {
-        firestore.getMessNames()
+        viewModel.getMessNames()
     }
 
     var messName by remember {
@@ -184,7 +190,7 @@ fun RegistrationScreenContent(
                 LaunchedEffect(key1 = memberType) {
                     messName = when {
                         messNames.isNotEmpty() -> messNames[0]
-                        (messNames.isEmpty() && memberType == MemberType.Manager.name) -> ""
+                        memberType == MemberType.Manager.name -> ""
                         else -> "Not found any mess"
                     }
                 }

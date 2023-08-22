@@ -157,7 +157,7 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
 
     }
 
-    override fun getUserInfo(): Flow<ResultState<User?>> = callbackFlow {
+    override fun getCurrentUserInfo(): Flow<ResultState<User?>> = callbackFlow {
         trySend(ResultState.Loading)
         if (Network.isNetworkAvailable(context)) {
 
@@ -186,17 +186,17 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
         }
     }
 
-    override fun getMessNames(): Flow<ResultState<List<String>>> = callbackFlow {
+    override fun getMessNames(): Flow<ResultState<List<Mess>>> = callbackFlow {
         trySend(ResultState.Loading)
 
         if (Network.isNetworkAvailable(context)) {
             firestore.collection(CollectionRef.messNameDb).get()
                 .addOnSuccessListener { result ->
-                    val lisOfMess = mutableListOf<String>()
+                    val lisOfMess = mutableListOf<Mess>()
                     for (document in result.documents) {
                         val mess = document.toObject(Mess::class.java)
                         if (mess != null) {
-                            lisOfMess.add(mess.messName)
+                            lisOfMess.add(mess)
                         }
                     }
                     trySend(ResultState.Success(lisOfMess))
@@ -257,7 +257,7 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
         }
     }
 
-    override fun insertMeal(meal: MealInfo): Flow<ResultState<String>> = callbackFlow {
+    override fun insertCurrentUserMeal(meal: MealInfo): Flow<ResultState<String>> = callbackFlow {
         trySend(ResultState.Loading)
 
         val monthYear = getMonthYear(meal.date!!)
@@ -323,7 +323,7 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
         }
     }
 
-    override fun updateMeal(meal: MealInfo): Flow<ResultState<String>> = callbackFlow {
+    override fun updateCurrentUserMeal(meal: MealInfo): Flow<ResultState<String>> = callbackFlow {
         trySend(ResultState.Loading)
 
         val monthYear = getMonthYear(meal.date!!)
@@ -414,7 +414,7 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
         }
     }
 
-    override fun getMealByDate(date: String): Flow<ResultState<MealInfo?>> = callbackFlow {
+    override fun getCurrentUserMealByDay(date: String): Flow<ResultState<MealInfo?>> = callbackFlow {
         trySend(ResultState.Loading)
 
         val monthYear = getMonthYear(date)
@@ -469,7 +469,7 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    override fun getAllMeal(date: String, currentUser: String?): Flow<ResultState<List<MealInfo>>> = callbackFlow {
+    override fun getUserMealByMonth(date: String, currentUser: String?): Flow<ResultState<List<MealInfo>>> = callbackFlow {
         trySend(ResultState.Loading)
 
         val monthYear = getMonthYear(date)
