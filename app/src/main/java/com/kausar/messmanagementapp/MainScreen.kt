@@ -160,6 +160,14 @@ fun RowScope.AddDestination(
             it.route == screen.route
         } == true,
         onClick = {
+            currentDestination?.let {
+                if(currentDestination.route != screen.route){
+                    navController.navigate(screen.route) {
+                        popUpTo(BottomBarScreen.Home.route)
+                        launchSingleTop = true
+                    }
+                }
+            } ?:
             navController.navigate(screen.route) {
                 popUpTo(BottomBarScreen.Home.route)
                 launchSingleTop = true
