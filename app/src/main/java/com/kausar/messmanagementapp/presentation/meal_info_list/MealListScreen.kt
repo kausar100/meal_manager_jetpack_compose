@@ -14,19 +14,21 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -104,6 +106,8 @@ fun MealListScreen(
         }
     }
 
+    val listState = rememberLazyListState()
+
     Box(
         Modifier
             .fillMaxSize()
@@ -117,22 +121,40 @@ fun MealListScreen(
         ) {
             Spacer(modifier = Modifier.fillMaxHeight(.1f))
             if (itemState.item.isNotEmpty()) {
-                Text(
-                    text = "Meal List <> $listTitle",
-                    fontSize = 20.sp,
-                    textAlign = TextAlign.Center,
-                    style = TextStyle(
-                        fontWeight = FontWeight.Bold,
-                        color = Color.Black,
-                        fontFamily = FontFamily.Cursive
+                Row(
+                    Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = "Meal List <> $listTitle",
+                        fontSize = 20.sp,
+                        textAlign = TextAlign.Center,
+                        style = TextStyle(
+                            fontWeight = FontWeight.Bold,
+                            color = Color.Black,
+                            fontFamily = FontFamily.Cursive
+                        )
                     )
-                )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Icon(
+                        imageVector = if (search) Icons.Default.Close else Icons.Default.Search,
+                        contentDescription = "search",
+                        tint = if (search) Color.Gray else Color.Blue,
+                        modifier = Modifier
+                            .border(1.dp, Color.LightGray)
+                            .clickable {
+                                search = !search
+                            }
+                    )
+                }
+
                 Spacer(modifier = Modifier.height(16.dp))
                 if (search) {
                     LazyRow(
                         Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp)
+                            .padding(horizontal = 16.dp),
+                        state = listState
                     ) {
                         itemsIndexed(searchItems) { index, item ->
                             Box(
@@ -152,9 +174,7 @@ fun MealListScreen(
                                         CircleShape
                                     )
                                     .clickable {
-//                                        search = false
                                         selectedIndex = index
-                                        //need to fetch meal info on this day
                                     },
                                 contentAlignment = Alignment.Center
                             ) {
@@ -162,9 +182,15 @@ fun MealListScreen(
                             }
                         }
                     }
-                    //show date on horizontal scrolling
                 }
-                MealListInfo(itemState = itemState)
+                if (search) {
+                    val found = getMealAt(itemState.item, searchItems[selectedIndex])
+                    Spacer(modifier = Modifier.height(16.dp))
+                    MealItemSearch(meal = found)
+                } else {
+                    MealListInfo(itemState = itemState)
+                }
+
             } else {
                 Box(
                     Modifier
@@ -188,26 +214,37 @@ fun MealListScreen(
             }
 
         }
-        if (!search) {
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.BottomEnd) {
-                FloatingActionButton(
-                    onClick = {
-                        search = true
-                    },
-                    modifier = Modifier.background(Color.Transparent, shape = CircleShape)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Search,
-                        contentDescription = "search meal",
-                        tint = Color.Black
-                    )
-                }
-            }
-        }
-
     }
+}
 
+fun getMealAt(meals: List<MealInfo>, day: String): MealInfo? {
+    var foundMeal: MealInfo? = null
+    for (meal in meals) {
+        if (meal.date!!.substring(0, 2) == day) {
+            foundMeal = meal
+            break
+        }
+    }
+    return foundMeal
+}
 
+@Composable
+fun MealItemSearch(meal: MealInfo?) {
+    Column(
+        Modifier
+            .fillMaxHeight(.95f)
+    ) {
+        meal?.let {
+            MealItem(meal = meal)
+        } ?: Box(
+            Modifier
+                .fillMaxHeight()
+                .fillMaxWidth(.9f),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(text = "Not found any meal!", textAlign = TextAlign.Center)
+        }
+    }
 }
 
 

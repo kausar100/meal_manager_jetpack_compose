@@ -72,6 +72,14 @@ fun MainScreen(viewModel: MainViewModel) {
                                 null
                             }
                         },
+                        canLogout = when (currentRoute(navController)) {
+                            BottomBarScreen.Home.route -> {
+                                true
+                            }
+                            else -> {
+                                false
+                            }
+                        },
                         canNavigateBack = false, logoutAction = {
                             authViewModel.logout()
                             viewModel.saveLoginStatus(false)
