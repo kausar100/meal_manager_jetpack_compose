@@ -2,7 +2,6 @@ package com.kausar.messmanagementapp.presentation.auth_screen
 
 import android.app.Activity
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -33,7 +32,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -175,7 +173,6 @@ fun OtpVerifyScreen(
                     textAlign = TextAlign.Center,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.Black,
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 VerifyPinContent(otp = otp, onCodeEnter = { otp ->
@@ -280,7 +277,6 @@ fun VerifyPinContent(
                 Image(
                     painter = painterResource(id = R.drawable.ic_pin),
                     contentDescription = "otp",
-                    modifier = Modifier.background(color = Color.White)
                 )
             }, label = { Text(text = "OTP") }, keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Number, imeAction = ImeAction.Done
@@ -294,7 +290,6 @@ fun VerifyPinContent(
             onClick = {
                 onCodeEnter(otp)
             }, shape = RoundedCornerShape(4.dp), colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF3F51B5)
             ), modifier = Modifier.fillMaxWidth(), contentPadding = PaddingValues(vertical = 16.dp)
         ) {
             Text(text = "Verify OTP", fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
@@ -308,14 +303,12 @@ fun VerifyPinContent(
                 text = "Didn't get any otp!",
                 textAlign = TextAlign.Center,
                 fontSize = 16.sp,
-                color = Color.Black,
             )
             TextButton(onClick = onResendOtp) {
                 Text(
                     text = "Resend otp",
                     textAlign = TextAlign.Center,
                     fontSize = 16.sp,
-                    color = Color(0xFF3F51B5),
                 )
             }
 

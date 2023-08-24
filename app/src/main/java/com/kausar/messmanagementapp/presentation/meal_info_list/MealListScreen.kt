@@ -30,6 +30,7 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -39,7 +40,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -132,17 +132,16 @@ fun MealListScreen(
                         textAlign = TextAlign.Center,
                         style = TextStyle(
                             fontWeight = FontWeight.Bold,
-                            color = Color.Black,
                             fontFamily = FontFamily.Cursive
                         )
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(modifier = Modifier.width(16.dp))
                     Icon(
                         imageVector = if (search) Icons.Default.Close else Icons.Default.Search,
                         contentDescription = "search",
-                        tint = if (search) Color.Gray else Color.Blue,
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
                         modifier = Modifier
-                            .border(1.dp, Color.LightGray)
+                            .border(1.dp, MaterialTheme.colorScheme.inverseSurface)
                             .clickable {
                                 search = !search
                             }
@@ -162,14 +161,14 @@ fun MealListScreen(
                                     .size(40.dp)
                                     .padding(4.dp)
                                     .border(
-                                        1.dp, Color.DarkGray,
+                                        1.dp, MaterialTheme.colorScheme.primary,
                                         CircleShape
                                     )
                                     .background(
                                         if (selectedIndex == index) {
-                                            Color(0xFF3F51B5)
+                                            MaterialTheme.colorScheme.inversePrimary
                                         } else {
-                                            Color.Gray
+                                            MaterialTheme.colorScheme.surface
                                         },
                                         CircleShape
                                     )
@@ -178,7 +177,7 @@ fun MealListScreen(
                                     },
                                 contentAlignment = Alignment.Center
                             ) {
-                                Text(text = item, color = Color.White)
+                                Text(text = item, color = MaterialTheme.colorScheme.secondary)
                             }
                         }
                     }
@@ -328,9 +327,17 @@ fun MealItem(meal: MealInfo) {
 @Composable
 fun MealIcon(status: Boolean, desc: String) {
     if (status)
-        Icon(imageVector = Icons.Default.Done, contentDescription = desc, tint = Color.Blue)
+        Icon(
+            imageVector = Icons.Default.Done,
+            contentDescription = desc,
+            tint = MaterialTheme.colorScheme.primary
+        )
     else
-        Icon(imageVector = Icons.Default.Clear, contentDescription = desc, tint = Color.Gray)
+        Icon(
+            imageVector = Icons.Default.Clear,
+            contentDescription = desc,
+            tint = MaterialTheme.colorScheme.error
+        )
 }
 
 @Preview(showBackground = true)

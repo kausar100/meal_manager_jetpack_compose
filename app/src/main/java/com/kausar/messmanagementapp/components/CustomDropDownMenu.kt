@@ -26,7 +26,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.input.ImeAction
@@ -90,10 +89,6 @@ fun CustomDropDownMenu(
                 imeAction = ImeAction.Next
             ),
             colors = TextFieldDefaults.outlinedTextFieldColors(
-                disabledTextColor = Color.Black,
-                disabledBorderColor = Color.Black,
-                disabledLabelColor = Color.Black,
-                disabledTrailingIconColor = Color.Black
             ),
             keyboardActions = KeyboardActions(onNext = { onImeAction(mSelectedText) })
         )

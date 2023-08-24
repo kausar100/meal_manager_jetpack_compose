@@ -12,7 +12,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
@@ -45,7 +44,6 @@ fun CustomTopAppBar(
                 fontSize = 20.sp,
                 style = TextStyle(
                     fontWeight = FontWeight.Bold,
-                    color = Color.Black,
                     fontFamily = FontFamily.Cursive
                 )
             )
@@ -104,7 +102,6 @@ fun WelcomeText() {
         textAlign = TextAlign.Center,
         fontSize = 20.sp,
         fontWeight = FontWeight.Bold,
-        color = Color.Black,
     )
 }
 

@@ -34,7 +34,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.SpanStyle
@@ -302,7 +301,6 @@ fun RegistrationScreenContent(
                 },
                 shape = RoundedCornerShape(4.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF3F51B5)
                 ),
                 modifier = Modifier.fillMaxWidth(),
                 contentPadding = PaddingValues(vertical = 16.dp)
@@ -321,12 +319,12 @@ fun RegistrationScreenContent(
                             append("Already Have an Account! ")
                             withStyle(
                                 style = SpanStyle(
-                                    color = Color(0xFF3F51B5), fontSize = 16.sp
+                                    fontSize = 16.sp
                                 )
                             ) {
                                 append("Log in here...")
                             }
-                        }, color = Color.Black, fontSize = 16.sp)
+                        }, fontSize = 16.sp)
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))

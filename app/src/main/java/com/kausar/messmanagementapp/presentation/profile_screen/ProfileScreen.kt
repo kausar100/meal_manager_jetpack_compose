@@ -30,6 +30,7 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -170,31 +171,35 @@ fun ProfileScreen(
                         Icon(
                             imageVector = Icons.Default.Person,
                             contentDescription = "profile photo",
-                            tint = Color.Black,
+                            tint = MaterialTheme.colorScheme.surfaceVariant,
                             modifier = Modifier
                                 .size(100.dp)
-                                .border(1.dp, color = Color.Gray, shape = CircleShape)
+                                .border(
+                                    1.dp,
+                                    color = MaterialTheme.colorScheme.surface,
+                                    shape = CircleShape
+                                )
                                 .background(color = Color.Transparent, shape = CircleShape)
                                 .clip(CircleShape)
                         )
                     }
                 }
                 Row(
-                    Modifier.width(100.dp)
+                    Modifier
+                        .width(100.dp)
                         .fillMaxHeight(.7f),
                     horizontalArrangement = Arrangement.End,
                     verticalAlignment = Alignment.Bottom
                 ) {
                     IconButton(
                         onClick = { imagePicker.launch("image/*") }, modifier = Modifier
-                            .background(Color.DarkGray, CircleShape)
+                            .background(MaterialTheme.colorScheme.surface, CircleShape)
                             .size(32.dp)
 
                     ) {
                         Icon(
                             imageVector = Icons.Default.Edit,
                             contentDescription = "update profile",
-                            tint = Color.White,
                             modifier = Modifier.size(24.dp)
                         )
                     }
@@ -209,7 +214,6 @@ fun ProfileScreen(
                 fontSize = 20.sp,
                 style = TextStyle(
                     fontWeight = FontWeight.Bold,
-                    color = Color.Black,
                     fontFamily = FontFamily.Cursive
                 )
             )
@@ -264,7 +268,7 @@ fun UserInfo(
     ) {
         Text(
             text = title, textAlign = TextAlign.Center, fontSize = 20.sp, style = TextStyle(
-                fontWeight = FontWeight.Bold, color = Color.Black, fontFamily = FontFamily.Cursive
+                fontWeight = FontWeight.Bold, fontFamily = FontFamily.Cursive
             )
         )
         Spacer(modifier = Modifier.height(8.dp))

@@ -116,7 +116,7 @@ fun AddNewMeal(
                 Row(
                     modifier = Modifier
                         .border(
-                            width = 1.dp, color = Color.Gray, shape = RoundedCornerShape(4.dp)
+                            width = 1.dp, color = MaterialTheme.colorScheme.background, shape = RoundedCornerShape(4.dp)
                         )
                         .padding(horizontal = 8.dp, vertical = 0.dp)
                         .weight(2f)
@@ -161,8 +161,6 @@ fun AddNewMeal(
                         onClick = {
                             addMeal(breakFast, lunch, dinner)
                         }, shape = RoundedCornerShape(4.dp), colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFF222B83),
-                            contentColor = Color.White,
                         ),
                         modifier = Modifier.fillMaxWidth(1f)
                     ) {
@@ -178,8 +176,7 @@ fun AddNewMeal(
                         onClick = {
                             updateMeal(breakFast, lunch, dinner)
                         }, shape = RoundedCornerShape(4.dp), colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFF222B83),
-                            contentColor = Color.White,
+
                         ),
                         modifier = Modifier.fillMaxWidth(1f)
                     ) {
@@ -214,7 +211,6 @@ fun AddNewMeal(
                         Icon(
                             imageVector = Icons.Default.Edit,
                             contentDescription = "update meal",
-                            tint = Color.Black
                         )
                     }
                 }

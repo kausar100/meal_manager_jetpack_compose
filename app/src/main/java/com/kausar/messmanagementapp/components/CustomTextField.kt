@@ -97,42 +97,6 @@ fun CustomBasicTextField(
             onNext = {
                 onComplete()
             }
-        ),
-//        decorationBox = { innerTextField ->
-//            Column(
-//                Modifier
-//                    .padding(
-//                        horizontal = 16.dp,
-//                        vertical = 8.dp
-//                    )
-//            ) {
-//                innerTextField()
-//                Spacer(modifier = Modifier.height(8.dp))
-//                Divider(
-//                    Modifier.height(1.dp),
-//                    thickness = 1.dp,
-//                    color = Color.Gray
-//                )
-//            }
-//        }
+        )
     )
 }
-
-//fun Modifier.bottomBorder(strokeWidth: Dp, color: Color) = composed(
-//    factory = {
-//        val density = LocalDensity.current
-//        val strokeWidthPx = density.run { strokeWidth.toPx() }
-//
-//        Modifier.drawBehind {
-//            val width = size.width
-//            val height = size.height - strokeWidthPx / 2
-//
-//            drawLine(
-//                color = color,
-//                start = Offset(x = 0f, y = height),
-//                end = Offset(x = width, y = height),
-//                strokeWidth = strokeWidthPx
-//            )
-//        }
-//    }
-//)

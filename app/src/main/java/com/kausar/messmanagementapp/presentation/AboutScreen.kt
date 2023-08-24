@@ -24,7 +24,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -49,7 +48,6 @@ fun AboutScreen(onClose: () -> Unit) {
                     text = "This app helps with meal management which is useful for any mess member. The feature of this app are listed below : ",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.Black,
                     textAlign = TextAlign.Justify
                 )
                 Spacer(modifier = Modifier.height(16.dp))
@@ -58,7 +56,6 @@ fun AboutScreen(onClose: () -> Unit) {
                     fontSize = 16.sp,
                     textAlign = TextAlign.Justify,
                     fontWeight = FontWeight.Normal,
-                    color = Color.Black
                 )
 
             }
@@ -74,7 +71,6 @@ fun AboutScreen(onClose: () -> Unit) {
                     textAlign = TextAlign.Center,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.Black
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
@@ -82,14 +78,12 @@ fun AboutScreen(onClose: () -> Unit) {
                     textAlign = TextAlign.Center,
                     fontSize = 20.sp,
                     fontWeight = FontWeight.ExtraBold,
-                    color = Color.Black
                 )
                 Text(
                     text = "Software Engineer",
                     textAlign = TextAlign.Center,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.Black
                 )
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -105,7 +99,6 @@ fun AboutScreen(onClose: () -> Unit) {
                         textAlign = TextAlign.Center,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color.Black,
                         modifier = Modifier.clickable {
                             val intent = Intent(Intent.ACTION_SEND).apply {
                                 type = "text/plain"
@@ -125,7 +118,6 @@ fun AboutScreen(onClose: () -> Unit) {
                         textAlign = TextAlign.Center,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color.Black,
                         modifier = Modifier.clickable {
                             val intent = Intent(Intent.ACTION_DIAL).apply {
                                 data = Uri.parse("tel:" + "01315783246")

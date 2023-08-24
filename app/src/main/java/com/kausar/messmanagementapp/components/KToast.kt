@@ -128,7 +128,9 @@ fun KToast(
         Modifier
             .fillMaxWidth()
             .background(
-                color = if (type == ToastType.error) Color.Red.copy(alpha = .8f) else Color.Blue.copy(
+                color = if (type == ToastType.error) MaterialTheme.colorScheme.errorContainer.copy(
+                    alpha = .8f
+                ) else MaterialTheme.colorScheme.primaryContainer.copy(
                     alpha = .8f
                 ), shape = RoundedCornerShape(8.dp)
             )
@@ -136,16 +138,16 @@ fun KToast(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
     ) {
-       Icon(
+        Icon(
             imageVector = icon,
             contentDescription = contentDescription,
-            tint = Color.White,
+            tint = MaterialTheme.colorScheme.surfaceTint,
             modifier = Modifier.size(32.dp)
         )
         Spacer(modifier = Modifier.width(8.dp))
         Text(
             text = message,
-            color = Color.White,
+            color = MaterialTheme.colorScheme.surfaceTint,
             fontWeight = FontWeight.W400,
             fontSize = MaterialTheme.typography.titleSmall.fontSize
         )

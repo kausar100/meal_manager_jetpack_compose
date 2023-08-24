@@ -31,6 +31,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -148,7 +149,6 @@ fun MemberListScreen(
                     textAlign = TextAlign.Center,
                     style = TextStyle(
                         fontWeight = FontWeight.Bold,
-                        color = Color.Black,
                         fontFamily = FontFamily.Cursive
                     )
                 )
@@ -251,7 +251,7 @@ fun MealInfoTable(itemState: FirebaseFirestoreDbViewModel.ItemState) {
     Column(
         Modifier
             .padding(horizontal = 16.dp)
-            .border(1.dp, Color.Gray, RoundedCornerShape(8.dp))
+            .border(1.dp,     MaterialTheme.colorScheme.surface, RoundedCornerShape(8.dp))
     ) {
         if (itemState.item.isNotEmpty()) {
             val mealResponseList = itemState.item
@@ -384,7 +384,7 @@ fun ShowUser(
     },
         modifier = Modifier
             .padding(16.dp)
-            .border(1.dp, Color.Gray, RoundedCornerShape(4.dp))
+            .border(1.dp,     MaterialTheme.colorScheme.primary, RoundedCornerShape(4.dp))
             .clickable {
                 onClickUser()
             },
@@ -406,10 +406,10 @@ fun ShowUser(
                 Icon(
                     imageVector = Icons.Default.Person,
                     contentDescription = "profile",
-                    tint = Color.Black,
+                    tint =     MaterialTheme.colorScheme.primary,
                     modifier = Modifier
                         .size(50.dp)
-                        .border(1.dp, color = Color.Gray, shape = CircleShape)
+                        .border(1.dp, color =     MaterialTheme.colorScheme.surface, shape = CircleShape)
                         .background(color = Color.Transparent, shape = CircleShape)
                         .clip(CircleShape)
                 )

@@ -320,7 +320,6 @@ fun HomeScreen(
                     Icon(
                         imageVector = Icons.Default.Add,
                         contentDescription = "add meal",
-                        tint = Color.Black
                     )
                 }
             }
@@ -476,7 +475,7 @@ fun MealInformation(
         Row(
             modifier = Modifier
                 .border(
-                    width = 1.dp, color = Color.Gray, shape = RoundedCornerShape(4.dp)
+                    width = 1.dp, color = MaterialTheme.colorScheme.background, shape = RoundedCornerShape(4.dp)
                 )
                 .padding(horizontal = 8.dp, vertical = 0.dp)
                 .weight(2f)
