@@ -8,13 +8,13 @@ import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -41,11 +41,7 @@ fun CustomTopAppBar(
                 title,
                 letterSpacing = 1.sp,
                 textAlign = TextAlign.Center,
-                fontSize = 20.sp,
-                style = TextStyle(
-                    fontWeight = FontWeight.Bold,
-                    fontFamily = FontFamily.Cursive
-                )
+                style = MaterialTheme.typography.titleMedium
             )
         }
 
@@ -91,7 +87,13 @@ fun CustomTopAppBar(
                 }
 
             }
-        }
+        },
+        colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+            containerColor = MaterialTheme.colorScheme.primary.copy(alpha = .9f),
+            actionIconContentColor = MaterialTheme.colorScheme.surface,
+            titleContentColor = MaterialTheme.colorScheme.surface,
+            navigationIconContentColor = MaterialTheme.colorScheme.surface
+        )
     )
 }
 

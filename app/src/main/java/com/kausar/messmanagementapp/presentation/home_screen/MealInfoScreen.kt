@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -17,7 +18,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.kausar.messmanagementapp.presentation.viewmodels.FirebaseFirestoreDbViewModel
 
 @Composable
@@ -26,7 +26,8 @@ fun MealInfoScreen(firestore: FirebaseFirestoreDbViewModel, currentUser: Boolean
         val mealCnt by firestore.mealCnt.collectAsState()
         MealSummary(
             modifier = Modifier
-                .fillMaxWidth(1f),
+                .fillMaxWidth(1f)
+                .fillMaxHeight(.3f),
             totalMeal = mealCnt.totalMeal.toString(),
             numberOfBreakfast = mealCnt.breakfast.toString(),
             numberOfLunch = mealCnt.lunch.toString(),
@@ -36,7 +37,8 @@ fun MealInfoScreen(firestore: FirebaseFirestoreDbViewModel, currentUser: Boolean
         val mealCnt by firestore.singleMealCnt.collectAsState()
         MealSummary(
             modifier = Modifier
-                .fillMaxWidth(1f),
+                .fillMaxWidth(1f)
+                .fillMaxHeight(.6f),
             totalMeal = mealCnt.totalMeal.toString(),
             numberOfBreakfast = mealCnt.breakfast.toString(),
             numberOfLunch = mealCnt.lunch.toString(),
@@ -56,7 +58,7 @@ fun MealSummary(
     Column(
         modifier = modifier.padding(8.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.SpaceEvenly
     ) {
         Row(
             Modifier
@@ -96,16 +98,16 @@ fun MealSummary(
             Spacer(modifier = Modifier.weight(1f))
             Text(text = numberOfDinner)
         }
-        Divider(Modifier.height(1.dp), color = MaterialTheme.colorScheme.primaryContainer)
+        Divider(Modifier.height(1.dp), color = MaterialTheme.colorScheme.primary)
         Row(
             Modifier
                 .fillMaxWidth()
                 .padding(2.dp),
             horizontalArrangement = Arrangement.Center
         ) {
-            Text(text = "Breakfast(0.5)", fontSize = 12.sp, fontWeight = FontWeight.ExtraBold)
-            Text(text = " Lunch(1.0)", fontSize = 12.sp, fontWeight = FontWeight.ExtraBold)
-            Text(text = " Dinner(1.0)", fontSize = 12.sp, fontWeight = FontWeight.ExtraBold)
+            Text(text = "Breakfast(0.5)", fontSize = MaterialTheme.typography.titleSmall.fontSize, fontWeight = FontWeight.ExtraBold)
+            Text(text = " Lunch(1.0)", fontSize = MaterialTheme.typography.titleSmall.fontSize, fontWeight = FontWeight.ExtraBold)
+            Text(text = " Dinner(1.0)", fontSize = MaterialTheme.typography.titleSmall.fontSize, fontWeight = FontWeight.ExtraBold)
         }
 
 

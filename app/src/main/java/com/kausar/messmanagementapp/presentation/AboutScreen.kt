@@ -20,6 +20,7 @@ import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -28,7 +29,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 
 
 @Composable
@@ -46,21 +46,21 @@ fun AboutScreen(onClose: () -> Unit) {
             Column(Modifier.padding(16.dp)) {
                 Text(
                     text = "This app helps with meal management which is useful for any mess member. The feature of this app are listed below : ",
-                    fontSize = 16.sp,
+                    fontSize = MaterialTheme.typography.titleMedium.fontSize,
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Justify
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
-                    text = "1. Mess member can set their daily meal information.\n\n2.They can update their meal information and \n\n3.Finally they can see list of meal information for a month",
-                    fontSize = 16.sp,
+                    text = "1.Mess member can set their daily meal information.\n\n2.They can update their meal information and \n\n3.Finally they can see list of meal information for a month",
+                    fontSize = MaterialTheme.typography.titleSmall.fontSize,
                     textAlign = TextAlign.Justify,
                     fontWeight = FontWeight.Normal,
                 )
 
             }
 
-            Spacer(modifier = Modifier.fillMaxHeight(.5f))
+            Spacer(modifier = Modifier.fillMaxHeight(.3f))
             Column(
                 Modifier.padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -69,20 +69,20 @@ fun AboutScreen(onClose: () -> Unit) {
                 Text(
                     text = "Developed By",
                     textAlign = TextAlign.Center,
-                    fontSize = 16.sp,
+                    fontSize = MaterialTheme.typography.titleSmall.fontSize,
                     fontWeight = FontWeight.Bold,
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = "Md. Golam Kausar",
                     textAlign = TextAlign.Center,
-                    fontSize = 20.sp,
+                    fontSize = MaterialTheme.typography.titleMedium.fontSize,
                     fontWeight = FontWeight.ExtraBold,
                 )
                 Text(
                     text = "Software Engineer",
                     textAlign = TextAlign.Center,
-                    fontSize = 16.sp,
+                    fontSize = MaterialTheme.typography.titleSmall.fontSize,
                     fontWeight = FontWeight.Bold,
                 )
                 Row(
@@ -97,7 +97,7 @@ fun AboutScreen(onClose: () -> Unit) {
                     Text(
                         text = "Mail Me",
                         textAlign = TextAlign.Center,
-                        fontSize = 16.sp,
+                        fontSize = MaterialTheme.typography.titleSmall.fontSize,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.clickable {
                             val intent = Intent(Intent.ACTION_SEND).apply {
@@ -116,7 +116,7 @@ fun AboutScreen(onClose: () -> Unit) {
                     Text(
                         text = "+8801315783246",
                         textAlign = TextAlign.Center,
-                        fontSize = 16.sp,
+                        fontSize = MaterialTheme.typography.titleSmall.fontSize,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.clickable {
                             val intent = Intent(Intent.ACTION_DIAL).apply {

@@ -18,6 +18,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -171,7 +172,7 @@ fun OtpVerifyScreen(
                 Text(
                     text = "Enter otp sent to ${userInformation.contactNo}",
                     textAlign = TextAlign.Center,
-                    fontSize = 16.sp,
+                    fontSize = MaterialTheme.typography.titleMedium.fontSize,
                     fontWeight = FontWeight.Bold,
                 )
                 Spacer(modifier = Modifier.height(16.dp))
@@ -302,13 +303,13 @@ fun VerifyPinContent(
             Text(
                 text = "Didn't get any otp!",
                 textAlign = TextAlign.Center,
-                fontSize = 16.sp,
+                fontSize =  MaterialTheme.typography.titleSmall.fontSize,
             )
             TextButton(onClick = onResendOtp) {
                 Text(
                     text = "Resend otp",
                     textAlign = TextAlign.Center,
-                    fontSize = 16.sp,
+                    fontSize =  MaterialTheme.typography.titleSmall.fontSize,
                 )
             }
 

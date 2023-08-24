@@ -18,6 +18,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -220,12 +221,12 @@ fun LoginScreenContent(
                         Text(text = buildAnnotatedString {
                             append("Don't Have an Account! ")
                             withStyle(
-                                style = SpanStyle( fontSize = 16.sp
+                                style = SpanStyle( fontSize = MaterialTheme.typography.titleSmall.fontSize
                                 )
                             ) {
                                 append("Create here...")
                             }
-                        }, fontSize = 16.sp)
+                        }, fontSize = MaterialTheme.typography.titleSmall.fontSize)
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))

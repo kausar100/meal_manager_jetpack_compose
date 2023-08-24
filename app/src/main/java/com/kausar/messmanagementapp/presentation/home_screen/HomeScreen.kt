@@ -13,25 +13,17 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -44,24 +36,18 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import coil.compose.AsyncImage
-import coil.request.ImageRequest
-import com.kausar.messmanagementapp.R
 import com.kausar.messmanagementapp.components.CustomProgressBar
 import com.kausar.messmanagementapp.data.model.MealInfo
-import com.kausar.messmanagementapp.data.model.User
+import com.kausar.messmanagementapp.data.model.MemberType
 import com.kausar.messmanagementapp.presentation.viewmodels.FirebaseFirestoreDbViewModel
 import com.kausar.messmanagementapp.presentation.viewmodels.MainViewModel
 import com.kausar.messmanagementapp.utils.ResultState
@@ -111,18 +97,14 @@ fun HomeScreen(
         mutableStateOf(false)
     }
 
-    var showMealInfoScreen by remember {
-        mutableStateOf(false)
-    }
-
     val userInfo = mainViewModel.userInfo.value
     val mealInfoState = viewModel.mealInfo.value
 
     val connection by connectivityState()
     val isConnected = (connection === ConnectionState.Available)
 
-    LaunchedEffect(key1 = isConnected){
-        if(userInfo.userType.isEmpty()){
+    LaunchedEffect(key1 = isConnected) {
+        if (userInfo.userType.isEmpty()) {
             mainViewModel.getUserInfo()
         }
         viewModel.getMealForToday()
@@ -146,6 +128,7 @@ fun HomeScreen(
             Spacer(modifier = Modifier.fillMaxHeight(.1f))
 
             if (newMeal) {
+                Spacer(modifier = Modifier.width(16.dp))
                 Row(
                     Modifier
                         .clickable { showPopup = true }
@@ -177,15 +160,24 @@ fun HomeScreen(
                         mainViewModel.getMessProfilePic(userInfo.messId, userInfo.messName)
                         viewModel.getAllMeal(userInfo.userId)
                     }
-                    CustomListTile(
-                        userData = userInfo,
-                        picture = mainViewModel.messPicture.value
-                    ) {
-                        showMealInfoScreen = true
+                    Text(
+                        text = "Number of meal until today",
+                        fontSize = MaterialTheme.typography.titleMedium.fontSize,
+                        textAlign = TextAlign.Center,
+                        textDecoration = TextDecoration.Underline
+                    )
+                    if (userInfo.userType == MemberType.Member.name) {
+                        MealInfoScreen(firestore = viewModel)
+                    } else {
+                        //manager
 
                     }
                     Spacer(modifier = Modifier.height(16.dp))
-                    Text(text = today, textAlign = TextAlign.Center)
+                    Text(
+                        text = today,
+                        textAlign = TextAlign.Center,
+                        textDecoration = TextDecoration.Underline
+                    )
                 }
             }
             Spacer(modifier = Modifier.height(8.dp))
@@ -297,13 +289,18 @@ fun HomeScreen(
                 )
             } else {
                 if (mealInfoState.success.isNotEmpty()) {
-                    MealInformation(
-                        modifier = Modifier
-                            .fillMaxWidth(1f)
-                            .fillMaxHeight(.7f)
-                            .padding(16.dp),
-                        mealInfo = mealInfoState.meal,
-                    )
+                    if (userInfo.userType == MemberType.Member.name) {
+                        MealInformation(
+                            modifier = Modifier
+                                .fillMaxWidth(1f)
+                                .fillMaxHeight(.7f)
+                                .padding(16.dp),
+                            mealInfo = mealInfoState.meal,
+                        )
+                    } else {
+
+                    }
+
                 }
                 ShowMessage(mealInfoState)
             }
@@ -324,43 +321,7 @@ fun HomeScreen(
                 }
             }
         }
-
-        if (showMealInfoScreen) {
-            ShowMealInformationDialog(onDismiss = {
-                showMealInfoScreen = false
-            }, firestore = viewModel)
-
-        }
-
     }
-}
-
-@Composable
-fun ShowMealInformationDialog(onDismiss: () -> Unit, firestore: FirebaseFirestoreDbViewModel) {
-    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.BottomCenter) {
-        AlertDialog(
-            onDismissRequest = onDismiss,
-            title = {
-                Text(text = "Number of Meal")
-            },
-            shape = RoundedCornerShape(8.dp),
-            text = {
-                MealInfoScreen(firestore = firestore)
-            },
-            confirmButton = {
-                Button(
-
-                    onClick = onDismiss,
-                ) {
-                    Text("OK")
-                }
-            },
-            dismissButton = {
-
-            }
-        )
-    }
-
 }
 
 @Composable
@@ -378,61 +339,6 @@ fun ShowMessage(mealInfoState: FirebaseFirestoreDbViewModel.SingleMeal) {
         }
 
     }
-
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun CustomListTile(userData: User, picture: String, onClickInfo: () -> Unit) {
-
-    ListItem(
-        headlineText = {
-            Text(text = userData.messName, fontWeight = FontWeight.Bold)
-        },
-        modifier = Modifier
-            .padding(16.dp)
-            .border(1.dp, Color.Gray, RoundedCornerShape(4.dp))
-            .clickable {
-                onClickInfo()
-            },
-        leadingContent = {
-            if (picture.isNotEmpty()) {
-                AsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(picture)
-                        .crossfade(true).build(),
-                    placeholder = painterResource(id = R.drawable.ic_home),
-                    contentDescription = stringResource(id = R.string.mess_picture),
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .size(50.dp)
-                        .clip(CircleShape)
-                )
-
-            } else {
-                Icon(
-                    imageVector = Icons.Default.Home,
-                    contentDescription = "profile",
-                    tint = Color.Black,
-                    modifier = Modifier
-                        .size(50.dp)
-                        .border(1.dp, color = Color.Gray, shape = CircleShape)
-                        .background(color = Color.Transparent, shape = CircleShape)
-                        .clip(CircleShape)
-                )
-            }
-
-        },
-        trailingContent = {
-            IconButton(onClick = onClickInfo) {
-                Icon(
-                    imageVector = Icons.Default.Info,
-                    contentDescription = "count_meal"
-                )
-            }
-        },
-        supportingText = { Text(text = userData.userType, fontWeight = FontWeight.Bold) },
-    )
 
 }
 
@@ -459,7 +365,7 @@ fun MealInformation(
                 text = "Meal time",
                 style = MaterialTheme.typography.titleMedium.copy(
                     fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp
+                    letterSpacing = 1.sp
                 )
             )
             Spacer(modifier = Modifier.weight(1f))
@@ -475,19 +381,22 @@ fun MealInformation(
         Row(
             modifier = Modifier
                 .border(
-                    width = 1.dp, color = MaterialTheme.colorScheme.background, shape = RoundedCornerShape(4.dp)
+                    width = 1.dp,
+                    color = MaterialTheme.colorScheme.background,
+                    shape = RoundedCornerShape(4.dp)
                 )
                 .padding(horizontal = 8.dp, vertical = 0.dp)
-                .weight(2f)
+                .weight(2f),
+            verticalAlignment = Alignment.CenterVertically
         ) {
             val title = listOf("Breakfast", "Lunch", "Dinner")
-            Column(Modifier.fillMaxHeight(), verticalArrangement = Arrangement.SpaceEvenly) {
+            Column(Modifier.fillMaxHeight(), verticalArrangement = Arrangement.SpaceAround) {
                 repeat(title.size) {
                     Text(text = title[it], textAlign = TextAlign.Center)
                 }
             }
             Spacer(modifier = Modifier.weight(1f))
-            Column(Modifier.fillMaxHeight(), verticalArrangement = Arrangement.SpaceEvenly) {
+            Column(Modifier.fillMaxHeight(), verticalArrangement = Arrangement.SpaceAround) {
                 CustomCheckBox(isEnabled = false, isChecked = breakFast, onCheckChange = {
                     breakFast = it
                 })

@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
@@ -76,6 +77,7 @@ fun MainScreen(viewModel: MainViewModel) {
                             BottomBarScreen.Home.route -> {
                                 true
                             }
+
                             else -> {
                                 false
                             }
@@ -139,7 +141,7 @@ fun BottomBar(navController: NavHostController) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
-    NavigationBar() {
+    NavigationBar(containerColor = MaterialTheme.colorScheme.primary.copy(alpha = .9f)) {
         screens.forEach { screen ->
             AddDestination(
                 screen = screen,
@@ -161,14 +163,13 @@ fun RowScope.AddDestination(
         } == true,
         onClick = {
             currentDestination?.let {
-                if(currentDestination.route != screen.route){
+                if (currentDestination.route != screen.route) {
                     navController.navigate(screen.route) {
                         popUpTo(BottomBarScreen.Home.route)
                         launchSingleTop = true
                     }
                 }
-            } ?:
-            navController.navigate(screen.route) {
+            } ?: navController.navigate(screen.route) {
                 popUpTo(BottomBarScreen.Home.route)
                 launchSingleTop = true
             }
@@ -182,6 +183,8 @@ fun RowScope.AddDestination(
             )
         },
         colors = NavigationBarItemDefaults.colors(
+            selectedTextColor = MaterialTheme.colorScheme.surface,
+            unselectedTextColor = MaterialTheme.colorScheme.inverseSurface,
             unselectedIconColor = LocalContentColor.current.copy(alpha = .3f),
         ),
 

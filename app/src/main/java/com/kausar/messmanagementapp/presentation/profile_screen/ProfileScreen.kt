@@ -50,14 +50,10 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
@@ -205,17 +201,10 @@ fun ProfileScreen(
                     }
                 }
             }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
             Text(
                 text = userData.userName,
                 textAlign = TextAlign.Center,
-                fontSize = 20.sp,
-                style = TextStyle(
-                    fontWeight = FontWeight.Bold,
-                    fontFamily = FontFamily.Cursive
-                )
+                style = MaterialTheme.typography.titleMedium
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -267,9 +256,7 @@ fun UserInfo(
             .padding(horizontal = 32.dp, vertical = 8.dp)
     ) {
         Text(
-            text = title, textAlign = TextAlign.Center, fontSize = 20.sp, style = TextStyle(
-                fontWeight = FontWeight.Bold, fontFamily = FontFamily.Cursive
-            )
+            text = title, textAlign = TextAlign.Center, style = MaterialTheme.typography.titleSmall
         )
         Spacer(modifier = Modifier.height(8.dp))
         CustomBasicTextField(

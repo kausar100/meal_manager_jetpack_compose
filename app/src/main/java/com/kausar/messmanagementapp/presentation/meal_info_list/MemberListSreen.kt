@@ -49,7 +49,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -144,13 +143,10 @@ fun MemberListScreen(
                     showMealInfoScreen = true
                 })
                 Text(
-                    text = "Meal List <> $listTitle",
+                    text = listTitle,
                     fontSize = 20.sp,
                     textAlign = TextAlign.Center,
-                    style = TextStyle(
-                        fontWeight = FontWeight.Bold,
-                        fontFamily = FontFamily.Cursive
-                    )
+                    style = MaterialTheme.typography.titleMedium
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 MealInfoTable(itemState = itemState)
@@ -218,7 +214,7 @@ fun MemberListScreen(
                         showMealInfoScreen = false
                     },
                     title = {
-                        Text(text = "Number of Meal")
+                        Text(text = "Number of meal until today", fontFamily = FontFamily.Cursive)
                     },
                     shape = RoundedCornerShape(8.dp),
                     text = {
@@ -226,7 +222,6 @@ fun MemberListScreen(
                     },
                     confirmButton = {
                         Button(
-
                             onClick = {
                                 showMealInfoScreen = false
                             },
@@ -320,7 +315,7 @@ fun ShowTitle(modifier: Modifier, items: List<String>) {
                 text = items[it],
                 fontWeight = FontWeight.W800,
                 textAlign = TextAlign.Center,
-                fontSize = 12.sp,
+                fontSize = MaterialTheme.typography.titleSmall.fontSize,
                 modifier = Modifier.weight(if (it == 0 || it == 1) 2f else 1f)
             )
         }
@@ -339,13 +334,13 @@ fun ShowInfo(modifier: Modifier, item: MealInfo) {
     ) {
         Text(
             text = item.date!!,
-            fontSize = 10.sp,
+            fontSize = MaterialTheme.typography.titleSmall.fontSize,
             textAlign = TextAlign.Center,
             modifier = Modifier.weight(2f)
         )
         Text(
             text = item.dayName!!,
-            fontSize = 10.sp,
+            fontSize = MaterialTheme.typography.titleSmall.fontSize,
             textAlign = TextAlign.Center,
             modifier = Modifier.weight(2f)
         )

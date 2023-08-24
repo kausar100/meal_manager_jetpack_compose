@@ -100,7 +100,7 @@ fun AddNewMeal(
                         text = "Meal time",
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.Bold,
-                            fontSize = 16.sp
+                            letterSpacing = 1.sp
                         )
                     )
                     Spacer(modifier = Modifier.weight(1f))
@@ -119,12 +119,13 @@ fun AddNewMeal(
                             width = 1.dp, color = MaterialTheme.colorScheme.background, shape = RoundedCornerShape(4.dp)
                         )
                         .padding(horizontal = 8.dp, vertical = 0.dp)
-                        .weight(2f)
+                        .weight(2f),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     val title = listOf("Breakfast", "Lunch", "Dinner")
                     Column(
                         Modifier.fillMaxHeight(),
-                        verticalArrangement = Arrangement.SpaceEvenly
+                        verticalArrangement = Arrangement.SpaceAround,
                     ) {
                         repeat(title.size) {
                             Text(text = title[it], textAlign = TextAlign.Center)
@@ -133,7 +134,7 @@ fun AddNewMeal(
                     Spacer(modifier = Modifier.weight(1f))
                     Column(
                         Modifier.fillMaxHeight(),
-                        verticalArrangement = Arrangement.SpaceEvenly
+                        verticalArrangement = Arrangement.SpaceAround
                     ) {
                         CustomCheckBox(
                             isEnabled = edit or toUpdate,
