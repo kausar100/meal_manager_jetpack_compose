@@ -14,7 +14,7 @@ interface FirebaseFirestoreRepo {
 
     fun getMessNames(): Flow<ResultState<List<Mess>>>
 
-    fun getMemberList(): Flow<ResultState<List<User>?>>
+    fun getMessMembers(): Flow<ResultState<List<User>?>>
 
     fun insertCurrentUserMeal(meal: MealInfo): Flow<ResultState<String>>
 

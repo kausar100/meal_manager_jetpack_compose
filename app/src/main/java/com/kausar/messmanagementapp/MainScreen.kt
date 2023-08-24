@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -184,8 +183,10 @@ fun RowScope.AddDestination(
         },
         colors = NavigationBarItemDefaults.colors(
             selectedTextColor = MaterialTheme.colorScheme.surface,
-            unselectedTextColor = MaterialTheme.colorScheme.inverseSurface,
-            unselectedIconColor = LocalContentColor.current.copy(alpha = .3f),
+            selectedIconColor = MaterialTheme.colorScheme.surface,
+            indicatorColor = MaterialTheme.colorScheme.primary,
+            unselectedTextColor = MaterialTheme.colorScheme.surface.copy(alpha = .3f),
+            unselectedIconColor = MaterialTheme.colorScheme.surface.copy(alpha = .3f),
         ),
 
         )

@@ -125,7 +125,7 @@ class FirebaseFirestoreDbViewModel @Inject constructor(
 
     fun getMembers() {
         viewModelScope.launch {
-            repo.getMemberList().collectLatest { result ->
+            repo.getMessMembers().collectLatest { result ->
                 when (result) {
                     is ResultState.Success -> {
                         _memberList.value = MemberState(

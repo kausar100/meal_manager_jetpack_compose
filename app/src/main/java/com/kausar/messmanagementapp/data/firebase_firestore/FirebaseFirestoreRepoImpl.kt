@@ -214,7 +214,7 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
         }
     }
 
-    override fun getMemberList(): Flow<ResultState<List<User>?>> = callbackFlow {
+    override fun getMessMembers(): Flow<ResultState<List<User>?>> = callbackFlow {
         trySend(ResultState.Loading)
 
         if (Network.isNetworkAvailable(context)) {
