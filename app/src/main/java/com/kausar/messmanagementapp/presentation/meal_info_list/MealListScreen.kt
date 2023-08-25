@@ -117,7 +117,6 @@ fun MealListScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top
         ) {
-            Spacer(modifier = Modifier.fillMaxHeight(.1f))
             if (itemState.item.isNotEmpty()) {
                 Row(
                     Modifier.fillMaxWidth(),

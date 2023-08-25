@@ -107,6 +107,7 @@ fun MainScreen(viewModel: MainViewModel) {
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier.padding(
+                top = it.calculateTopPadding(),
                 bottom = it.calculateBottomPadding()
             )
         ) {

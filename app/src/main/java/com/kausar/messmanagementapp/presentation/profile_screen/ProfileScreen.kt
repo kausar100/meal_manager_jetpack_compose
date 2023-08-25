@@ -108,10 +108,9 @@ fun ProfileScreen(
                 .fillMaxSize()
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            verticalArrangement = Arrangement.Top
         ) {
-            Spacer(modifier = Modifier.fillMaxHeight(.1f))
-            Box(Modifier.fillMaxHeight(.3f), contentAlignment = Alignment.Center) {
+            Box(Modifier.fillMaxHeight(.25f), contentAlignment = Alignment.Center) {
 
                 if (isLoading) {
                     CircularProgressIndicator()

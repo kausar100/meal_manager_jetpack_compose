@@ -122,9 +122,6 @@ fun HomeScreen(
                 .fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-
-            Spacer(modifier = Modifier.fillMaxHeight(.1f))
-
             if (newMeal) {
                 Spacer(modifier = Modifier.width(16.dp))
                 Row(

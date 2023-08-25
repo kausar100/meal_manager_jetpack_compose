@@ -136,7 +136,6 @@ fun MemberListScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top
         ) {
-            Spacer(modifier = Modifier.fillMaxHeight(.1f))
             if (showList) {
                 ShowUser(userInfo = memberInfo, expand = true, onClickUser = {
                     showList = false

@@ -13,6 +13,7 @@ import com.kausar.messmanagementapp.presentation.auth_screen.LoginScreen
 import com.kausar.messmanagementapp.presentation.auth_screen.RegistrationScreen
 import com.kausar.messmanagementapp.presentation.auth_screen.OtpVerifyScreen
 import com.kausar.messmanagementapp.presentation.home_screen.HomeScreen
+import com.kausar.messmanagementapp.presentation.home_screen.TabScreen
 import com.kausar.messmanagementapp.presentation.meal_info_list.MealListScreen
 import com.kausar.messmanagementapp.presentation.meal_info_list.MemberListScreen
 import com.kausar.messmanagementapp.presentation.profile_screen.ProfileScreen
@@ -42,15 +43,19 @@ fun BottomNavGraph(
         startDestination = startDestination
     ) {
         composable(route = BottomBarScreen.Home.route) {
-            HomeScreen(mainViewModel)
+            if (mainViewModel.userInfo.value.userType == MemberType.Member.name) {
+                HomeScreen(mainViewModel)
+            } else {
+                TabScreen(navController = navController, mainViewModel = mainViewModel)
+            }
         }
         composable(route = BottomBarScreen.Profile.route) {
             ProfileScreen(mainViewModel)
         }
         composable(route = BottomBarScreen.MealList.route) {
-            if (mainViewModel.userInfo.value.userType == MemberType.Member.name){
+            if (mainViewModel.userInfo.value.userType == MemberType.Member.name) {
                 MealListScreen(mainViewModel)
-            }else{
+            } else {
                 MemberListScreen(mainViewModel = mainViewModel)
             }
         }
