@@ -31,6 +31,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -142,6 +143,7 @@ fun MemberListScreen(
                 }, onClickInfo = {
                     showMealInfoScreen = true
                 })
+                Spacer(modifier = Modifier.height(16.dp))
                 Text(
                     text = listTitle,
                     fontSize = 20.sp,
@@ -244,9 +246,7 @@ fun MemberListScreen(
 fun MealInfoTable(itemState: FirebaseFirestoreDbViewModel.ItemState) {
     val mealListTitle = listOf("Date", "Day", "B", "L", "D")
     Column(
-        Modifier
-            .padding(horizontal = 16.dp)
-            .border(1.dp,     MaterialTheme.colorScheme.surface, RoundedCornerShape(8.dp))
+        Modifier.border(1.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(8.dp))
     ) {
         if (itemState.item.isNotEmpty()) {
             val mealResponseList = itemState.item
@@ -328,7 +328,7 @@ fun ShowTitle(modifier: Modifier, items: List<String>) {
 fun ShowInfo(modifier: Modifier, item: MealInfo) {
     Row(
         modifier = modifier
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .padding(vertical = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -377,9 +377,13 @@ fun ShowUser(
     ListItem(headlineText = {
         Text(text = userInfo.userName)
     },
+        colors = ListItemDefaults.colors(
+            containerColor = MaterialTheme.colorScheme.background
+
+        ),
         modifier = Modifier
-            .padding(16.dp)
-            .border(1.dp,     MaterialTheme.colorScheme.primary, RoundedCornerShape(4.dp))
+            .padding(vertical = 8.dp)
+            .border(1.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(4.dp))
             .clickable {
                 onClickUser()
             },
@@ -401,10 +405,14 @@ fun ShowUser(
                 Icon(
                     imageVector = Icons.Default.Person,
                     contentDescription = "profile",
-                    tint =     MaterialTheme.colorScheme.primary,
+                    tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier
                         .size(50.dp)
-                        .border(1.dp, color =     MaterialTheme.colorScheme.surface, shape = CircleShape)
+                        .border(
+                            1.dp,
+                            color = MaterialTheme.colorScheme.surface,
+                            shape = CircleShape
+                        )
                         .background(color = Color.Transparent, shape = CircleShape)
                         .clip(CircleShape)
                 )
