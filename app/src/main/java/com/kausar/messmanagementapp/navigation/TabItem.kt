@@ -9,7 +9,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.navigation.NavController
-import com.kausar.messmanagementapp.presentation.home_screen.HomeScreen
+import com.kausar.messmanagementapp.presentation.home_screen.SharedHomeScreen
 import com.kausar.messmanagementapp.presentation.viewmodels.MainViewModel
 
 typealias ComposableFun = @Composable () -> Unit
@@ -21,26 +21,13 @@ sealed class TabItem(var title: String, var screen: ComposableFun) {
     ) :
         TabItem(
             "Myself",
-            { HomeScreen(mainViewModel) })
+            { SharedHomeScreen(mainViewModel) })
 
     data class Others(
         val navController: NavController,
         val mainViewModel: MainViewModel
     ) :
-        TabItem("Others", { HomeScreen(mainViewModel) })
-}
-
-@Composable
-fun MyselfScreen(mainViewModel: MainViewModel) {
-    Box(
-        Modifier
-            .fillMaxSize()
-            .background(Color.Red),
-    contentAlignment = Alignment.Center) {
-        Text(text = "Myself")
-
-    }
-
+        TabItem("Others", { OthersScreen(mainViewModel) })
 }
 
 @Composable

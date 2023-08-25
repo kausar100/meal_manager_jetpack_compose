@@ -10,9 +10,9 @@ import androidx.navigation.navArgument
 import com.kausar.messmanagementapp.data.model.MemberType
 import com.kausar.messmanagementapp.presentation.SplashScreen
 import com.kausar.messmanagementapp.presentation.auth_screen.LoginScreen
-import com.kausar.messmanagementapp.presentation.auth_screen.RegistrationScreen
 import com.kausar.messmanagementapp.presentation.auth_screen.OtpVerifyScreen
-import com.kausar.messmanagementapp.presentation.home_screen.HomeScreen
+import com.kausar.messmanagementapp.presentation.auth_screen.RegistrationScreen
+import com.kausar.messmanagementapp.presentation.home_screen.SharedHomeScreen
 import com.kausar.messmanagementapp.presentation.home_screen.TabScreen
 import com.kausar.messmanagementapp.presentation.meal_info_list.MealListScreen
 import com.kausar.messmanagementapp.presentation.meal_info_list.MemberListScreen
@@ -44,7 +44,7 @@ fun BottomNavGraph(
     ) {
         composable(route = BottomBarScreen.Home.route) {
             if (mainViewModel.userInfo.value.userType == MemberType.Member.name) {
-                HomeScreen(mainViewModel)
+                SharedHomeScreen(mainViewModel)
             } else {
                 TabScreen(navController = navController, mainViewModel = mainViewModel)
             }
