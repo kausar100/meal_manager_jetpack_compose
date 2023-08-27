@@ -42,15 +42,12 @@ class FirebaseFirestoreDbViewModel @Inject constructor(
     private val today: String
         get() = getDate(calender)
 
-    private val _memberList: MutableState<MemberState> = mutableStateOf(MemberState())
-    val memberInfo: State<MemberState> = _memberList
-
     private val _singleMealcnt = MutableStateFlow(SingleMealCount())
     val singleMealCnt: StateFlow<SingleMealCount> = _singleMealcnt
 
     fun getAllMeal(userId: String) {
         viewModelScope.launch {
-            repo.getUserMealByMonth(today, userId).collectLatest {
+            repo.getUserMealByMonth(userId).collectLatest {
                 when (it) {
                     is ResultState.Success -> {
                         _res.value = ItemState(
@@ -85,7 +82,7 @@ class FirebaseFirestoreDbViewModel @Inject constructor(
     }
 
     fun getMealByUserId(userId: String) = viewModelScope.launch {
-        repo.getUserMealByMonth(today, userId).collectLatest {
+        repo.getUserMealByMonth(userId).collectLatest {
             when (it) {
                 is ResultState.Success -> {
                     _res.value = ItemState(
@@ -120,33 +117,6 @@ class FirebaseFirestoreDbViewModel @Inject constructor(
 
     init {
         getMealForToday()
-        getMembers()
-    }
-
-    fun getMembers() {
-        viewModelScope.launch {
-            repo.getMessMembers().collectLatest { result ->
-                when (result) {
-                    is ResultState.Success -> {
-                        _memberList.value = MemberState(
-                            listOfMember = result.data ?: emptyList()
-                        )
-                    }
-
-                    is ResultState.Failure -> {
-                        _memberList.value = MemberState(
-                            error = result.message.localizedMessage
-                        )
-                    }
-
-                    is ResultState.Loading -> {
-                        _memberList.value = MemberState(
-                            isLoading = true
-                        )
-                    }
-                }
-            }
-        }
     }
 
     private fun needToStop(mealDate: String): Boolean {
@@ -316,12 +286,6 @@ class FirebaseFirestoreDbViewModel @Inject constructor(
         val lunch: Double = 0.0,
         val dinner: Double = 0.0,
         val totalMeal: Double = 0.0
-    )
-
-    data class MemberState(
-        val listOfMember: List<User> = emptyList(),
-        val error: String = "",
-        val isLoading: Boolean = false
     )
 }
 

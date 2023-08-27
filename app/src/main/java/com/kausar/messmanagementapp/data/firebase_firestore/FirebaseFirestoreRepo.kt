@@ -1,5 +1,6 @@
 package com.kausar.messmanagementapp.data.firebase_firestore
 
+import com.kausar.messmanagementapp.data.model.MealCount
 import com.kausar.messmanagementapp.data.model.MealInfo
 import com.kausar.messmanagementapp.data.model.Mess
 import com.kausar.messmanagementapp.data.model.User
@@ -16,6 +17,12 @@ interface FirebaseFirestoreRepo {
 
     fun getMessMembers(): Flow<ResultState<List<User>?>>
 
+    fun addMealCount(): Flow<ResultState<String>>
+
+    fun getSingleMealCount() : Flow<ResultState<MealCount>>
+
+    fun updateMealCount(member: User, monthYear: String): Flow<ResultState<String>>
+
     fun insertCurrentUserMeal(meal: MealInfo): Flow<ResultState<String>>
 
     fun updateCurrentUserMeal(meal: MealInfo): Flow<ResultState<String>>
@@ -24,5 +31,5 @@ interface FirebaseFirestoreRepo {
 
     fun getCurrentUserMealByDay(date: String): Flow<ResultState<MealInfo?>>
 
-    fun getUserMealByMonth(date: String, currentUser: String? = null): Flow<ResultState<List<MealInfo>>>
+    fun getUserMealByMonth(currentUser: String? = null): Flow<ResultState<List<MealInfo>>>
 }

@@ -1,11 +1,13 @@
 package com.kausar.messmanagementapp.presentation.viewmodels
 
+import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kausar.messmanagementapp.data.firebase_firestore.FirebaseFirestoreRepo
+import com.kausar.messmanagementapp.data.model.MealCount
 import com.kausar.messmanagementapp.data.model.Mess
 import com.kausar.messmanagementapp.data.model.User
 import com.kausar.messmanagementapp.data.shared_pref.LoginDataStore
@@ -35,13 +37,18 @@ class MainViewModel @Inject constructor(
     private val _messList: MutableState<MessState> = mutableStateOf(MessState())
     val messNames: State<MessState> = _messList
 
+    private val _memberList: MutableState<MemberState> = mutableStateOf(MemberState())
+    val memberInfo: State<MemberState> = _memberList
+
+
+    private val _count: MutableState<CountState> = mutableStateOf(CountState())
+    val count: State<CountState> = _count
+
     private val _messPic = mutableStateOf("")
     val messPicture: State<String> = _messPic
 
-
     init {
         getContactNumber()
-        getUserInfo()
         getAppUser()
         getMessNames()
         viewModelScope.launch {
@@ -50,6 +57,73 @@ class MainViewModel @Inject constructor(
             }
         }
     }
+
+    fun getMessMembers() {
+        viewModelScope.launch {
+            firestoreRepo.getMessMembers().collectLatest { result ->
+                when (result) {
+                    is ResultState.Success -> {
+                        _memberList.value = MemberState(
+                            listOfMember = result.data ?: emptyList()
+                        )
+                        countMeal()
+                    }
+
+                    is ResultState.Failure -> {
+                        _memberList.value = MemberState(
+                            error = result.message.localizedMessage
+                        )
+                    }
+
+                    is ResultState.Loading -> {
+                        _memberList.value = MemberState(
+                            isLoading = true
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    private fun countMeal() = viewModelScope.launch {
+        firestoreRepo.addMealCount().collectLatest { result ->
+            when (result) {
+                is ResultState.Success -> {
+                    getMealCnt()
+                }
+                else -> {
+                }
+            }
+        }
+    }
+
+    private fun getMealCnt() = viewModelScope.launch {
+        firestoreRepo.getSingleMealCount().collectLatest { result ->
+            when (result) {
+                is ResultState.Success -> {
+                    _count.value = CountState(
+                        cnt = result.data,
+                        success = "Meal count fetched successfully!"
+                    )
+                }
+
+                is ResultState.Failure -> {
+                    _count.value = CountState(
+                        error = result.message.localizedMessage
+                    )
+                }
+
+                is ResultState.Loading -> {
+                    _count.value = CountState(
+                        isLoading = true
+                    )
+
+                }
+            }
+
+        }
+    }
+
 
     fun getMessNames() = viewModelScope.launch {
 
@@ -117,7 +191,7 @@ class MainViewModel @Inject constructor(
         for (mess in messNames.value.listOfMess) {
             if (mess.messId == messId && mess.messName == messName) {
                 _messPic.value = mess.profilePhoto
-                println("mess pic link ${_messPic.value}")
+                Log.d("getMessProfilePic: ", "${_messPic.value}")
                 break
             }
         }
@@ -158,6 +232,19 @@ class MainViewModel @Inject constructor(
 
     data class MessState(
         val listOfMess: List<Mess> = emptyList(),
+        val error: String = "",
+        val isLoading: Boolean = false
+    )
+
+    data class MemberState(
+        val listOfMember: List<User> = emptyList(),
+        val error: String = "",
+        val isLoading: Boolean = false
+    )
+
+    data class CountState(
+        val cnt: MealCount? = null,
+        val success: String = "",
         val error: String = "",
         val isLoading: Boolean = false
     )

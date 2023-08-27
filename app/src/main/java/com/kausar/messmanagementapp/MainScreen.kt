@@ -44,6 +44,7 @@ fun MainScreen(viewModel: MainViewModel) {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
     val isLogin = viewModel.isLoggedIn.value
+    viewModel.getUserInfo()
 
     val connection by connectivityState()
     val isConnected = (connection === ConnectionState.Available)
@@ -120,8 +121,6 @@ fun MainScreen(viewModel: MainViewModel) {
         }
 
     }
-
-
 }
 
 

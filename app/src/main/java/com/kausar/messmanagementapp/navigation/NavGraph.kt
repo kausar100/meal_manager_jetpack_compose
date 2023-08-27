@@ -43,6 +43,7 @@ fun BottomNavGraph(
         startDestination = startDestination
     ) {
         composable(route = BottomBarScreen.Home.route) {
+            mainViewModel.getMessMembers()
             if (mainViewModel.userInfo.value.userType == MemberType.Member.name) {
                 SharedHomeScreen(mainViewModel)
             } else {

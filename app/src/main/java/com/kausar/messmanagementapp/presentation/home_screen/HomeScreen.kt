@@ -2,7 +2,6 @@ package com.kausar.messmanagementapp.presentation.home_screen
 
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -17,9 +16,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -36,12 +32,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.kausar.messmanagementapp.components.CustomProgressBar
 import com.kausar.messmanagementapp.data.model.MealInfo
@@ -319,150 +313,6 @@ fun HomeScreen(
     }
 }
 
-@Composable
-fun ShowMessage(mealInfoState: FirebaseFirestoreDbViewModel.SingleMeal) {
-    Box(
-        Modifier
-            .fillMaxHeight()
-            .fillMaxWidth(1f),
-        contentAlignment = Alignment.Center
-    ) {
-        if (mealInfoState.isLoading) {
-            CustomProgressBar(msg = "Fetching meal info...")
-        } else if (mealInfoState.error.isNotEmpty()) {
-            Text(mealInfoState.error, textAlign = TextAlign.Center)
-        }
-
-    }
-
-}
-
-@Composable
-fun MealInformation(
-    modifier: Modifier = Modifier,
-    mealInfo: MealInfo?
-) {
-    var breakFast by rememberSaveable { mutableStateOf(mealInfo?.breakfast ?: false) }
-    var lunch by rememberSaveable { mutableStateOf(mealInfo?.lunch ?: false) }
-    var dinner by rememberSaveable { mutableStateOf(mealInfo?.dinner ?: false) }
-
-    Column(
-        modifier = modifier.fillMaxHeight(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Top
-    ) {
-        Row(
-            modifier = Modifier
-                .padding(horizontal = 8.dp, vertical = 4.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(
-                text = "Meal time",
-                style = MaterialTheme.typography.titleMedium.copy(
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.sp
-                )
-            )
-            Spacer(modifier = Modifier.weight(1f))
-            Text(
-                text = "Meal status",
-                style = MaterialTheme.typography.titleMedium.copy(
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.sp
-                )
-            )
-
-        }
-        Row(
-            modifier = Modifier
-                .border(
-                    width = 1.dp,
-                    color = MaterialTheme.colorScheme.background,
-                    shape = RoundedCornerShape(4.dp)
-                )
-                .padding(horizontal = 8.dp, vertical = 0.dp)
-                .weight(2f),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            val title = listOf("Breakfast", "Lunch", "Dinner")
-            Column(Modifier.fillMaxHeight(), verticalArrangement = Arrangement.SpaceAround) {
-                repeat(title.size) {
-                    Text(text = title[it], textAlign = TextAlign.Center)
-                }
-            }
-            Spacer(modifier = Modifier.weight(1f))
-            Column(Modifier.fillMaxHeight(), verticalArrangement = Arrangement.SpaceAround) {
-                CustomCheckBox(isEnabled = false, isChecked = breakFast, onCheckChange = {
-                    breakFast = it
-                })
-                CustomCheckBox(isEnabled = false, isChecked = lunch, onCheckChange = {
-                    lunch = it
-                })
-                CustomCheckBox(isEnabled = false, isChecked = dinner, onCheckChange = {
-                    dinner = it
-                })
-            }
-        }
-    }
-}
-
-@Composable
-fun CustomCheckBox(
-    modifier: Modifier = Modifier,
-    isEnabled: Boolean = true,
-    isChecked: Boolean = false,
-    onCheckChange: (Boolean) -> Unit
-) {
-    Checkbox(enabled = isEnabled,
-        modifier = modifier,
-        checked = isChecked,
-        onCheckedChange = { onCheckChange(it) })
-}
-
-@Composable
-fun PopUpOption(onDismiss: () -> Unit, onSelect: (String, String) -> Unit) {
-    var expanded by remember { mutableStateOf(true) }
-
-    val calendar = Calendar.getInstance()
-    val month = calendar[Calendar.MONTH]
-
-    val dates = mutableListOf<String>()
-
-    val firestoreDates = mutableListOf<String>()
-
-    for (i in 1..3) {
-        calendar.add(Calendar.DATE, 1)
-        if (month != calendar[Calendar.MONTH])
-            break
-        val date = fetchDateAsString(calendar)
-        dates.add(date)
-
-        val firestoreDate = getDate(calendar)
-        firestoreDates.add(firestoreDate)
-    }
-
-    DropdownMenu(
-        expanded = expanded,
-        onDismissRequest = {
-            expanded = false
-            onDismiss()
-        }
-    ) {
-
-        repeat(dates.size) {
-            DropdownMenuItem(
-                text = {
-                    Text(text = dates[it])
-                },
-                onClick = {
-                    expanded = false
-                    onSelect(dates[it], firestoreDates[it])
-                }
-            )
-        }
-    }
-
-}
 
 @Preview
 @Composable

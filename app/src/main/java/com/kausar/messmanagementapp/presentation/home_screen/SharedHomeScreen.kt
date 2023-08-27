@@ -1,5 +1,6 @@
 package com.kausar.messmanagementapp.presentation.home_screen
 
+import android.util.Log
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -18,6 +19,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FloatingActionButton
@@ -96,6 +98,9 @@ fun SharedHomeScreen(
 
     val userInfo = mainViewModel.userInfo.value
     val mealInfoState = viewModel.mealInfo.value
+    val memberState = mainViewModel.memberInfo.value
+
+    val mealCnt = mainViewModel.count.value
 
     val connection by connectivityState()
     val isConnected = (connection === ConnectionState.Available)
@@ -106,6 +111,8 @@ fun SharedHomeScreen(
         }
         viewModel.getMealForToday()
     }
+
+    Log.d("SharedHomeScreen: ", "${memberState.listOfMember}")
 
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
@@ -159,7 +166,18 @@ fun SharedHomeScreen(
                         textAlign = TextAlign.Center,
                         textDecoration = TextDecoration.Underline
                     )
-                    MealInfoScreen(firestore = viewModel)
+//                    MealInfoScreen(firestore = viewModel)
+                    mealCnt.cnt?.let {
+                        MealSummary(
+                            modifier = Modifier
+                                .fillMaxWidth(1f)
+                                .fillMaxHeight(.4f),
+                            totalMeal = it.total.toString(),
+                            numberOfBreakfast = it.breakfast.toString(),
+                            numberOfLunch = it.lunch.toString(),
+                            numberOfDinner = it.dinner.toString()
+                        )
+                    } ?: CircularProgressIndicator(Modifier.padding(top = 8.dp))
 
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(

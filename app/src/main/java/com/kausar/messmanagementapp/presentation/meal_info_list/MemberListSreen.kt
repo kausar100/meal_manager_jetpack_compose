@@ -78,13 +78,13 @@ fun MemberListScreen(
 ) {
 
     val itemState = viewModel.response.value
-    val memberState = viewModel.memberInfo.value
+    val memberState = mainViewModel.memberInfo.value
     val userInfo = mainViewModel.userInfo.value
 
     LaunchedEffect(key1 = true) {
         if (userInfo.userType.isNotEmpty()) {
             if (memberState.listOfMember.isEmpty()) {
-                viewModel.getMembers()
+                mainViewModel.getMessMembers()
             }
         } else {
             mainViewModel.getUserInfo()
@@ -106,7 +106,7 @@ fun MemberListScreen(
     }
     LaunchedEffect(key1 = isConnected) {
         if (memberState.error.isNotEmpty() && isConnected) {
-            viewModel.getMembers()
+            mainViewModel.getMessMembers()
         }
     }
 

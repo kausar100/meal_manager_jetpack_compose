@@ -33,7 +33,7 @@ import androidx.compose.ui.unit.dp
 import com.kausar.messmanagementapp.R
 import kotlinx.coroutines.delay
 
-private const val SplashWaitTime: Long = 1000
+private const val SplashWaitTime: Long = 2000
 
 @Composable
 fun SplashScreen(onTimeout: () -> Unit) {
