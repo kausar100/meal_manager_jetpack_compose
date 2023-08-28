@@ -8,14 +8,17 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kausar.messmanagementapp.data.firebase_firestore.FirebaseFirestoreRepo
 import com.kausar.messmanagementapp.data.model.MealCount
+import com.kausar.messmanagementapp.data.model.MealInfo
 import com.kausar.messmanagementapp.data.model.Mess
 import com.kausar.messmanagementapp.data.model.User
 import com.kausar.messmanagementapp.data.shared_pref.LoginDataStore
 import com.kausar.messmanagementapp.presentation.home_screen.Keys
 import com.kausar.messmanagementapp.utils.ResultState
+import com.kausar.messmanagementapp.utils.getDate
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import java.util.Calendar
 import javax.inject.Inject
 
 @HiltViewModel
@@ -50,11 +53,24 @@ class MainViewModel @Inject constructor(
         mutableStateOf(AllMealCountState())
     private val membersMealCount: State<AllMealCountState> = _membersMealCnt
 
-    private val _totalMealCnt = mutableStateOf(hashMapOf<String,Double>())
+    private val _totalMealCnt = mutableStateOf(hashMapOf<String, Double>())
     val totalMealCount = _totalMealCnt
+
+    private val _membersTodayMealCnt: MutableState<AllMemberTodayCountState> =
+        mutableStateOf(AllMemberTodayCountState())
+    private val membersTodayMealCount: State<AllMemberTodayCountState> = _membersTodayMealCnt
+
+    private val _todayMealCnt = mutableStateOf(hashMapOf<String, Double>())
+    val todayMealCount = _todayMealCnt
 
     private val _messPic = mutableStateOf("")
     val messPicture: State<String> = _messPic
+
+    private val calender: Calendar
+        get() = Calendar.getInstance()
+
+    private val today: String
+        get() = getDate(calender)
 
     init {
         getContactNumber()
@@ -131,6 +147,59 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    fun getMembersTodayMealCount() = viewModelScope.launch {
+        firestoreRepo.getMembersMealCountForToday(today).collectLatest { result ->
+            when (result) {
+                is ResultState.Success -> {
+                    Log.d("membersTodayMealCount: ", result.data.size.toString())
+                    _membersTodayMealCnt.value = AllMemberTodayCountState(
+                        info = result.data
+                    )
+                    _todayMealCnt.value = getTodayMealCount()
+                }
+
+                is ResultState.Failure -> {
+                    _membersTodayMealCnt.value = AllMemberTodayCountState(
+                        error = result.message.localizedMessage ?: "some error occurred"
+                    )
+                }
+
+                is ResultState.Loading -> {
+                    _membersTodayMealCnt.value = AllMemberTodayCountState(
+                        isLoading = true
+                    )
+                }
+            }
+
+        }
+    }
+
+    private fun getTodayMealCount(): HashMap<String, Double> {
+        membersTodayMealCount.value.info.isNotEmpty().let {
+            var breakfast = 0.0
+            var lunch = 0.0
+            var dinner = 0.0
+
+            for (meal in membersTodayMealCount.value.info) {
+                meal.breakfast?.let {
+                    if (meal.breakfast) breakfast += 1.0
+                }
+                meal.lunch?.let {
+                    if (meal.lunch) lunch += 1.0
+                }
+                meal.dinner?.let {
+                    if (meal.dinner) dinner += 1.0
+                }
+            }
+
+            return hashMapOf(
+                Keys.Breakfast.name to breakfast,
+                Keys.Lunch.name to lunch,
+                Keys.Dinner.name to dinner
+            )
+        }
+    }
+
     fun getAllMealCount() = viewModelScope.launch {
         firestoreRepo.getMealCount().collectLatest { result ->
             when (result) {
@@ -159,6 +228,7 @@ class MainViewModel @Inject constructor(
     }
 
     private fun getTotalCount(): HashMap<String, Double> {
+
         membersMealCount.value.cnt.isNotEmpty().let {
             var breakfast = 0.0
             var lunch = 0.0
@@ -307,6 +377,12 @@ class MainViewModel @Inject constructor(
 
     data class AllMealCountState(
         val cnt: List<MealCount> = emptyList(),
+        val error: String = "",
+        val isLoading: Boolean = false
+    )
+
+    data class AllMemberTodayCountState(
+        val info: List<MealInfo> = emptyList(),
         val error: String = "",
         val isLoading: Boolean = false
     )

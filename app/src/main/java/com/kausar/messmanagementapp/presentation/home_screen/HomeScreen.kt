@@ -1,7 +1,9 @@
 package com.kausar.messmanagementapp.presentation.home_screen
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -11,6 +13,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -21,6 +26,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.kausar.messmanagementapp.presentation.viewmodels.FirebaseFirestoreDbViewModel
 import com.kausar.messmanagementapp.presentation.viewmodels.MainViewModel
+import com.kausar.messmanagementapp.utils.fetchDateAsString
+import java.util.Calendar
 
 enum class Keys {
     Total, Breakfast, Lunch, Dinner
@@ -31,8 +38,14 @@ fun HomeScreen(
     mainViewModel: MainViewModel = hiltViewModel(),
     viewModel: FirebaseFirestoreDbViewModel = hiltViewModel(),
 ) {
+    val calendar = Calendar.getInstance()
+    val today by rememberSaveable {
+        mutableStateOf(fetchDateAsString(calendar))
+    }
+
     LaunchedEffect(key1 = true) {
         mainViewModel.getAllMealCount()
+        mainViewModel.getMembersTodayMealCount()
     }
 
     Box(
@@ -63,7 +76,40 @@ fun HomeScreen(
                     numberOfLunch = if (data.contains(Keys.Lunch.name)) data[Keys.Lunch.name].toString() else "0.0",
                     numberOfDinner = if (data.contains(Keys.Dinner.name)) data[Keys.Dinner.name].toString() else "0.0"
                 )
-            }else{
+            } else {
+                CircularProgressIndicator()
+            }
+
+            Text(
+                text = today,
+                textAlign = TextAlign.Center, fontWeight = FontWeight.Bold
+            )
+            if (mainViewModel.todayMealCount.value.isNotEmpty()) {
+                val data = mainViewModel.todayMealCount.value
+                Column() {
+                    Row(
+                        Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceAround,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(text = "Meal Time")
+                        Text(text = "Number of Meal")
+                    }
+                    repeat(3) {
+                        val title = when (it) {
+                            0 -> Keys.Breakfast.name
+                            1 -> Keys.Lunch.name
+                            2 -> Keys.Dinner.name
+                            else -> ""
+                        }
+                        TodayMealCountInformation(
+                            mealTime = title,
+                            value = if (data.contains(title)) data[title] ?: 0.0 else 0.0,
+                        )
+                    }
+                }
+
+            } else {
                 CircularProgressIndicator()
             }
         }
@@ -72,6 +118,19 @@ fun HomeScreen(
 
 }
 
+
+@Composable
+fun TodayMealCountInformation(mealTime: String, value: Double) {
+    Row(
+        Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceAround,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(text = mealTime)
+        Text(text = value.toString())
+    }
+
+}
 
 @Preview
 @Composable

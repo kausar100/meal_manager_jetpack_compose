@@ -153,7 +153,7 @@ class FirebaseFirestoreDbViewModel @Inject constructor(
     fun update(meal: MealInfo) = repo.updateCurrentUserMeal(meal)
 
     fun getMealForToday() = viewModelScope.launch {
-        repo.getCurrentUserMealByDay(today).collectLatest {
+        repo.getUserMealByDay(today, null).collectLatest {
             when (it) {
                 is ResultState.Success -> {
                     it.data?.let { meal ->
@@ -165,7 +165,6 @@ class FirebaseFirestoreDbViewModel @Inject constructor(
                     }
 
                 }
-
                 is ResultState.Failure -> {
                     _todayMeal.value = SingleMeal(
                         error = it.message.localizedMessage!!.toString()
@@ -184,7 +183,7 @@ class FirebaseFirestoreDbViewModel @Inject constructor(
 
     fun getMealAtDate(date: String) = viewModelScope.launch {
         _newMeal.value = SingleMeal()
-        repo.getCurrentUserMealByDay(date).collectLatest {
+        repo.getUserMealByDay(date, null).collectLatest {
             when (it) {
                 is ResultState.Success -> {
                     it.data?.let { meal ->

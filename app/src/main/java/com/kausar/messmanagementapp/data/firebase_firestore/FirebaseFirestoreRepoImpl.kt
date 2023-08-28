@@ -460,10 +460,12 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
                                         trySend(ResultState.Success(membersMealCount))
                                     }
                                 }
+
                                 is ResultState.Failure -> {
                                     Log.d("failed: ", member.userName)
                                     trySend(ResultState.Failure(Exception("meal count failed for ${member.userName}")))
                                 }
+
                                 else -> {}
                             }
                         }
@@ -755,12 +757,56 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
         }
     }
 
-    override fun getCurrentUserMealByDay(date: String): Flow<ResultState<MealInfo?>> =
+    override fun getMembersMealCountForToday(today: String): Flow<ResultState<List<MealInfo>>> =
+        callbackFlow {
+            trySend(ResultState.Loading)
+
+            if (Network.isNetworkAvailable(context)) {
+                if (messMembers.isNotEmpty()) {
+                    val membersMealToday = mutableListOf<MealInfo>()
+                    for (member in messMembers) {
+                        CoroutineScope(Dispatchers.IO).launch {
+                            getUserMealByDay(today, member.userId).collectLatest { result ->
+                                when (result) {
+                                    is ResultState.Success -> {
+                                        Log.d("members: ", member.userName)
+                                        result.data?.let {
+                                            membersMealToday.add(result.data)
+                                            if (member == messMembers.last()) {
+                                                trySend(ResultState.Success(membersMealToday))
+                                            }
+                                        }
+
+                                    }
+                                    is ResultState.Failure -> {
+                                        Log.d("failed: ", member.userName)
+                                        trySend(ResultState.Failure(Exception("meal info failed for ${member.userName}")))
+                                    }
+
+                                    else -> {}
+                                }
+                            }
+                        }
+                    }
+
+                }
+
+            } else {
+                trySend(ResultState.Failure(Exception("Please check your internet connection!")))
+            }
+
+
+            awaitClose {
+                close()
+            }
+        }
+
+    override fun getUserMealByDay(date: String, uid: String?): Flow<ResultState<MealInfo?>> =
         callbackFlow {
             trySend(ResultState.Loading)
 
             val monthYear = getMonthYear(date)
-            val currentUser = firebaseAuth.currentUser?.uid
+            val currentUser = uid ?: firebaseAuth.currentUser?.uid
 
 
             if (Network.isNetworkAvailable(context)) {

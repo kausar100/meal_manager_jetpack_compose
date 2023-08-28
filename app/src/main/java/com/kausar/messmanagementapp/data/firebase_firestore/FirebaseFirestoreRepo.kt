@@ -33,7 +33,9 @@ interface FirebaseFirestoreRepo {
 
     fun getAppUser(): Flow<ResultState<List<User>?>>
 
-    fun getCurrentUserMealByDay(date: String): Flow<ResultState<MealInfo?>>
+    fun getMembersMealCountForToday(today: String) : Flow<ResultState<List<MealInfo>>>
+
+    fun getUserMealByDay(date: String, uid: String?): Flow<ResultState<MealInfo?>>
 
     fun getUserMealByMonth(currentUser: String? = null): Flow<ResultState<List<MealInfo>>>
 }
