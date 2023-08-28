@@ -36,6 +36,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -62,7 +63,7 @@ import com.kausar.messmanagementapp.R
 import com.kausar.messmanagementapp.components.CustomProgressBar
 import com.kausar.messmanagementapp.data.model.MealInfo
 import com.kausar.messmanagementapp.data.model.User
-import com.kausar.messmanagementapp.presentation.home_screen.MealInfoScreen
+import com.kausar.messmanagementapp.presentation.home_screen.MealSummary
 import com.kausar.messmanagementapp.presentation.viewmodels.FirebaseFirestoreDbViewModel
 import com.kausar.messmanagementapp.presentation.viewmodels.MainViewModel
 import com.kausar.messmanagementapp.utils.fetchCurrentMonthName
@@ -80,6 +81,7 @@ fun MemberListScreen(
     val itemState = viewModel.response.value
     val memberState = mainViewModel.memberInfo.value
     val userInfo = mainViewModel.userInfo.value
+    val mealCnt by viewModel.singleMealCnt.collectAsState()
 
     LaunchedEffect(key1 = true) {
         if (userInfo.userType.isNotEmpty()) {
@@ -219,7 +221,15 @@ fun MemberListScreen(
                     },
                     shape = RoundedCornerShape(8.dp),
                     text = {
-                        MealInfoScreen(firestore = viewModel, currentUser = false)
+                        MealSummary(
+                            modifier = Modifier
+                                .fillMaxWidth(1f)
+                                .fillMaxHeight(.6f),
+                            totalMeal = mealCnt.totalMeal.toString(),
+                            numberOfBreakfast = mealCnt.breakfast.toString(),
+                            numberOfLunch = mealCnt.lunch.toString(),
+                            numberOfDinner = mealCnt.dinner.toString()
+                        )
                     },
                     confirmButton = {
                         Button(

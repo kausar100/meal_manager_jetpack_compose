@@ -33,9 +33,6 @@ class FirebaseFirestoreDbViewModel @Inject constructor(
     private val _newMeal: MutableState<SingleMeal> = mutableStateOf(SingleMeal())
     val newMealInfo: State<SingleMeal> = _newMeal
 
-    private val _cnt = MutableStateFlow(MealCount())
-    val mealCnt: StateFlow<MealCount> = _cnt
-
     private val calender: Calendar
         get() = Calendar.getInstance()
 
@@ -53,16 +50,6 @@ class FirebaseFirestoreDbViewModel @Inject constructor(
                         _res.value = ItemState(
                             item = it.data
                         )
-                        _cnt.update { cnt ->
-                            cnt.copy(
-                                breakfast = 0.0,
-                                lunch = 0.0,
-                                dinner = 0.0,
-                                totalMeal = 0.0
-                            )
-                        }
-                        val meals = it.data.asReversed()
-                        getMealCnt(meals)
                     }
 
                     is ResultState.Failure -> {
@@ -125,40 +112,6 @@ class FirebaseFirestoreDbViewModel @Inject constructor(
         val todayDay = today.substring(0, 2).toInt()
 
         return currentDay.minus(todayDay) >= 0
-    }
-
-    private fun getMealCnt(meals: List<MealInfo>) {
-        if (meals.isNotEmpty()) {
-            for (meal in meals) {
-                if (needToStop(meal.date!!))
-                    break
-                if (meal.breakfast == true) {
-                    _cnt.update {
-                        it.copy(
-                            breakfast = it.breakfast.plus(1.0),
-                            totalMeal = it.totalMeal.plus(0.5)
-                        )
-                    }
-                }
-                if (meal.lunch == true) {
-                    _cnt.update {
-                        it.copy(
-                            lunch = it.lunch.plus(1.0),
-                            totalMeal = it.totalMeal.plus(1.0),
-                        )
-                    }
-                }
-                if (meal.dinner == true) {
-                    _cnt.update {
-                        it.copy(
-                            dinner = it.dinner.plus(1.0),
-                            totalMeal = it.totalMeal.plus(1.0),
-                        )
-                    }
-                }
-            }
-        }
-
     }
 
     private fun getSingleMealCnt(meals: List<MealInfo>) {
@@ -275,13 +228,6 @@ class FirebaseFirestoreDbViewModel @Inject constructor(
     )
 
     data class SingleMealCount(
-        val breakfast: Double = 0.0,
-        val lunch: Double = 0.0,
-        val dinner: Double = 0.0,
-        val totalMeal: Double = 0.0
-    )
-
-    data class MealCount(
         val breakfast: Double = 0.0,
         val lunch: Double = 0.0,
         val dinner: Double = 0.0,

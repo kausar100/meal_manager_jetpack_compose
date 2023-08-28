@@ -11,18 +11,15 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -43,7 +40,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.kausar.messmanagementapp.components.CustomProgressBar
 import com.kausar.messmanagementapp.data.model.MealInfo
@@ -178,9 +174,9 @@ fun SharedHomeScreen(
                         text = "Number of meal until today",
                         fontSize = MaterialTheme.typography.titleMedium.fontSize,
                         textAlign = TextAlign.Center,
-                        textDecoration = TextDecoration.Underline
+                        textDecoration = TextDecoration.Underline,
+                        fontWeight = FontWeight.Bold
                     )
-//                    MealInfoScreen(firestore = viewModel)
                     mealCnt.cnt?.let {
                         MealSummary(
                             modifier = Modifier
@@ -201,27 +197,17 @@ fun SharedHomeScreen(
                             CircularProgressIndicator(Modifier.padding(top = 8.dp))
                         }
 
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = today,
-                        textAlign = TextAlign.Center,
-                        textDecoration = TextDecoration.Underline
-                    )
                 }
             }
-            Spacer(modifier = Modifier.height(8.dp))
             if (newMeal) {
                 AddNewMeal(
-                    modifier = Modifier
-                        .fillMaxHeight(.80f)
-                        .fillMaxWidth(1f),
-                    selectedDate = selectedDate,
-                    viewModel = viewModel,
                     onCancel = {
                         newMeal = false
                         selectedDate = getDate(temp)
                         presentingDate = fetchDateAsString(temp)
                     },
+                    selectedDate = selectedDate,
+                    viewModel = viewModel,
                     updateMeal = { breakfast, lunch, dinner ->
                         progMsg = "Updating meal info..."
                         showToast = true
@@ -263,74 +249,73 @@ fun SharedHomeScreen(
                                 }
                             }
                         }
-                    },
-                    addMeal = { breakfast, lunch, dinner ->
-                        progMsg = "Inserting new meal..."
-                        showToast = true
-                        scope.launch {
-                            viewModel.insert(
-                                MealInfo(
-                                    selectedDate,
-                                    getDayName(presentingDate),
-                                    breakfast,
-                                    lunch,
-                                    dinner
-                                )
-                            ).collectLatest { result ->
-                                when (result) {
-                                    is ResultState.Success -> {
-                                        showToast = false
-                                        context.showToast(result.data)
-                                        viewModel.getAllMeal(userInfo.userId)
+                    }
+                ) { breakfast, lunch, dinner ->
+                    progMsg = "Inserting new meal..."
+                    showToast = true
+                    scope.launch {
+                        viewModel.insert(
+                            MealInfo(
+                                selectedDate,
+                                getDayName(presentingDate),
+                                breakfast,
+                                lunch,
+                                dinner
+                            )
+                        ).collectLatest { result ->
+                            when (result) {
+                                is ResultState.Success -> {
+                                    showToast = false
+                                    context.showToast(result.data)
+                                    viewModel.getAllMeal(userInfo.userId)
+                                    newMeal = false
+                                }
+
+                                is ResultState.Failure -> {
+                                    showToast = false
+                                    result.message.localizedMessage?.let { msg ->
+                                        context.showToast(
+                                            msg
+                                        )
                                         newMeal = false
                                     }
+                                }
 
-                                    is ResultState.Failure -> {
-                                        showToast = false
-                                        result.message.localizedMessage?.let { msg ->
-                                            context.showToast(
-                                                msg
-                                            )
-                                            newMeal = false
-                                        }
-                                    }
+                                is ResultState.Loading -> {
 
-                                    is ResultState.Loading -> {
-
-                                    }
                                 }
                             }
                         }
                     }
-                )
+                }
             } else {
+                Row(
+                    Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = today,
+                        textAlign = TextAlign.Center,
+                        textDecoration = TextDecoration.Underline
+                    )
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Icon(
+                        imageVector = Icons.Default.AddCircle,
+                        contentDescription = "add meal",
+                        tint = MaterialTheme.colorScheme.secondary,
+                        modifier = Modifier.clickable { newMeal = true }
+                    )
+
+                }
                 if (mealInfoState.success.isNotEmpty()) {
                     MealInformation(
-                        modifier = Modifier
-                            .fillMaxWidth(1f)
-                            .fillMaxHeight(.7f)
-                            .padding(16.dp),
                         mealInfo = mealInfoState.meal,
                     )
                 }
                 ShowMessage(mealInfoState)
             }
 
-        }
-        if (!newMeal) {
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.BottomEnd) {
-                FloatingActionButton(
-                    onClick = {
-                        newMeal = true
-                    },
-                    containerColor = MaterialTheme.colorScheme.secondary
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = "add meal",
-                    )
-                }
-            }
         }
     }
 }
@@ -351,88 +336,6 @@ fun ShowMessage(mealInfoState: FirebaseFirestoreDbViewModel.SingleMeal) {
 
     }
 
-}
-
-@Composable
-fun MealInformation(
-    modifier: Modifier = Modifier,
-    mealInfo: MealInfo?
-) {
-    var breakFast by rememberSaveable { mutableStateOf(mealInfo?.breakfast ?: false) }
-    var lunch by rememberSaveable { mutableStateOf(mealInfo?.lunch ?: false) }
-    var dinner by rememberSaveable { mutableStateOf(mealInfo?.dinner ?: false) }
-
-    Column(
-        modifier = modifier.fillMaxHeight(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Top
-    ) {
-        Row(
-            modifier = Modifier
-                .padding(horizontal = 8.dp, vertical = 4.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(
-                text = "Meal time",
-                style = MaterialTheme.typography.titleMedium.copy(
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.sp
-                )
-            )
-            Spacer(modifier = Modifier.weight(1f))
-            Text(
-                text = "Meal status",
-                style = MaterialTheme.typography.titleMedium.copy(
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.sp
-                )
-            )
-
-        }
-        Row(
-            modifier = Modifier
-                .border(
-                    width = 1.dp,
-                    color = MaterialTheme.colorScheme.background,
-                    shape = RoundedCornerShape(4.dp)
-                )
-                .padding(horizontal = 8.dp, vertical = 0.dp)
-                .weight(2f),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            val title = listOf("Breakfast", "Lunch", "Dinner")
-            Column(Modifier.fillMaxHeight(), verticalArrangement = Arrangement.SpaceAround) {
-                repeat(title.size) {
-                    Text(text = title[it], textAlign = TextAlign.Center)
-                }
-            }
-            Spacer(modifier = Modifier.weight(1f))
-            Column(Modifier.fillMaxHeight(), verticalArrangement = Arrangement.SpaceAround) {
-                CustomCheckBox(isEnabled = false, isChecked = breakFast, onCheckChange = {
-                    breakFast = it
-                })
-                CustomCheckBox(isEnabled = false, isChecked = lunch, onCheckChange = {
-                    lunch = it
-                })
-                CustomCheckBox(isEnabled = false, isChecked = dinner, onCheckChange = {
-                    dinner = it
-                })
-            }
-        }
-    }
-}
-
-@Composable
-fun CustomCheckBox(
-    modifier: Modifier = Modifier,
-    isEnabled: Boolean = true,
-    isChecked: Boolean = false,
-    onCheckChange: (Boolean) -> Unit
-) {
-    Checkbox(enabled = isEnabled,
-        modifier = modifier,
-        checked = isChecked,
-        onCheckedChange = { onCheckChange(it) })
 }
 
 @Composable

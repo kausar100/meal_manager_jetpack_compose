@@ -16,6 +16,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Divider
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -31,7 +32,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kausar.messmanagementapp.components.CustomProgressBar
@@ -39,7 +39,6 @@ import com.kausar.messmanagementapp.presentation.viewmodels.FirebaseFirestoreDbV
 
 @Composable
 fun AddNewMeal(
-    modifier: Modifier = Modifier,
     onCancel: () -> Unit,
     selectedDate: String,
     viewModel: FirebaseFirestoreDbViewModel,
@@ -82,77 +81,76 @@ fun AddNewMeal(
                 }
             }
             Column(
-                modifier = modifier
-                    .fillMaxHeight()
-                    .padding(16.dp),
+                modifier = Modifier
+                    .fillMaxHeight(),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Top
             ) {
-                Row(
-                    modifier = Modifier
-                        .padding(horizontal = 8.dp, vertical = 4.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(
-                        text = "Meal time",
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            fontWeight = FontWeight.Bold,
-                            letterSpacing = 1.sp
-                        )
-                    )
-                    Spacer(modifier = Modifier.weight(1f))
-                    Text(
-                        text = "Meal status",
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            fontWeight = FontWeight.Bold,
-                            letterSpacing = 1.sp
-                        )
-                    )
-
-                }
-                Row(
-                    modifier = Modifier
-                        .border(
-                            width = 1.dp, color = MaterialTheme.colorScheme.background, shape = RoundedCornerShape(4.dp)
-                        )
-                        .padding(horizontal = 8.dp, vertical = 0.dp)
-                        .weight(2f),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    val title = listOf("Breakfast", "Lunch", "Dinner")
-                    Column(
-                        Modifier.fillMaxHeight(),
-                        verticalArrangement = Arrangement.SpaceAround,
+                Column(Modifier.fillMaxHeight(.6f)) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 8.dp, vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        repeat(title.size) {
-                            Text(text = title[it], textAlign = TextAlign.Center)
-                        }
+                        Text(
+                            text = "Meal time",
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontWeight = FontWeight.Bold,
+                                letterSpacing = 1.sp
+                            )
+                        )
+                        Text(
+                            text = "Meal status",
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontWeight = FontWeight.Bold,
+                                letterSpacing = 1.sp
+                            )
+                        )
+
                     }
-                    Spacer(modifier = Modifier.weight(1f))
+                    Divider(Modifier.padding(horizontal = 8.dp))
                     Column(
-                        Modifier.fillMaxHeight(),
+                        Modifier
+                            .fillMaxWidth()
+                            .fillMaxHeight()
+                            .border(
+                                width = 1.dp,
+                                color = MaterialTheme.colorScheme.background,
+                                shape = RoundedCornerShape(4.dp)
+                            )
+                            .padding(horizontal = 8.dp, vertical = 0.dp),
                         verticalArrangement = Arrangement.SpaceAround
                     ) {
-                        CustomCheckBox(
-                            isEnabled = edit or toUpdate,
-                            isChecked = breakFast,
-                            onCheckChange = {
-                                breakFast = it
-                            })
-                        CustomCheckBox(
-                            isEnabled = edit or toUpdate,
-                            isChecked = lunch,
-                            onCheckChange = {
-                                lunch = it
-                            })
-                        CustomCheckBox(
-                            isEnabled = edit or toUpdate,
-                            isChecked = dinner,
-                            onCheckChange = {
-                                dinner = it
-                            })
+                        val title = listOf("Breakfast", "Lunch", "Dinner")
+                        repeat(title.size) {
+                            val value = when (it) {
+                                0 -> breakFast
+                                1 -> lunch
+                                else -> dinner
+                            }
+                            SingleRowForMealInfo(
+                                isEnabled = edit or toUpdate,
+                                title = title[it], value = value, onChange = { newValue ->
+                                    when (it) {
+                                        0 -> {
+                                            breakFast = newValue
+                                        }
+
+                                        1 -> {
+                                            lunch = newValue
+                                        }
+
+                                        else -> {
+                                            dinner = newValue
+                                        }
+                                    }
+                                })
+                        }
                     }
                 }
+
                 Spacer(Modifier.height(16.dp))
                 AnimatedVisibility(visible = !toUpdate) {
                     ElevatedButton(
