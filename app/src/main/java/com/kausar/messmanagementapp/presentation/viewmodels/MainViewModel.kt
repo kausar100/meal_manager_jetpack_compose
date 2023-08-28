@@ -86,16 +86,11 @@ class MainViewModel @Inject constructor(
     }
 
     private fun countMeal() = viewModelScope.launch {
-        firestoreRepo.addMealCount().collectLatest { result ->
+        firestoreRepo.countSingleMeal().collectLatest { result ->
             when (result) {
                 is ResultState.Success -> {
                     Log.d("countMeal: ","meal count added successfully!")
-
-                    //current user count added
-                    if(result.data.second){
-                        Log.d("countMeal: ","current user found")
-                        getMealCnt()
-                    }
+                    getMealCnt()
                 }
                 else -> {
                     Log.d( "countMeal: ","failed")

@@ -192,10 +192,14 @@ fun SharedHomeScreen(
                             numberOfDinner = it.dinner.toString()
                         )
                     }
-                        ?: if (mealCnt.isLoading) CircularProgressIndicator(Modifier.padding(top = 8.dp)) else Text(
-                            text = "No meal information found!",
-                            modifier = Modifier.padding(top = 16.dp)
-                        )
+                        ?: if (mealCnt.error.isNotEmpty()) {
+                            Text(
+                                text = mealCnt.error,
+                                modifier = Modifier.padding(top = 16.dp)
+                            )
+                        } else {
+                            CircularProgressIndicator(Modifier.padding(top = 8.dp))
+                        }
 
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
