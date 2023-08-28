@@ -11,6 +11,7 @@ import com.kausar.messmanagementapp.data.model.MealCount
 import com.kausar.messmanagementapp.data.model.Mess
 import com.kausar.messmanagementapp.data.model.User
 import com.kausar.messmanagementapp.data.shared_pref.LoginDataStore
+import com.kausar.messmanagementapp.presentation.home_screen.Keys
 import com.kausar.messmanagementapp.utils.ResultState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.collectLatest
@@ -41,8 +42,16 @@ class MainViewModel @Inject constructor(
     val memberInfo: State<MemberState> = _memberList
 
 
-    private val _count: MutableState<CountState> = mutableStateOf(CountState())
-    val count: State<CountState> = _count
+    private val _currentUserMealCnt: MutableState<SingleMealCountState> =
+        mutableStateOf(SingleMealCountState())
+    val currentUserMealCount: State<SingleMealCountState> = _currentUserMealCnt
+
+    private val _membersMealCnt: MutableState<AllMealCountState> =
+        mutableStateOf(AllMealCountState())
+    private val membersMealCount: State<AllMealCountState> = _membersMealCnt
+
+    private val _totalMealCnt = mutableStateOf(hashMapOf<String,Double>())
+    val totalMealCount = _totalMealCnt
 
     private val _messPic = mutableStateOf("")
     val messPicture: State<String> = _messPic
@@ -66,7 +75,7 @@ class MainViewModel @Inject constructor(
                         _memberList.value = MemberState(
                             listOfMember = result.data ?: emptyList()
                         )
-                        countMeal()
+                        addMembersMealCount()
                     }
 
                     is ResultState.Failure -> {
@@ -85,44 +94,89 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    private fun countMeal() = viewModelScope.launch {
-        firestoreRepo.countSingleMeal().collectLatest { result ->
-            when (result) {
-                is ResultState.Success -> {
-                    Log.d("countMeal: ","meal count added successfully!")
-                    getMealCnt()
-                }
-                else -> {
-                    Log.d( "countMeal: ","failed")
+    private fun addMembersMealCount() {
+        viewModelScope.launch {
+            firestoreRepo.countMeal().collectLatest {
+                if (it is ResultState.Success) {
+                    getSingleMealCount()
                 }
             }
         }
     }
 
-    private fun getMealCnt() = viewModelScope.launch {
-        firestoreRepo.getSingleMealCount().collectLatest { result ->
+    private fun getSingleMealCount() = viewModelScope.launch {
+        firestoreRepo.getSingleMealCount(null).collectLatest { result ->
             when (result) {
                 is ResultState.Success -> {
-                    _count.value = CountState(
+                    _currentUserMealCnt.value = SingleMealCountState(
                         cnt = result.data,
                         success = "Meal count fetched successfully!"
                     )
                 }
 
                 is ResultState.Failure -> {
-                    _count.value = CountState(
+                    _currentUserMealCnt.value = SingleMealCountState(
                         error = result.message.localizedMessage ?: "some error occurred"
                     )
                 }
 
                 is ResultState.Loading -> {
-                    _count.value = CountState(
+                    _currentUserMealCnt.value = SingleMealCountState(
                         isLoading = true
                     )
 
                 }
             }
 
+        }
+    }
+
+    fun getAllMealCount() = viewModelScope.launch {
+        firestoreRepo.getMealCount().collectLatest { result ->
+            when (result) {
+                is ResultState.Success -> {
+                    Log.d("getAllMealCount: ", result.data.size.toString())
+                    _membersMealCnt.value = AllMealCountState(
+                        cnt = result.data
+                    )
+                    _totalMealCnt.value = getTotalCount()
+                }
+
+                is ResultState.Failure -> {
+                    _membersMealCnt.value = AllMealCountState(
+                        error = result.message.localizedMessage ?: "some error occurred"
+                    )
+                }
+
+                is ResultState.Loading -> {
+                    _membersMealCnt.value = AllMealCountState(
+                        isLoading = true
+                    )
+                }
+            }
+
+        }
+    }
+
+    private fun getTotalCount(): HashMap<String, Double> {
+        membersMealCount.value.cnt.isNotEmpty().let {
+            var breakfast = 0.0
+            var lunch = 0.0
+            var dinner = 0.0
+            var total = 0.0
+            for (meal in membersMealCount.value.cnt) {
+                breakfast += meal.breakfast
+                lunch += meal.lunch
+                dinner += meal.dinner
+                total += meal.total
+            }
+
+            return hashMapOf(
+                Keys.Total.name to total,
+                Keys.Breakfast.name to breakfast,
+                Keys.Lunch.name to lunch,
+                Keys.Dinner.name to dinner
+            )
         }
     }
 
@@ -244,9 +298,15 @@ class MainViewModel @Inject constructor(
         val isLoading: Boolean = false
     )
 
-    data class CountState(
+    data class SingleMealCountState(
         val cnt: MealCount? = null,
         val success: String = "",
+        val error: String = "",
+        val isLoading: Boolean = false
+    )
+
+    data class AllMealCountState(
+        val cnt: List<MealCount> = emptyList(),
         val error: String = "",
         val isLoading: Boolean = false
     )

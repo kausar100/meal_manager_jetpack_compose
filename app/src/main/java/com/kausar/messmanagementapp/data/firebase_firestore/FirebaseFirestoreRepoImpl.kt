@@ -16,10 +16,13 @@ import com.kausar.messmanagementapp.data.model.toMap
 import com.kausar.messmanagementapp.utils.ResultState
 import com.kausar.messmanagementapp.utils.getDate
 import com.kausar.messmanagementapp.utils.network_connection.Network
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Calendar
@@ -229,55 +232,56 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
     private val getMonthYear: String
         get() = getMonthYear(today)
 
-    override fun getSingleMealCount(): Flow<ResultState<MealCount>> = callbackFlow {
-        trySend(ResultState.Loading)
+    override fun getSingleMealCount(currentUID: String?): Flow<ResultState<MealCount>> =
+        callbackFlow {
+            trySend(ResultState.Loading)
 
-        if (Network.isNetworkAvailable(context)) {
-            val currentUser = firebaseAuth.currentUser?.uid
-            currentUser?.let {
-                firestore.collection(CollectionRef.userDb).document(currentUser)
-                    .get().addOnSuccessListener {
-                        if (it.exists()) {
-                            val user = it.toObject(User::class.java)
-                            user?.let {
-                                firestore.collection(CollectionRef.mealDb)
-                                    .document(user.messName)
-                                    .collection(user.messId)
-                                    .document(user.userId)
-                                    .collection(getMonthYear)
-                                    .document(user.userId)
-                                    .get()
-                                    .addOnSuccessListener { cnt ->
-                                        cnt?.let {
-                                            val count = cnt.toObject(MealCount::class.java)
-                                            count?.let {
-                                                Log.d("getSingleMealCount: ", "success")
-                                                trySend(ResultState.Success(count))
+            if (Network.isNetworkAvailable(context)) {
+                val userId = currentUID ?: firebaseAuth.currentUser?.uid
+                userId?.let {
+                    firestore.collection(CollectionRef.userDb).document(userId)
+                        .get().addOnSuccessListener {
+                            if (it.exists()) {
+                                val user = it.toObject(User::class.java)
+                                user?.let {
+                                    firestore.collection(CollectionRef.mealDb)
+                                        .document(user.messName)
+                                        .collection(user.messId)
+                                        .document(user.userId)
+                                        .collection(getMonthYear)
+                                        .document(user.userId)
+                                        .get()
+                                        .addOnSuccessListener { cnt ->
+                                            cnt?.let {
+                                                val count = cnt.toObject(MealCount::class.java)
+                                                count?.let {
+                                                    Log.d("getSingleMealCount: ", "success")
+                                                    trySend(ResultState.Success(count))
+                                                }
+
                                             }
-
                                         }
-                                    }
-                                    .addOnFailureListener { e ->
-                                        Log.d("getSingleMealCount: ", "failed")
-                                        trySend(ResultState.Failure(Exception(e)))
-                                    }
+                                        .addOnFailureListener { e ->
+                                            Log.d("getSingleMealCount: ", "failed")
+                                            trySend(ResultState.Failure(Exception(e)))
+                                        }
+                                }
                             }
+
+
                         }
-
-
-                    }
-                    .addOnFailureListener {
-                        trySend(ResultState.Failure(it))
-                    }
+                        .addOnFailureListener {
+                            trySend(ResultState.Failure(it))
+                        }
+                }
+            } else {
+                trySend(ResultState.Failure(Exception("Please check your internet connection!")))
             }
-        } else {
-            trySend(ResultState.Failure(Exception("Please check your internet connection!")))
-        }
 
-        awaitClose {
-            close()
+            awaitClose {
+                close()
+            }
         }
-    }
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun getMessMembers(): Flow<ResultState<List<User>?>> = callbackFlow {
@@ -331,78 +335,152 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
         return day.toInt() > currDay.toInt()
     }
 
-//    @RequiresApi(Build.VERSION_CODES.O)
-//    override fun updateSingleMealCount(
-//        monthYear: String
-//    ): Flow<ResultState<String>> =
-//        callbackFlow {
-//            var cntBreakfast = 0.0
-//            var cntLunch = 0.0
-//            var cntDinner = 0.0
-//
-////            getUserMealByMonth(currentUser).collectLatest { response ->
-////                when (response) {
-////                    is ResultState.Success -> {
-////                        if (response.data.isNotEmpty()) {
-////                            for (meal in response.data) {
-////                                if (needToCount(meal.date!!)) {
-////                                    if (meal.breakfast!!) {
-////                                        cntBreakfast += 1.0
-////                                    }
-////                                    if (meal.lunch!!) {
-////                                        cntLunch += 1.0
-////                                    }
-////                                    if (meal.dinner!!) {
-////                                        cntDinner += 1.0
-////                                    }
-////                                }
-////                            }
-////                            val cntTotal = cntBreakfast * 0.5 + cntLunch * 1.0 + cntDinner * 1.0
-////
-////                            val cnt = MealCount(
-////                                breakfast = cntBreakfast,
-////                                lunch = cntLunch,
-////                                dinner = cntDinner,
-////                                total = cntTotal
-////                            )
-////
-////                            firestore.collection(CollectionRef.mealDb)
-////                                .document(member.messName)
-////                                .collection(member.messId)
-////                                .document(member.userId)
-////                                .collection(monthYear)
-////                                .document(member.userId)
-////                                .set(cnt.toMap())
-////                                .addOnSuccessListener {
-////                                    Log.d("updateMealCount: ", "success")
-////                                    trySend(
-////                                        ResultState.Success(
-////                                            "Data inserted successfully!"
-////                                        )
-////                                    )
-////
-////                                }
-////                                .addOnFailureListener { e ->
-////                                    Log.d("updateMealCount: ", "failed")
-////                                    trySend(ResultState.Failure(Exception(e)))
-////                                }
-////
-////                        } else {
-////                            trySend(ResultState.Failure(Exception("No meal history found!")))
-////                        }
-////                    }
-////
-////                    is ResultState.Failure -> {
-////                        trySend(ResultState.Failure(Exception("No meal history found!")))
-////                    }
-////
-////                    else -> {
-////                        Log.d("updateMealCount: ", "loading")
-////                    }
-////                }
-////            }
-//
-//        }
+    @RequiresApi(Build.VERSION_CODES.O)
+    override fun updateMealCount(
+        member: User,
+        monthYear: String
+    ): Flow<ResultState<String>> =
+        callbackFlow {
+            var cntBreakfast = 0.0
+            var cntLunch = 0.0
+            var cntDinner = 0.0
+
+
+            Log.d("updateMealCount: ", member.userName)
+
+            getUserMealByMonth(member.userId).collectLatest { response ->
+                when (response) {
+                    is ResultState.Success -> {
+                        if (response.data.isNotEmpty()) {
+                            for (meal in response.data) {
+                                if (needToCount(meal.date!!)) {
+                                    if (meal.breakfast!!) {
+                                        cntBreakfast += 1.0
+                                    }
+                                    if (meal.lunch!!) {
+                                        cntLunch += 1.0
+                                    }
+                                    if (meal.dinner!!) {
+                                        cntDinner += 1.0
+                                    }
+                                }
+                            }
+                            val cntTotal = cntBreakfast * 0.5 + cntLunch * 1.0 + cntDinner * 1.0
+
+                            val cnt = MealCount(
+                                breakfast = cntBreakfast,
+                                lunch = cntLunch,
+                                dinner = cntDinner,
+                                total = cntTotal
+                            )
+
+                            firestore.collection(CollectionRef.mealDb)
+                                .document(member.messName)
+                                .collection(member.messId)
+                                .document(member.userId)
+                                .collection(monthYear)
+                                .document(member.userId)
+                                .set(cnt.toMap())
+                                .addOnSuccessListener {
+                                    Log.d("updateMealCount: ", "success")
+                                    trySend(
+                                        ResultState.Success(
+                                            "Data inserted successfully!"
+                                        )
+                                    )
+
+                                }
+                                .addOnFailureListener { e ->
+                                    Log.d("updateMealCount: ", "failed")
+                                    trySend(ResultState.Failure(Exception(e)))
+                                }
+
+                        } else {
+                            trySend(ResultState.Failure(Exception("No meal history found!")))
+                        }
+                    }
+
+                    is ResultState.Failure -> {
+                        trySend(ResultState.Failure(Exception("No meal history found!")))
+                    }
+
+                    else -> {
+
+                    }
+                }
+            }
+
+        }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    override fun countMeal(
+    ): Flow<ResultState<String>> = callbackFlow {
+        trySend(ResultState.Loading)
+
+        val monthYear = getMonthYear(today)
+        val currentUser = firebaseAuth.currentUser?.uid
+
+        if (Network.isNetworkAvailable(context)) {
+            currentUser?.let {
+                if (messMembers.isNotEmpty()) {
+                    for (member in messMembers) {
+                        CoroutineScope(Dispatchers.IO).launch {
+                            updateMealCount(member, monthYear).collectLatest {
+                                if (currentUser == member.userId) {
+                                    trySend(it)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } else {
+            trySend(ResultState.Failure(Exception("Please check your internet connection!")))
+        }
+        awaitClose {
+            close()
+        }
+
+    }
+
+    override fun getMealCount(): Flow<ResultState<List<MealCount>>> = callbackFlow {
+        trySend(ResultState.Loading)
+
+        if (Network.isNetworkAvailable(context)) {
+            if (messMembers.isNotEmpty()) {
+                val membersMealCount = mutableListOf<MealCount>()
+                for (member in messMembers) {
+                    CoroutineScope(Dispatchers.IO).launch {
+                        getSingleMealCount(member.userId).collectLatest { result ->
+                            when (result) {
+                                is ResultState.Success -> {
+                                    Log.d("members: ", member.userName)
+                                    membersMealCount.add(result.data)
+                                    if (member == messMembers.last()) {
+                                        trySend(ResultState.Success(membersMealCount))
+                                    }
+                                }
+                                is ResultState.Failure -> {
+                                    Log.d("failed: ", member.userName)
+                                    trySend(ResultState.Failure(Exception("meal count failed for ${member.userName}")))
+                                }
+                                else -> {}
+                            }
+                        }
+                    }
+                }
+
+            }
+
+        } else {
+            trySend(ResultState.Failure(Exception("Please check your internet connection!")))
+        }
+        awaitClose {
+            close()
+        }
+
+    }
+
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun countSingleMeal(

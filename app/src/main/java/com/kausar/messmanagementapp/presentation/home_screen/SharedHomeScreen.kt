@@ -1,6 +1,5 @@
 package com.kausar.messmanagementapp.presentation.home_screen
 
-import android.util.Log
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -96,7 +95,7 @@ fun SharedHomeScreen(
     val mealInfoState = viewModel.mealInfo.value
     val memberState = mainViewModel.memberInfo.value
 
-    val mealCnt = mainViewModel.count.value
+    val mealCnt = mainViewModel.currentUserMealCount.value
 
     val connection by connectivityState()
     val isConnected = (connection === ConnectionState.Available)
@@ -105,13 +104,13 @@ fun SharedHomeScreen(
         if (userInfo.userType.isEmpty()) {
             mainViewModel.getUserInfo()
         }
-        viewModel.getMealForToday()
+        if (mealInfoState.success.isEmpty() && mealInfoState.error.isEmpty()) {
+            viewModel.getMealForToday()
+        }
         if (memberState.listOfMember.isEmpty()) {
             mainViewModel.getMessMembers()
         }
     }
-
-    Log.d("SharedHomeScreen: ", "${memberState.listOfMember}")
 
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
@@ -167,9 +166,6 @@ fun SharedHomeScreen(
                 }
             } else {
                 if (userInfo.userType.isNotEmpty()) {
-                    LaunchedEffect(key1 = true) {
-                        viewModel.getAllMeal(userInfo.userId)
-                    }
                     Text(
                         text = "Number of meal until today",
                         fontSize = MaterialTheme.typography.titleMedium.fontSize,
@@ -225,7 +221,6 @@ fun SharedHomeScreen(
                                     is ResultState.Success -> {
                                         showToast = false
                                         context.showToast(result.data)
-                                        viewModel.getAllMeal(userInfo.userId)
                                         selectedDate = getDate(temp)
                                         presentingDate = fetchDateAsString(temp)
                                         newMeal = false
@@ -267,7 +262,6 @@ fun SharedHomeScreen(
                                 is ResultState.Success -> {
                                     showToast = false
                                     context.showToast(result.data)
-                                    viewModel.getAllMeal(userInfo.userId)
                                     newMeal = false
                                 }
 
@@ -290,14 +284,15 @@ fun SharedHomeScreen(
                 }
             } else {
                 Row(
-                    Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
                         text = today,
-                        textAlign = TextAlign.Center,
-                        textDecoration = TextDecoration.Underline
+                        textAlign = TextAlign.Center, fontWeight = FontWeight.Bold
                     )
                     Spacer(modifier = Modifier.width(16.dp))
                     Icon(

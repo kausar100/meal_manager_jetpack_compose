@@ -19,9 +19,13 @@ interface FirebaseFirestoreRepo {
 
     fun countSingleMeal(): Flow<ResultState<String>>
 
-    fun getSingleMealCount() : Flow<ResultState<MealCount>>
+    fun getSingleMealCount(currentUID: String?) : Flow<ResultState<MealCount>>
 
-//    fun updateSingleMealCount(monthYear: String): Flow<ResultState<String>>
+    fun countMeal(): Flow<ResultState<String>>
+
+    fun getMealCount(): Flow<ResultState<List<MealCount>>>
+
+    fun updateMealCount( member: User, monthYear: String): Flow<ResultState<String>>
 
     fun insertCurrentUserMeal(meal: MealInfo): Flow<ResultState<String>>
 
