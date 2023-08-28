@@ -71,7 +71,7 @@ class MainViewModel @Inject constructor(
 
                     is ResultState.Failure -> {
                         _memberList.value = MemberState(
-                            error = result.message.localizedMessage
+                            error = result.message.localizedMessage ?: "some error occurred"
                         )
                     }
 
@@ -89,9 +89,16 @@ class MainViewModel @Inject constructor(
         firestoreRepo.addMealCount().collectLatest { result ->
             when (result) {
                 is ResultState.Success -> {
-                    getMealCnt()
+                    Log.d("countMeal: ","meal count added successfully!")
+
+                    //current user count added
+                    if(result.data.second){
+                        Log.d("countMeal: ","current user found")
+                        getMealCnt()
+                    }
                 }
                 else -> {
+                    Log.d( "countMeal: ","failed")
                 }
             }
         }
@@ -109,7 +116,7 @@ class MainViewModel @Inject constructor(
 
                 is ResultState.Failure -> {
                     _count.value = CountState(
-                        error = result.message.localizedMessage
+                        error = result.message.localizedMessage ?: "some error occurred"
                     )
                 }
 
@@ -137,7 +144,7 @@ class MainViewModel @Inject constructor(
 
                 is ResultState.Failure -> {
                     _messList.value = MessState(
-                        error = it.message.localizedMessage
+                        error = it.message.localizedMessage ?: "some error occurred"
                     )
                 }
 
@@ -191,7 +198,7 @@ class MainViewModel @Inject constructor(
         for (mess in messNames.value.listOfMess) {
             if (mess.messId == messId && mess.messName == messName) {
                 _messPic.value = mess.profilePhoto
-                Log.d("getMessProfilePic: ", "${_messPic.value}")
+                Log.d("getMessProfilePic: ", _messPic.value)
                 break
             }
         }

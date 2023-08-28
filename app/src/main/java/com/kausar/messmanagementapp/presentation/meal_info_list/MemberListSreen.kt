@@ -105,7 +105,7 @@ fun MemberListScreen(
         }
     }
     LaunchedEffect(key1 = isConnected) {
-        if (memberState.error.isNotEmpty() && isConnected) {
+        if ((memberState.error.isNotEmpty() || memberState.listOfMember.isEmpty()) && isConnected) {
             mainViewModel.getMessMembers()
         }
     }

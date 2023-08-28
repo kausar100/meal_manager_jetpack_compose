@@ -110,6 +110,9 @@ fun SharedHomeScreen(
             mainViewModel.getUserInfo()
         }
         viewModel.getMealForToday()
+        if (memberState.listOfMember.isEmpty()) {
+            mainViewModel.getMessMembers()
+        }
     }
 
     Log.d("SharedHomeScreen: ", "${memberState.listOfMember}")
@@ -122,7 +125,18 @@ fun SharedHomeScreen(
             .fillMaxSize()
             .padding(16.dp),
     ) {
+        if (showToast) {
+            Box(
+                Modifier
+                    .fillMaxHeight()
+                    .fillMaxWidth(1f),
+                contentAlignment = Alignment.Center
+            ) {
 
+                CustomProgressBar(msg = progMsg)
+
+            }
+        }
         Column(
             Modifier
                 .fillMaxSize(),
@@ -177,7 +191,11 @@ fun SharedHomeScreen(
                             numberOfLunch = it.lunch.toString(),
                             numberOfDinner = it.dinner.toString()
                         )
-                    } ?: CircularProgressIndicator(Modifier.padding(top = 8.dp))
+                    }
+                        ?: if (mealCnt.isLoading) CircularProgressIndicator(Modifier.padding(top = 8.dp)) else Text(
+                            text = "No meal information found!",
+                            modifier = Modifier.padding(top = 16.dp)
+                        )
 
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
@@ -188,19 +206,6 @@ fun SharedHomeScreen(
                 }
             }
             Spacer(modifier = Modifier.height(8.dp))
-            if (showToast) {
-                Box(
-                    Modifier
-                        .fillMaxHeight()
-                        .fillMaxWidth(1f),
-                    contentAlignment = Alignment.Center
-                ) {
-
-                    CustomProgressBar(msg = progMsg)
-
-                }
-            }
-
             if (newMeal) {
                 AddNewMeal(
                     modifier = Modifier

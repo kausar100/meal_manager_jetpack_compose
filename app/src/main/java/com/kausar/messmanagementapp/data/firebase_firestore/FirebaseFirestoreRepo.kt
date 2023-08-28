@@ -17,11 +17,11 @@ interface FirebaseFirestoreRepo {
 
     fun getMessMembers(): Flow<ResultState<List<User>?>>
 
-    fun addMealCount(): Flow<ResultState<String>>
+    fun addMealCount(): Flow<ResultState<Pair<String,Boolean>>> //message and current user or not
 
     fun getSingleMealCount() : Flow<ResultState<MealCount>>
 
-    fun updateMealCount(member: User, monthYear: String): Flow<ResultState<String>>
+    fun updateMealCount(member: User, monthYear: String): Flow<ResultState<Pair<String,Boolean>>> //message and current user or not
 
     fun insertCurrentUserMeal(meal: MealInfo): Flow<ResultState<String>>
 

@@ -237,30 +237,33 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
             currentUser?.let {
                 firestore.collection(CollectionRef.userDb).document(currentUser)
                     .get().addOnSuccessListener {
-                        val user = it.toObject(User::class.java)
-                        user?.let {
-                            firestore.collection(CollectionRef.mealDb)
-                                .document(user.messName)
-                                .collection(user.messId)
-                                .document(user.userId)
-                                .collection(getMonthYear)
-                                .document(user.userId)
-                                .get()
-                                .addOnSuccessListener { cnt ->
-                                    cnt?.let {
-                                        val count = cnt.toObject(MealCount::class.java)
-                                        count?.let {
-                                            Log.d("getSingleMealCount: ", "success")
-                                            trySend(ResultState.Success(count))
-                                        }
+                        if (it.exists()) {
+                            val user = it.toObject(User::class.java)
+                            user?.let {
+                                firestore.collection(CollectionRef.mealDb)
+                                    .document(user.messName)
+                                    .collection(user.messId)
+                                    .document(user.userId)
+                                    .collection(getMonthYear)
+                                    .document(user.userId)
+                                    .get()
+                                    .addOnSuccessListener { cnt ->
+                                        cnt?.let {
+                                            val count = cnt.toObject(MealCount::class.java)
+                                            count?.let {
+                                                Log.d("getSingleMealCount: ", "success")
+                                                trySend(ResultState.Success(count))
+                                            }
 
+                                        }
                                     }
-                                }
-                                .addOnFailureListener { e ->
-                                    Log.d("getSingleMealCount: ", "failed")
-                                    trySend(ResultState.Failure(Exception(e)))
-                                }
+                                    .addOnFailureListener { e ->
+                                        Log.d("getSingleMealCount: ", "failed")
+                                        trySend(ResultState.Failure(Exception(e)))
+                                    }
+                            }
                         }
+
 
                     }
                     .addOnFailureListener {
@@ -329,11 +332,16 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    override fun updateMealCount(member: User, monthYear: String): Flow<ResultState<String>> =
+    override fun updateMealCount(
+        member: User,
+        monthYear: String
+    ): Flow<ResultState<Pair<String, Boolean>>> =
         callbackFlow {
             var cntBreakfast = 0.0
             var cntLunch = 0.0
             var cntDinner = 0.0
+
+            val currentUser = firebaseAuth.currentUser?.uid
 
             getUserMealByMonth(member.userId).collectLatest { response ->
                 when (response) {
@@ -370,7 +378,28 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
                                 .set(cnt.toMap())
                                 .addOnSuccessListener {
                                     Log.d("updateMealCount: ", "success")
-                                    trySend(ResultState.Success("Data inserted successfully!"))
+                                    currentUser?.let {
+                                        if (currentUser == member.userId)
+                                            trySend(
+                                                ResultState.Success(
+                                                    Pair(
+                                                        "Data inserted successfully!",
+                                                        true
+                                                    )
+                                                )
+                                            )
+                                        else {
+                                            trySend(
+                                                ResultState.Success(
+                                                    Pair(
+                                                        "Data inserted successfully!",
+                                                        false
+                                                    )
+                                                )
+                                            )
+                                        }
+                                    }
+
                                 }
                                 .addOnFailureListener { e ->
                                     Log.d("updateMealCount: ", "failed")
@@ -382,9 +411,11 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
                         }
                     }
 
+                    is ResultState.Failure ->{ trySend(ResultState.Failure(Exception("No meal history found!")))}
+
                     else -> {
-                        Log.d("updateMealCount: ", "failed for some reason!")
-                    }
+                        Log.d("updateMealCount: ","loading")
+                     }
                 }
             }
 
@@ -392,7 +423,7 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun addMealCount(
-    ): Flow<ResultState<String>> = callbackFlow {
+    ): Flow<ResultState<Pair<String, Boolean>>> = callbackFlow {
         trySend(ResultState.Loading)
 
         val monthYear = getMonthYear(today)
