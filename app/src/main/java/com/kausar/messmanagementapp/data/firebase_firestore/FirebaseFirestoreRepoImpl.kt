@@ -463,7 +463,13 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
 
                                 is ResultState.Failure -> {
                                     Log.d("failed: ", member.userName)
-                                    trySend(ResultState.Failure(Exception("meal count failed for ${member.userName}")))
+                                    if (member == messMembers.last()) {
+                                        if(membersMealCount.isNotEmpty()){
+                                            trySend(ResultState.Success(membersMealCount))
+                                        }else{
+                                            trySend(ResultState.Failure(Exception("No meal information found!")))
+                                        }
+                                    }
                                 }
 
                                 else -> {}
@@ -780,7 +786,13 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
                                     }
                                     is ResultState.Failure -> {
                                         Log.d("failed: ", member.userName)
-                                        trySend(ResultState.Failure(Exception("meal info failed for ${member.userName}")))
+                                        if(member == messMembers.last()){
+                                            if(membersMealToday.isNotEmpty()){
+                                                trySend(ResultState.Success(membersMealToday))
+                                            }else{
+                                                trySend(ResultState.Failure(Exception("No meal information found for today!")))
+                                            }
+                                        }
                                     }
 
                                     else -> {}
@@ -831,7 +843,7 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
                                                     trySend(ResultState.Success(mealInformation))
                                                 }
 
-                                            }
+                                            } ?: trySend(ResultState.Failure(Exception("Not found any meal for today!")))
 
                                         }
                                         .addOnFailureListener {

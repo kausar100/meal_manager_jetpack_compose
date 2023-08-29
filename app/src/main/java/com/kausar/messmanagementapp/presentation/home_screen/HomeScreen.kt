@@ -1,14 +1,16 @@
 package com.kausar.messmanagementapp.presentation.home_screen
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Divider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -44,8 +46,9 @@ fun HomeScreen(
     }
 
     LaunchedEffect(key1 = true) {
-        mainViewModel.getAllMealCount()
-        mainViewModel.getMembersTodayMealCount()
+        if (mainViewModel.totalMealCount.isEmpty()) {
+            mainViewModel.getAllMealCount()
+        }
     }
 
     Box(
@@ -59,18 +62,19 @@ fun HomeScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "Number of meal until today",
+                text = "Number of total meal until today",
                 fontSize = MaterialTheme.typography.titleMedium.fontSize,
                 textAlign = TextAlign.Center,
                 textDecoration = TextDecoration.Underline,
                 fontWeight = FontWeight.Bold
             )
-            if (mainViewModel.totalMealCount.value.isNotEmpty()) {
-                val data = mainViewModel.totalMealCount.value
+            if (mainViewModel.totalMealCount.isNotEmpty()) {
+                val data = mainViewModel.totalMealCount
                 MealSummary(
                     modifier = Modifier
                         .fillMaxWidth(1f)
-                        .fillMaxHeight(.4f),
+                        .fillMaxHeight(.4f)
+                        .padding(horizontal = 8.dp),
                     totalMeal = if (data.contains(Keys.Total.name)) data[Keys.Total.name].toString() else "0.0",
                     numberOfBreakfast = if (data.contains(Keys.Breakfast.name)) data[Keys.Breakfast.name].toString() else "0.0",
                     numberOfLunch = if (data.contains(Keys.Lunch.name)) data[Keys.Lunch.name].toString() else "0.0",
@@ -79,22 +83,25 @@ fun HomeScreen(
             } else {
                 CircularProgressIndicator()
             }
-
+            Spacer(modifier = Modifier.height(16.dp))
             Text(
                 text = today,
-                textAlign = TextAlign.Center, fontWeight = FontWeight.Bold
+                textAlign = TextAlign.Center,
+                fontWeight = FontWeight.Bold
             )
-            if (mainViewModel.todayMealCount.value.isNotEmpty()) {
-                val data = mainViewModel.todayMealCount.value
-                Column() {
-                    Row(
-                        Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceAround,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(text = "Meal Time")
-                        Text(text = "Number of Meal")
-                    }
+            if (mainViewModel.todayMealCount.isNotEmpty()) {
+                val data = mainViewModel.todayMealCount
+                Column(Modifier.fillMaxWidth()) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    TodayMealCountInformation(
+                        mealTime = "Meal Time",
+                        value = 0.0,
+                        header = "Number of Meal"
+                    )
+                    Divider(
+                        Modifier
+                            .padding(horizontal = 16.dp)
+                    )
                     repeat(3) {
                         val title = when (it) {
                             0 -> Keys.Breakfast.name
@@ -104,7 +111,7 @@ fun HomeScreen(
                         }
                         TodayMealCountInformation(
                             mealTime = title,
-                            value = if (data.contains(title)) data[title] ?: 0.0 else 0.0,
+                            value = data[title] ?: 0.0
                         )
                     }
                 }
@@ -120,14 +127,21 @@ fun HomeScreen(
 
 
 @Composable
-fun TodayMealCountInformation(mealTime: String, value: Double) {
+fun TodayMealCountInformation(mealTime: String, value: Double, header: String? = null) {
     Row(
-        Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceAround,
+        Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(text = mealTime)
-        Text(text = value.toString())
+        Text(
+            text = mealTime,
+            fontWeight = if (header != null) FontWeight.Bold else FontWeight.Normal
+        )
+        Spacer(modifier = Modifier.weight(1f))
+        header?.let {
+            Text(text = header, fontWeight = FontWeight.Bold)
+        } ?: Text(text = value.toString())
     }
 
 }
