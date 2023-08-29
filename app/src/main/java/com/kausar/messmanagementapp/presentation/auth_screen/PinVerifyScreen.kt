@@ -1,6 +1,8 @@
 package com.kausar.messmanagementapp.presentation.auth_screen
 
 import android.app.Activity
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -26,6 +28,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -50,17 +53,23 @@ import com.kausar.messmanagementapp.components.CustomOutlinedTextField
 import com.kausar.messmanagementapp.components.CustomProgressBar
 import com.kausar.messmanagementapp.components.CustomTopAppBar
 import com.kausar.messmanagementapp.components.WelcomeText
+import com.kausar.messmanagementapp.data.model.Status
+import com.kausar.messmanagementapp.data.model.TimerModel
 import com.kausar.messmanagementapp.data.model.User
 import com.kausar.messmanagementapp.navigation.Screen
 import com.kausar.messmanagementapp.presentation.viewmodels.FirebaseFirestoreDbViewModel
 import com.kausar.messmanagementapp.presentation.viewmodels.MainViewModel
+import com.kausar.messmanagementapp.presentation.viewmodels.TimerViewModel
 import com.kausar.messmanagementapp.utils.ResultState
+import com.kausar.messmanagementapp.utils.format
 import com.kausar.messmanagementapp.utils.showToast
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import java.time.Duration
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OtpVerifyScreen(
@@ -68,11 +77,13 @@ fun OtpVerifyScreen(
     mainViewModel: MainViewModel,
     viewModel: AuthViewModel = hiltViewModel(),
     firestoreViewModel: FirebaseFirestoreDbViewModel = hiltViewModel(),
+    timerViewModel: TimerViewModel = hiltViewModel(),
     onRegistrationComplete: () -> Unit
 ) {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+
 
     val userInformation = Gson().fromJson(info, User::class.java)
 
@@ -113,6 +124,7 @@ fun OtpVerifyScreen(
                         resendOtp = false
                         delay(1000)
                         showProgress = false
+                        timerViewModel.resetTimer()
                         context.showToast(it.data)
                     }
                 }
@@ -121,6 +133,7 @@ fun OtpVerifyScreen(
     }
 
     LaunchedEffect(key1 = true) {
+        timerViewModel.startTimer(Duration.ofSeconds(60))
         viewModel.createUserWithPhoneNumber(
             phone = userInformation.contactNo,
             activity = context as Activity
@@ -140,11 +153,14 @@ fun OtpVerifyScreen(
                     is ResultState.Success -> {
                         delay(1000)
                         showProgress = false
+//                        timerViewModel.startTimer(Duration.ofSeconds(60))
                         context.showToast(it.data)
                     }
                 }
             }
     }
+
+    val timer by timerViewModel.viewState.observeAsState()
 
     Scaffold(topBar = {
         CustomTopAppBar(
@@ -176,64 +192,72 @@ fun OtpVerifyScreen(
                     fontWeight = FontWeight.Bold,
                 )
                 Spacer(modifier = Modifier.height(16.dp))
-                VerifyPinContent(otp = otp, onCodeEnter = { otp ->
-                    scope.launch(Dispatchers.Main) {
-                        viewModel.signInWithCredential(
-                            otp
-                        ).collectLatest {
-                            when (it) {
-                                is ResultState.Loading -> {
-                                    progressMsg = "Verifying otp..."
-                                    showProgress = true
-                                }
+                VerifyPinContent(
+                    onCodeEnter = { otp ->
+                        scope.launch(Dispatchers.Main) {
+                            viewModel.signInWithCredential(
+                                otp
+                            ).collectLatest {
+                                when (it) {
+                                    is ResultState.Loading -> {
+                                        progressMsg = "Verifying otp..."
+                                        showProgress = true
+                                    }
 
-                                is ResultState.Failure -> {
-                                    showProgress = false
-                                    context.showToast("Please enter correct otp!")
-                                }
-
-                                is ResultState.Success -> {
-                                    if (userInformation.userType.isEmpty()) {
-                                        //login
-                                        println("need to just login")
+                                    is ResultState.Failure -> {
                                         showProgress = false
-                                        context.showToast(it.data)
-                                        mainViewModel.saveContact(userInformation.contactNo)
-                                        onRegistrationComplete()
-                                    } else {
-                                        //registration
-                                        println("need to register")
-                                        firestoreViewModel.registerUser(userInformation)
-                                            .collectLatest { result ->
-                                                when (result) {
-                                                    is ResultState.Success -> {
-                                                        showProgress = false
-                                                        context.showToast(result.data)
-                                                        mainViewModel.saveContact(userInformation.contactNo)
-                                                        onRegistrationComplete()
-                                                    }
+                                        context.showToast("Please enter correct otp!")
+                                    }
 
-                                                    is ResultState.Failure -> {
-                                                        showProgress = false
-                                                        context.showToast(
-                                                            result.message.localizedMessage
-                                                                ?: "Some error occur"
-                                                        )
-                                                    }
+                                    is ResultState.Success -> {
+                                        if (userInformation.userType.isEmpty()) {
+                                            //login
+                                            println("need to just login")
+                                            showProgress = false
+                                            context.showToast(it.data)
+                                            mainViewModel.saveContact(userInformation.contactNo)
+                                            onRegistrationComplete()
+                                        } else {
+                                            //registration
+                                            println("need to register")
+                                            firestoreViewModel.registerUser(userInformation)
+                                                .collectLatest { result ->
+                                                    when (result) {
+                                                        is ResultState.Success -> {
+                                                            showProgress = false
+                                                            context.showToast(result.data)
+                                                            mainViewModel.saveContact(
+                                                                userInformation.contactNo
+                                                            )
+                                                            onRegistrationComplete()
+                                                        }
 
-                                                    is ResultState.Loading -> {}
+                                                        is ResultState.Failure -> {
+                                                            showProgress = false
+                                                            context.showToast(
+                                                                result.message.localizedMessage
+                                                                    ?: "Some error occur"
+                                                            )
+                                                        }
+
+                                                        is ResultState.Loading -> {}
+                                                    }
                                                 }
-                                            }
+                                        }
                                     }
                                 }
                             }
                         }
-                    }
-                }, onResendOtp = {
-                    resendOtp = true
-                }, onChange = {
+                    },
+                    otp = otp,
+                    onResendOtp = {
+                        timerViewModel.startTimer(Duration.ofSeconds(60))
+                        resendOtp = true
+                    },
+                    timer = timer
+                ) {
                     otp = it
-                })
+                }
             }
 
             if (showProgress) {
@@ -246,12 +270,15 @@ fun OtpVerifyScreen(
 
 }
 
+
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun VerifyPinContent(
     onCodeEnter: (String) -> Unit,
     otp: String = "",
-    onResendOtp: () -> Unit,
+    onResendOtp: () -> Unit = {},
+    timer: TimerModel?,
     onChange: (String) -> Unit
 ) {
     val focusManager = LocalFocusManager.current
@@ -300,21 +327,36 @@ fun VerifyPinContent(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center
         ) {
-            Text(
-                text = "Didn't get any otp!",
-                textAlign = TextAlign.Center,
-                fontSize =  MaterialTheme.typography.titleSmall.fontSize,
-            )
-            TextButton(onClick = onResendOtp) {
-                Text(
-                    text = "Resend otp",
-                    textAlign = TextAlign.Center,
-                    fontSize =  MaterialTheme.typography.titleSmall.fontSize,
-                )
-            }
+            timer?.let {
+                if (timer.status == Status.FINISHED) {
+                    Text(
+                        text = "Didn't get any otp!",
+                        textAlign = TextAlign.Center,
+                        fontSize = MaterialTheme.typography.titleSmall.fontSize,
+                    )
 
+                } else if (timer.status == Status.RUNNING) {
+                    Text(
+                        text = "Time Remaining: ",
+                        textAlign = TextAlign.Center,
+                        fontSize = MaterialTheme.typography.titleSmall.fontSize,
+                    )
+                    Text(
+                        text = timer.timeDuration.format(), textAlign = TextAlign.Center,
+                        fontSize = MaterialTheme.typography.titleSmall.fontSize,
+                    )
+
+                }
+                if (timer.status != Status.NONE) {
+                    TextButton(onClick = onResendOtp, enabled = timer.status == Status.FINISHED) {
+                        Text(
+                            text = "Resend otp",
+                            textAlign = TextAlign.Center,
+                            fontSize = MaterialTheme.typography.titleSmall.fontSize,
+                        )
+                    }
+                }
+            }
         }
     }
-
-
 }
