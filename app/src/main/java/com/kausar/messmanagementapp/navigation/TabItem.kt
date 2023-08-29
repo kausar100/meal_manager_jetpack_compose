@@ -17,9 +17,9 @@ sealed class TabItem(var title: String, var screen: ComposableFun) {
             "Myself",
             { SharedHomeScreen(mainViewModel) })
 
-    data class Others(
+    data class Total(
         val navController: NavController,
         val mainViewModel: MainViewModel
     ) :
-        TabItem("Others", { HomeScreen(mainViewModel) })
+        TabItem("Total", { HomeScreen(mainViewModel) })
 }

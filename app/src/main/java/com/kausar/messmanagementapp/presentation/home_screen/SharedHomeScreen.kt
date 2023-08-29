@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -152,7 +153,9 @@ fun SharedHomeScreen(
                     Spacer(modifier = Modifier.width(16.dp))
 
                     Icon(imageVector = Icons.Default.Edit, contentDescription = "choose date")
+
                 }
+
                 if (showPopup) {
                     Box(contentAlignment = Alignment.CenterEnd) {
                         PopUpOption(onDismiss = {
@@ -196,6 +199,7 @@ fun SharedHomeScreen(
                 }
             }
             if (newMeal) {
+                Spacer(modifier = Modifier.height(16.dp))
                 AddNewMeal(
                     onCancel = {
                         newMeal = false
