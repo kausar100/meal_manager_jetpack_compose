@@ -1,21 +1,20 @@
 package com.kausar.messmanagementapp.presentation.viewmodels
 
 
+import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kausar.messmanagementapp.data.firebase_firestore.FirebaseFirestoreRepo
+import com.kausar.messmanagementapp.data.model.MealCount
 import com.kausar.messmanagementapp.data.model.MealInfo
 import com.kausar.messmanagementapp.data.model.User
 import com.kausar.messmanagementapp.utils.ResultState
 import com.kausar.messmanagementapp.utils.getDate
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.Calendar
 import javax.inject.Inject
@@ -39,8 +38,8 @@ class FirebaseFirestoreDbViewModel @Inject constructor(
     private val today: String
         get() = getDate(calender)
 
-    private val _singleMealcnt = MutableStateFlow(SingleMealCount())
-    val singleMealCnt: StateFlow<SingleMealCount> = _singleMealcnt
+    private val _singleMemberMealCount = mutableStateOf(SingleMealCount())
+    val selectedMemberMealCnt: State<SingleMealCount> = _singleMemberMealCount
 
     fun getAllMeal(userId: String) {
         viewModelScope.launch {
@@ -75,16 +74,6 @@ class FirebaseFirestoreDbViewModel @Inject constructor(
                     _res.value = ItemState(
                         item = it.data
                     )
-                    _singleMealcnt.update { cnt ->
-                        cnt.copy(
-                            breakfast = 0.0,
-                            lunch = 0.0,
-                            dinner = 0.0,
-                            totalMeal = 0.0
-                        )
-                    }
-                    val meals = it.data.asReversed()
-                    getSingleMealCnt(meals)
                 }
 
                 is ResultState.Failure -> {
@@ -106,46 +95,30 @@ class FirebaseFirestoreDbViewModel @Inject constructor(
         getMealForToday()
     }
 
-    private fun needToStop(mealDate: String): Boolean {
-        val currentDay = mealDate.substring(0, 2).toInt()
-
-        val todayDay = today.substring(0, 2).toInt()
-
-        return currentDay.minus(todayDay) >= 0
-    }
-
-    private fun getSingleMealCnt(meals: List<MealInfo>) {
-        if (meals.isNotEmpty()) {
-            for (meal in meals) {
-                if (needToStop(meal.date!!))
-                    break
-                if (meal.breakfast == true) {
-                    _singleMealcnt.update {
-                        it.copy(
-                            breakfast = it.breakfast.plus(1.0),
-                            totalMeal = it.totalMeal.plus(0.5)
-                        )
-                    }
+    fun getMemberMealCount(userId: String) = viewModelScope.launch {
+        repo.getSingleMealCount(userId).collectLatest { result ->
+            when (result) {
+                is ResultState.Success -> {
+                    _singleMemberMealCount.value =  SingleMealCount(
+                        cnt = result.data,
+                    )
+                    Log.d( "getMemberMealCount: ",selectedMemberMealCnt.value.cnt.toString())
                 }
-                if (meal.lunch == true) {
-                    _singleMealcnt.update {
-                        it.copy(
-                            lunch = it.lunch.plus(1.0),
-                            totalMeal = it.totalMeal.plus(1.0),
-                        )
-                    }
+
+                is ResultState.Failure -> {
+                    _singleMemberMealCount.value =  SingleMealCount(
+                        error = result.message.localizedMessage ?: "some error occurred"
+                    )
                 }
-                if (meal.dinner == true) {
-                    _singleMealcnt.update {
-                        it.copy(
-                            dinner = it.dinner.plus(1.0),
-                            totalMeal = it.totalMeal.plus(1.0),
-                        )
-                    }
+
+                is ResultState.Loading -> {
+                    _singleMemberMealCount.value =  SingleMealCount(
+                        isLoading = true
+                    )
                 }
             }
-        }
 
+        }
     }
 
     fun insert(meal: MealInfo) = repo.insertCurrentUserMeal(meal)
@@ -227,10 +200,9 @@ class FirebaseFirestoreDbViewModel @Inject constructor(
     )
 
     data class SingleMealCount(
-        val breakfast: Double = 0.0,
-        val lunch: Double = 0.0,
-        val dinner: Double = 0.0,
-        val totalMeal: Double = 0.0
+        val cnt: MealCount? = null,
+        val error: String = "",
+        val isLoading: Boolean = false
     )
 }
 

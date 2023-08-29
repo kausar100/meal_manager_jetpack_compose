@@ -27,6 +27,7 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -36,7 +37,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -81,7 +81,8 @@ fun MemberListScreen(
     val itemState = viewModel.response.value
     val memberState = mainViewModel.memberInfo.value
     val userInfo = mainViewModel.userInfo.value
-    val mealCnt by viewModel.singleMealCnt.collectAsState()
+
+    val mealCnt = viewModel.selectedMemberMealCnt.value
 
     LaunchedEffect(key1 = true) {
         if (userInfo.userType.isNotEmpty()) {
@@ -141,8 +142,6 @@ fun MemberListScreen(
             if (showList) {
                 ShowUser(userInfo = memberInfo, expand = true, onClickUser = {
                     showList = false
-                }, onClickInfo = {
-                    showMealInfoScreen = true
                 })
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
@@ -171,8 +170,8 @@ fun MemberListScreen(
                                 },
                                     onClickInfo = {
                                         scope.launch {
-                                            viewModel.getMealByUserId(user.userId)
-                                            delay(500)
+                                            viewModel.getMemberMealCount(user.userId)
+                                            delay(1000)
                                             memberInfo = user
                                             showMealInfoScreen = true
                                         }
@@ -221,15 +220,26 @@ fun MemberListScreen(
                     },
                     shape = RoundedCornerShape(8.dp),
                     text = {
-                        MealSummary(
-                            modifier = Modifier
-                                .fillMaxWidth(1f)
-                                .fillMaxHeight(.6f),
-                            totalMeal = mealCnt.totalMeal.toString(),
-                            numberOfBreakfast = mealCnt.breakfast.toString(),
-                            numberOfLunch = mealCnt.lunch.toString(),
-                            numberOfDinner = mealCnt.dinner.toString()
-                        )
+                        if (mealCnt.cnt == null) {
+                            Box(contentAlignment = Alignment.Center) {
+                                if (mealCnt.error.isNotEmpty()) {
+                                    Text(text = mealCnt.error, textAlign = TextAlign.Center)
+                                } else {
+                                    CircularProgressIndicator()
+                                }
+                            }
+                        } else {
+                            MealSummary(
+                                modifier = Modifier
+                                    .fillMaxWidth(1f)
+                                    .fillMaxHeight(.6f),
+                                totalMeal = mealCnt.cnt.total.toString(),
+                                numberOfBreakfast = mealCnt.cnt.breakfast.toString(),
+                                numberOfLunch = mealCnt.cnt.lunch.toString(),
+                                numberOfDinner = mealCnt.cnt.dinner.toString()
+                            )
+                        }
+
                     },
                     confirmButton = {
                         Button(
@@ -429,20 +439,23 @@ fun ShowUser(
 
         },
         trailingContent = {
-            Row() {
+            Row {
                 IconButton(onClick = onClickUser) {
                     Icon(
                         imageVector = if (expand) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
                         contentDescription = "show_hide_list"
                     )
                 }
-                Spacer(modifier = Modifier.width(8.dp))
-                IconButton(onClick = onClickInfo) {
-                    Icon(
-                        imageVector = Icons.Default.Info,
-                        contentDescription = "meal_info"
-                    )
+                if(!expand){
+                    Spacer(modifier = Modifier.width(8.dp))
+                    IconButton(onClick = onClickInfo) {
+                        Icon(
+                            imageVector = Icons.Default.Info,
+                            contentDescription = "meal_info"
+                        )
+                    }
                 }
+
             }
 
         },
