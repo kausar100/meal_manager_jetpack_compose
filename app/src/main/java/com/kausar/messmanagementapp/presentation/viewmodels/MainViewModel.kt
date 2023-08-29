@@ -3,7 +3,6 @@ package com.kausar.messmanagementapp.presentation.viewmodels
 import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -54,14 +53,14 @@ class MainViewModel @Inject constructor(
         mutableStateOf(AllMealCountState())
     private val membersMealCount: State<AllMealCountState> = _membersMealCnt
 
-    private val _totalMealCnt = mutableStateMapOf<String, Double>()
+    private val _totalMealCnt = mutableStateOf(hashMapOf<String, Double>())
     val totalMealCount = _totalMealCnt
 
     private val _membersTodayMealCnt: MutableState<AllMemberTodayCountState> =
         mutableStateOf(AllMemberTodayCountState())
     private val membersTodayMealCount: State<AllMemberTodayCountState> = _membersTodayMealCnt
 
-    private val _todayMealCnt = mutableStateMapOf<String, Double>()
+    private val _todayMealCnt = mutableStateOf(hashMapOf<String, Double>())
     val todayMealCount = _todayMealCnt
 
     private val _messPic = mutableStateOf("")
@@ -157,25 +156,19 @@ class MainViewModel @Inject constructor(
                     _membersTodayMealCnt.value = AllMemberTodayCountState(
                         info = result.data
                     )
-                    val count = getTodayMealCount()
-                    for (item in count) {
-                        _todayMealCnt[item.key] = item.value
-                    }
+                    _todayMealCnt.value = getTodayMealCount()
                 }
 
                 is ResultState.Failure -> {
                     _membersTodayMealCnt.value = AllMemberTodayCountState(
                         error = result.message.localizedMessage ?: "some error occurred"
                     )
-                    val count = hashMapOf(
+                    _todayMealCnt.value = hashMapOf(
                         Keys.Total.name to 0.0,
                         Keys.Breakfast.name to 0.0,
                         Keys.Lunch.name to 0.0,
                         Keys.Dinner.name to 0.0
                     )
-                    for (item in count) {
-                        _todayMealCnt[item.key] = item.value
-                    }
 
                 }
 
@@ -223,25 +216,13 @@ class MainViewModel @Inject constructor(
                     _membersMealCnt.value = AllMealCountState(
                         cnt = result.data
                     )
-                    val count = getTotalCount()
-                    for (item in count) {
-                        _totalMealCnt[item.key] = item.value
-                    }
+                    _totalMealCnt.value = getTotalCount()
                 }
 
                 is ResultState.Failure -> {
                     _membersMealCnt.value = AllMealCountState(
                         error = result.message.localizedMessage ?: "some error occurred"
                     )
-                    val count = hashMapOf(
-                        Keys.Total.name to 0.0,
-                        Keys.Breakfast.name to 0.0,
-                        Keys.Lunch.name to 0.0,
-                        Keys.Dinner.name to 0.0
-                    )
-                    for (item in count) {
-                        _totalMealCnt[item.key] = item.value
-                    }
                 }
 
                 is ResultState.Loading -> {
@@ -357,6 +338,7 @@ class MainViewModel @Inject constructor(
                         _listOfAppUser.value = res.data
                     }
                 }
+
                 is ResultState.Failure -> {
                     println(res.message.localizedMessage)
                 }

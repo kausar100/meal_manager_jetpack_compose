@@ -46,7 +46,7 @@ fun HomeScreen(
     }
 
     LaunchedEffect(key1 = true) {
-        if (mainViewModel.totalMealCount.isEmpty()) {
+        if (mainViewModel.totalMealCount.value.isEmpty()) {
             mainViewModel.getAllMealCount()
         }
     }
@@ -68,8 +68,8 @@ fun HomeScreen(
                 textDecoration = TextDecoration.Underline,
                 fontWeight = FontWeight.Bold
             )
-            if (mainViewModel.totalMealCount.isNotEmpty()) {
-                val data = mainViewModel.totalMealCount
+            if (mainViewModel.totalMealCount.value.isNotEmpty()) {
+                val data = mainViewModel.totalMealCount.value
                 MealSummary(
                     modifier = Modifier
                         .fillMaxWidth(1f)
@@ -89,8 +89,8 @@ fun HomeScreen(
                 textAlign = TextAlign.Center,
                 fontWeight = FontWeight.Bold
             )
-            if (mainViewModel.todayMealCount.isNotEmpty()) {
-                val data = mainViewModel.todayMealCount
+            if (mainViewModel.todayMealCount.value.isNotEmpty()) {
+                val data = mainViewModel.todayMealCount.value
                 Column(Modifier.fillMaxWidth()) {
                     Spacer(modifier = Modifier.height(8.dp))
                     TodayMealCountInformation(
