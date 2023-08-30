@@ -9,7 +9,7 @@ import com.kausar.messmanagementapp.presentation.viewmodels.MainViewModel
 typealias ComposableFun = @Composable () -> Unit
 
 sealed class TabItem(var title: String, var screen: ComposableFun) {
-    data class Myself(
+    data class Mine(
         val navController: NavController,
         val mainViewModel: MainViewModel
     ) :
