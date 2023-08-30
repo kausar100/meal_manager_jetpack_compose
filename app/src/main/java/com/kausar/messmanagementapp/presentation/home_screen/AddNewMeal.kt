@@ -157,6 +157,8 @@ fun AddNewMeal(
                         onClick = {
                             addMeal(breakFast, lunch, dinner)
                         }, shape = RoundedCornerShape(4.dp), colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.secondary
                         ),
                         modifier = Modifier.fillMaxWidth(1f)
                     ) {
@@ -172,7 +174,8 @@ fun AddNewMeal(
                         onClick = {
                             updateMeal(breakFast, lunch, dinner)
                         }, shape = RoundedCornerShape(4.dp), colors = ButtonDefaults.buttonColors(
-
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.secondary
                         ),
                         modifier = Modifier.fillMaxWidth(1f)
                     ) {

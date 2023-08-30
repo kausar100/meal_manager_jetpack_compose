@@ -58,7 +58,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.kausar.messmanagementapp.R
-import com.kausar.messmanagementapp.components.CustomBasicTextField
+import com.kausar.messmanagementapp.components.CustomTextField
 import com.kausar.messmanagementapp.components.CustomProgressBar
 import com.kausar.messmanagementapp.presentation.viewmodels.FirebaseStorageViewModel
 import com.kausar.messmanagementapp.presentation.viewmodels.MainViewModel
@@ -188,7 +188,7 @@ fun ProfileScreen(
                 ) {
                     IconButton(
                         onClick = { imagePicker.launch("image/*") }, modifier = Modifier
-                            .background(MaterialTheme.colorScheme.surface, CircleShape)
+                            .background(MaterialTheme.colorScheme.primary, CircleShape)
                             .size(32.dp)
 
                     ) {
@@ -249,25 +249,19 @@ fun UserInfo(
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
-    Column(
-        Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 32.dp, vertical = 8.dp)
+
+    CustomTextField(
+        readOnly = !editable,
+        input = info,
+        onInputChange = onInputChange,
+        header = {
+            Text(text = title)
+        },
+        keyboardOptions = keyboardOptions,
+        modifier = Modifier.fillMaxWidth()
     ) {
-        Text(
-            text = title, textAlign = TextAlign.Center, style = MaterialTheme.typography.titleSmall
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        CustomBasicTextField(
-            readOnly = !editable,
-            input = info,
-            onInputChange = onInputChange,
-            keyboardOptions = keyboardOptions,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            focusManager.clearFocus()
-            keyboardController?.hide()
-        }
+        focusManager.clearFocus()
+        keyboardController?.hide()
     }
 }
 

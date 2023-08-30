@@ -1,18 +1,17 @@
 package com.kausar.messmanagementapp.components
 
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawWithContent
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 
@@ -62,30 +61,24 @@ fun CustomOutlinedTextField(
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CustomBasicTextField(
+fun CustomTextField(
     modifier: Modifier = Modifier,
     input: String,
     onInputChange: (String) -> Unit,
+    header: @Composable() (() -> Unit)?,
     readOnly: Boolean = false,
     keyboardOptions: KeyboardOptions,
     onComplete: () -> Unit
 
 ) {
-    BasicTextField(
+    TextField(
         value = input,
         onValueChange = onInputChange,
         modifier = modifier
-            .padding(vertical = 8.dp)
-            .drawWithContent {
-                drawContent()
-                drawLine(
-                    color = Color.Gray,
-                    start = Offset(0f, size.height + 16f),
-                    end = Offset(size.width, size.height + 16f),
-                    strokeWidth = 2f
-                )
-            },
+            .padding(vertical = 8.dp),
+        label = header,
         singleLine = true,
         readOnly = readOnly,
         maxLines = 1,
@@ -97,6 +90,10 @@ fun CustomBasicTextField(
             onNext = {
                 onComplete()
             }
+        ),
+        colors = TextFieldDefaults.textFieldColors(
+            containerColor = MaterialTheme.colorScheme.primary,
+            textColor = MaterialTheme.colorScheme.secondary
         )
     )
 }

@@ -26,7 +26,7 @@ fun TabScreen(
 ) {
 
     val tabs = listOf(
-        TabItem.Myself(navController, mainViewModel),
+        TabItem.Mine(navController, mainViewModel),
         TabItem.Total(navController, mainViewModel),
     )
     val pagerState = rememberPagerState()

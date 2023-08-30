@@ -26,6 +26,8 @@ import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -393,73 +395,80 @@ fun ShowUser(
     onClickUser: () -> Unit = {},
     onClickInfo: () -> Unit = {}
 ) {
-    ListItem(headlineText = {
-        Text(text = userInfo.userName)
-    },
-        colors = ListItemDefaults.colors(
-            containerColor = MaterialTheme.colorScheme.background
-
-        ),
-        modifier = Modifier
+    Card(
+        Modifier
             .padding(vertical = 8.dp)
-            .border(1.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(4.dp))
             .clickable {
                 onClickUser()
-            },
-        leadingContent = {
-            if (userInfo.profilePhoto.isNotEmpty()) {
-                AsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(userInfo.profilePhoto)
-                        .crossfade(true).build(),
-                    placeholder = painterResource(id = R.drawable.ic_person),
-                    contentDescription = stringResource(id = R.string.mess_picture),
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .size(50.dp)
-                        .clip(CircleShape)
-                )
-
-            } else {
-                Icon(
-                    imageVector = Icons.Default.Person,
-                    contentDescription = "profile",
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier
-                        .size(50.dp)
-                        .border(
-                            1.dp,
-                            color = MaterialTheme.colorScheme.surface,
-                            shape = CircleShape
-                        )
-                        .background(color = Color.Transparent, shape = CircleShape)
-                        .clip(CircleShape)
-                )
-            }
-
+            }, elevation = CardDefaults.elevatedCardElevation(),
+        colors = CardDefaults.elevatedCardColors(
+            containerColor = MaterialTheme.colorScheme.primary,
+            contentColor = MaterialTheme.colorScheme.secondary
+        ),
+        shape = RoundedCornerShape(4.dp)
+    ) {
+        ListItem(headlineText = {
+            Text(text = userInfo.userName)
         },
-        trailingContent = {
-            Row {
-                IconButton(onClick = onClickUser) {
+            colors = ListItemDefaults.colors(
+                containerColor = MaterialTheme.colorScheme.primary
+            ),
+            leadingContent = {
+                if (userInfo.profilePhoto.isNotEmpty()) {
+                    AsyncImage(
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(userInfo.profilePhoto)
+                            .crossfade(true).build(),
+                        placeholder = painterResource(id = R.drawable.ic_person),
+                        contentDescription = stringResource(id = R.string.mess_picture),
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .size(50.dp)
+                            .clip(CircleShape)
+                    )
+
+                } else {
                     Icon(
-                        imageVector = if (expand) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
-                        contentDescription = "show_hide_list"
+                        imageVector = Icons.Default.Person,
+                        contentDescription = "profile",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier
+                            .size(50.dp)
+                            .border(
+                                1.dp,
+                                color = MaterialTheme.colorScheme.surface,
+                                shape = CircleShape
+                            )
+                            .background(color = Color.Transparent, shape = CircleShape)
+                            .clip(CircleShape)
                     )
                 }
-                if(!expand){
-                    Spacer(modifier = Modifier.width(8.dp))
-                    IconButton(onClick = onClickInfo) {
+
+            },
+            trailingContent = {
+                Row {
+                    IconButton(onClick = onClickUser) {
                         Icon(
-                            imageVector = Icons.Default.Info,
-                            contentDescription = "meal_info"
+                            imageVector = if (expand) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                            contentDescription = "show_hide_list"
                         )
                     }
+                    if (!expand) {
+                        Spacer(modifier = Modifier.width(8.dp))
+                        IconButton(onClick = onClickInfo) {
+                            Icon(
+                                imageVector = Icons.Default.Info,
+                                contentDescription = "meal_info"
+                            )
+                        }
+                    }
+
                 }
 
-            }
+            },
+            overlineText = { Text(text = userInfo.userType) }
+        )
+    }
 
-        },
-        overlineText = { Text(text = userInfo.userType) }
-    )
 
 }
