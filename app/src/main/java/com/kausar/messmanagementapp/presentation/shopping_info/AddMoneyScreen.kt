@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.ButtonDefaults
@@ -44,6 +45,8 @@ import androidx.navigation.NavHostController
 import com.kausar.messmanagementapp.R
 import com.kausar.messmanagementapp.components.CustomDropDownMenu
 import com.kausar.messmanagementapp.components.CustomOutlinedTextField
+import com.kausar.messmanagementapp.data.model.AddMoneyModel
+import com.kausar.messmanagementapp.data.model.Demo
 import com.kausar.messmanagementapp.data.model.User
 import com.kausar.messmanagementapp.presentation.viewmodels.MainViewModel
 import java.util.Calendar
@@ -89,25 +92,18 @@ fun getNames(members: List<User>): List<String> {
 
 @Composable
 fun AddMoneyContent() {
-    Card(
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primary,
-            contentColor = MaterialTheme.colorScheme.secondary
-        ),
-        elevation = CardDefaults.elevatedCardElevation(),
-        shape = RoundedCornerShape(4.dp)
-    ) {
-        LazyColumn(
-            Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        ) {
-            items(20) {
-                Text(text = "This is item no $it")
-            }
-        }
 
+    LazyColumn(
+        Modifier
+            .fillMaxWidth()
+    ) {
+
+        items(Demo.listOfTestAddMoneyModel) { info ->
+            SingleMoney(info)
+        }
     }
+
+
 }
 
 fun getUser(members: List<User>, name: String): User {
@@ -119,6 +115,32 @@ fun getUser(members: List<User>, name: String): User {
         }
     }
     return selectedMember
+}
+
+@Composable
+fun SingleMoney(info: AddMoneyModel) {
+    Card(
+        Modifier.padding(vertical = 4.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primary,
+            contentColor = MaterialTheme.colorScheme.secondary
+        ),
+        elevation = CardDefaults.elevatedCardElevation(),
+        shape = RoundedCornerShape(4.dp)
+    ) {
+        Row(
+            Modifier.fillMaxWidth().padding(vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            Column() {
+                Text(text = info.date)
+                Text(text = info.userName)
+            }
+            Text(text = info.amount)
+        }
+    }
+
 }
 
 @Composable
