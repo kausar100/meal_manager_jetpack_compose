@@ -15,7 +15,6 @@ import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -94,16 +93,6 @@ fun CustomTopAppBar(
             titleContentColor = MaterialTheme.colorScheme.surface,
             navigationIconContentColor = MaterialTheme.colorScheme.surface
         )
-    )
-}
-
-@Composable
-fun WelcomeText() {
-    Text(
-        text = "Welcome To Meal Management App",
-        textAlign = TextAlign.Center,
-        fontSize = 20.sp,
-        fontWeight = FontWeight.Bold,
     )
 }
 

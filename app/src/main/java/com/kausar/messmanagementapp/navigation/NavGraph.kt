@@ -1,5 +1,6 @@
 package com.kausar.messmanagementapp.navigation
 
+import android.os.Build
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
@@ -15,8 +16,9 @@ import com.kausar.messmanagementapp.presentation.auth_screen.RegistrationScreen
 import com.kausar.messmanagementapp.presentation.home_screen.SharedHomeScreen
 import com.kausar.messmanagementapp.presentation.home_screen.TabScreen
 import com.kausar.messmanagementapp.presentation.meal_info_list.MealListScreen
-import com.kausar.messmanagementapp.presentation.meal_info_list.MemberListScreen
+import com.kausar.messmanagementapp.presentation.meal_info_list.MealInfoScreen
 import com.kausar.messmanagementapp.presentation.profile_screen.ProfileScreen
+import com.kausar.messmanagementapp.presentation.shopping_info.ShoppingScreen
 import com.kausar.messmanagementapp.presentation.viewmodels.MainViewModel
 
 fun logoutAndNavigateToLoginPage(navController: NavController) {
@@ -49,14 +51,17 @@ fun BottomNavGraph(
                 TabScreen(navController = navController, mainViewModel = mainViewModel)
             }
         }
+        composable(route = BottomBarScreen.Shopping.route) {
+            ShoppingScreen(mainViewModel)
+        }
         composable(route = BottomBarScreen.Profile.route) {
             ProfileScreen(mainViewModel)
         }
-        composable(route = BottomBarScreen.MealList.route) {
+        composable(route = BottomBarScreen.MealInfo.route) {
             if (mainViewModel.userInfo.value.userType == MemberType.Member.name) {
                 MealListScreen(mainViewModel)
             } else {
-                MemberListScreen(mainViewModel = mainViewModel)
+                MealInfoScreen(mainViewModel = mainViewModel)
             }
         }
         composable(route = Screen.Login.route) {
@@ -83,13 +88,15 @@ fun BottomNavGraph(
             )
         ) {
             val info = it.arguments?.getString(Screen.PinVerify.argKey) ?: ""
-            OtpVerifyScreen(info = info, mainViewModel) {
-                mainViewModel.saveLoginStatus(true)
-                navController.popBackStack()
-                navController.navigate(BottomBarScreen.Home.route) {
-                    popUpTo(navController.graph.id) {
-                        if (navController.previousBackStackEntry != null) {
-                            inclusive = true
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                OtpVerifyScreen(info = info, mainViewModel) {
+                    mainViewModel.saveLoginStatus(true)
+                    navController.popBackStack()
+                    navController.navigate(BottomBarScreen.Home.route) {
+                        popUpTo(navController.graph.id) {
+                            if (navController.previousBackStackEntry != null) {
+                                inclusive = true
+                            }
                         }
                     }
                 }

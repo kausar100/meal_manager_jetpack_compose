@@ -1,10 +1,6 @@
 package com.kausar.messmanagementapp.navigation
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.List
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.ui.graphics.vector.ImageVector
+import com.kausar.messmanagementapp.R
 
 sealed class Screen(
     val route: String,
@@ -31,24 +27,30 @@ sealed class Screen(
 sealed class BottomBarScreen(
     val route: String,
     val title: String,
-    val icon: ImageVector
+    val icon: Int
 ) {
     object Home : BottomBarScreen(
         route = "home",
         title = "Home",
-        icon = Icons.Default.Home
+        icon = R.drawable.ic_home
     )
 
-    object MealList : BottomBarScreen(
-        route = "meal_list",
-        title = "Meal Information",
-        icon = Icons.Default.List
+    object MealInfo : BottomBarScreen(
+        route = "meal_info",
+        title = "Meal",
+        icon = R.drawable.ic_meal
+    )
+
+    object Shopping : BottomBarScreen(
+        route = "shop_info",
+        title = "Shopping",
+        icon = R.drawable.ic_shopping
     )
 
     object Profile : BottomBarScreen(
         route = "profile",
         title = "Profile",
-        icon = Icons.Default.Person
+        icon = R.drawable.ic_person
     )
 
 }

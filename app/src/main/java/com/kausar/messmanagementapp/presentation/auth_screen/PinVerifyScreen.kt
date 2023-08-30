@@ -2,21 +2,19 @@ package com.kausar.messmanagementapp.presentation.auth_screen
 
 import android.app.Activity
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -30,29 +28,23 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.gson.Gson
-import com.kausar.messmanagementapp.R
-import com.kausar.messmanagementapp.components.CustomOutlinedTextField
 import com.kausar.messmanagementapp.components.CustomProgressBar
 import com.kausar.messmanagementapp.components.CustomTopAppBar
-import com.kausar.messmanagementapp.components.WelcomeText
+import com.kausar.messmanagementapp.components.OtpTextField
 import com.kausar.messmanagementapp.data.model.Status
 import com.kausar.messmanagementapp.data.model.TimerModel
 import com.kausar.messmanagementapp.data.model.User
@@ -99,6 +91,10 @@ fun OtpVerifyScreen(
         mutableStateOf(false)
     }
 
+    var otpSent by remember {
+        mutableStateOf(false)
+    }
+
     var otp by rememberSaveable {
         mutableStateOf("")
     }
@@ -133,7 +129,6 @@ fun OtpVerifyScreen(
     }
 
     LaunchedEffect(key1 = true) {
-        timerViewModel.startTimer(Duration.ofSeconds(60))
         viewModel.createUserWithPhoneNumber(
             phone = userInformation.contactNo,
             activity = context as Activity
@@ -153,7 +148,8 @@ fun OtpVerifyScreen(
                     is ResultState.Success -> {
                         delay(1000)
                         showProgress = false
-//                        timerViewModel.startTimer(Duration.ofSeconds(60))
+                        otpSent = true
+                        timerViewModel.startTimer(Duration.ofSeconds(60))
                         context.showToast(it.data)
                     }
                 }
@@ -175,91 +171,90 @@ fun OtpVerifyScreen(
                 .fillMaxSize()
                 .padding(padding), contentAlignment = Alignment.Center
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp)
-                    .padding(padding),
-                verticalArrangement = Arrangement.Top,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                WelcomeText()
-                Spacer(modifier = Modifier.fillMaxHeight(.1f))
-                Text(
-                    text = "Enter otp sent to ${userInformation.contactNo}",
-                    textAlign = TextAlign.Center,
-                    fontSize = MaterialTheme.typography.titleMedium.fontSize,
-                    fontWeight = FontWeight.Bold,
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                VerifyPinContent(
-                    onCodeEnter = { otp ->
-                        scope.launch(Dispatchers.Main) {
-                            viewModel.signInWithCredential(
-                                otp
-                            ).collectLatest {
-                                when (it) {
-                                    is ResultState.Loading -> {
-                                        progressMsg = "Verifying otp..."
-                                        showProgress = true
-                                    }
+            if (otpSent) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp)
+                        .padding(padding),
+                    verticalArrangement = Arrangement.Top,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "Enter otp sent to ${userInformation.contactNo}",
+                        textAlign = TextAlign.Center,
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    VerifyPinContent(
+                        onCodeEnter = { otp ->
+                            scope.launch(Dispatchers.Main) {
+                                viewModel.signInWithCredential(
+                                    otp
+                                ).collectLatest {
+                                    when (it) {
+                                        is ResultState.Loading -> {
+                                            progressMsg = "Verifying otp..."
+                                            showProgress = true
+                                        }
 
-                                    is ResultState.Failure -> {
-                                        showProgress = false
-                                        context.showToast("Please enter correct otp!")
-                                    }
-
-                                    is ResultState.Success -> {
-                                        if (userInformation.userType.isEmpty()) {
-                                            //login
-                                            println("need to just login")
+                                        is ResultState.Failure -> {
                                             showProgress = false
-                                            context.showToast(it.data)
-                                            mainViewModel.saveContact(userInformation.contactNo)
-                                            onRegistrationComplete()
-                                        } else {
-                                            //registration
-                                            println("need to register")
-                                            firestoreViewModel.registerUser(userInformation)
-                                                .collectLatest { result ->
-                                                    when (result) {
-                                                        is ResultState.Success -> {
-                                                            showProgress = false
-                                                            context.showToast(result.data)
-                                                            mainViewModel.saveContact(
-                                                                userInformation.contactNo
-                                                            )
-                                                            onRegistrationComplete()
-                                                        }
+                                            context.showToast("Please enter correct otp!")
+                                        }
 
-                                                        is ResultState.Failure -> {
-                                                            showProgress = false
-                                                            context.showToast(
-                                                                result.message.localizedMessage
-                                                                    ?: "Some error occur"
-                                                            )
-                                                        }
+                                        is ResultState.Success -> {
+                                            timerViewModel.resetTimer()
+                                            if (userInformation.userType.isEmpty()) {
+                                                //login
+                                                Log.d("OtpVerifyScreen: ", "need to just login")
+                                                showProgress = false
+                                                context.showToast(it.data)
+                                                mainViewModel.saveContact(userInformation.contactNo)
+                                                onRegistrationComplete()
+                                            } else {
+                                                //registration
+                                                Log.d("OtpVerifyScreen: ", "need to register")
+                                                firestoreViewModel.registerUser(userInformation)
+                                                    .collectLatest { result ->
+                                                        when (result) {
+                                                            is ResultState.Success -> {
+                                                                showProgress = false
+                                                                context.showToast(result.data)
+                                                                mainViewModel.saveContact(
+                                                                    userInformation.contactNo
+                                                                )
+                                                                onRegistrationComplete()
+                                                            }
 
-                                                        is ResultState.Loading -> {}
+                                                            is ResultState.Failure -> {
+                                                                showProgress = false
+                                                                context.showToast(
+                                                                    result.message.localizedMessage
+                                                                        ?: "Some error occurred"
+                                                                )
+                                                            }
+
+                                                            is ResultState.Loading -> {}
+                                                        }
                                                     }
-                                                }
+                                            }
                                         }
                                     }
                                 }
                             }
-                        }
-                    },
-                    otp = otp,
-                    onResendOtp = {
-                        timerViewModel.startTimer(Duration.ofSeconds(60))
-                        resendOtp = true
-                    },
-                    timer = timer
-                ) {
-                    otp = it
+                        },
+                        otp = otp,
+                        onResendOtp = {
+                            timerViewModel.startTimer(Duration.ofSeconds(60))
+                            resendOtp = true
+                        },
+                        timer = timer
+                    ) {
+                        otp = it
+                    }
                 }
             }
-
             if (showProgress) {
                 CustomProgressBar(msg = progressMsg)
             }
@@ -272,7 +267,6 @@ fun OtpVerifyScreen(
 
 
 @RequiresApi(Build.VERSION_CODES.O)
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun VerifyPinContent(
     onCodeEnter: (String) -> Unit,
@@ -281,47 +275,14 @@ fun VerifyPinContent(
     timer: TimerModel?,
     onChange: (String) -> Unit
 ) {
-    val focusManager = LocalFocusManager.current
-    val keyboardController = LocalSoftwareKeyboardController.current
+
     Column(
         modifier = Modifier.padding(horizontal = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        CustomOutlinedTextField(modifier = Modifier.fillMaxWidth(), input = otp,
-            onInputChange = {
-                if (it.length < 6) {
-                    onChange(it)
-                } else if (it.length == 6) {
-                    onChange(it)
-                    keyboardController?.hide()
-                    focusManager.clearFocus(true)
-                } else {
-                    keyboardController?.hide()
-                    focusManager.clearFocus(true)
-                }
-
-            }, placeholder = { Text(text = "Enter otp") }, prefixIcon = {
-                Image(
-                    painter = painterResource(id = R.drawable.ic_pin),
-                    contentDescription = "otp",
-                )
-            }, label = { Text(text = "OTP") }, keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Number, imeAction = ImeAction.Done
-            )
-        ) {
-            focusManager.clearFocus(true)
-        }
         Spacer(modifier = Modifier.height(16.dp))
-
-        ElevatedButton(
-            onClick = {
-                onCodeEnter(otp)
-            }, shape = RoundedCornerShape(4.dp), colors = ButtonDefaults.buttonColors(
-            ), modifier = Modifier.fillMaxWidth(), contentPadding = PaddingValues(vertical = 16.dp)
-        ) {
-            Text(text = "Verify OTP", fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
-        }
+        OtpTextField(otpText = otp, onOtpTextChange = onChange)
         Row(
             Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
@@ -337,15 +298,10 @@ fun VerifyPinContent(
 
                 } else if (timer.status == Status.RUNNING) {
                     Text(
-                        text = "Time Remaining: ",
+                        text = "Time Remaining: ${timer.timeDuration.format()}",
                         textAlign = TextAlign.Center,
                         fontSize = MaterialTheme.typography.titleSmall.fontSize,
                     )
-                    Text(
-                        text = timer.timeDuration.format(), textAlign = TextAlign.Center,
-                        fontSize = MaterialTheme.typography.titleSmall.fontSize,
-                    )
-
                 }
                 if (timer.status != Status.NONE) {
                     TextButton(onClick = onResendOtp, enabled = timer.status == Status.FINISHED) {
@@ -353,10 +309,21 @@ fun VerifyPinContent(
                             text = "Resend otp",
                             textAlign = TextAlign.Center,
                             fontSize = MaterialTheme.typography.titleSmall.fontSize,
+                            textDecoration = TextDecoration.Underline
                         )
                     }
                 }
             }
         }
+        Spacer(modifier = Modifier.height(8.dp))
+        ElevatedButton(
+            onClick = {
+                onCodeEnter(otp)
+            }, shape = RoundedCornerShape(4.dp), colors = ButtonDefaults.buttonColors(
+            ), modifier = Modifier.fillMaxWidth(), contentPadding = PaddingValues(vertical = 16.dp)
+        ) {
+            Text(text = "Verify OTP", fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
+        }
+
     }
 }

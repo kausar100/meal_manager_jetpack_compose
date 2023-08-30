@@ -73,7 +73,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
-fun MemberListScreen(
+fun MealInfoScreen(
     mainViewModel: MainViewModel,
     viewModel: FirebaseFirestoreDbViewModel = hiltViewModel()
 ) {

@@ -17,6 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -53,7 +54,8 @@ fun MainScreen(viewModel: MainViewModel) {
         topBar = {
             when (currentRoute(navController)) {
                 BottomBarScreen.Home.route,
-                BottomBarScreen.MealList.route,
+                BottomBarScreen.MealInfo.route,
+                BottomBarScreen.Shopping.route,
                 BottomBarScreen.Profile.route -> {
                     CustomTopAppBar(
                         title = when (currentRoute(navController)) {
@@ -61,8 +63,12 @@ fun MainScreen(viewModel: MainViewModel) {
                                 BottomBarScreen.Home.title
                             }
 
-                            BottomBarScreen.MealList.route -> {
-                                BottomBarScreen.MealList.title
+                            BottomBarScreen.MealInfo.route -> {
+                                BottomBarScreen.MealInfo.title
+                            }
+
+                            BottomBarScreen.Shopping.route -> {
+                                BottomBarScreen.Shopping.title
                             }
 
                             BottomBarScreen.Profile.route -> {
@@ -93,7 +99,7 @@ fun MainScreen(viewModel: MainViewModel) {
         },
         bottomBar = {
             when (currentRoute(navController)) {
-                BottomBarScreen.Home.route, BottomBarScreen.MealList.route, BottomBarScreen.Profile.route -> {
+                BottomBarScreen.Home.route, BottomBarScreen.MealInfo.route, BottomBarScreen.Shopping.route, BottomBarScreen.Profile.route -> {
                     BottomBar(navController = navController)
                 }
             }
@@ -133,8 +139,11 @@ fun currentRoute(navController: NavController): String? {
 @Composable
 fun BottomBar(navController: NavHostController) {
 
-    val screens = mutableListOf(
-        BottomBarScreen.Home, BottomBarScreen.MealList, BottomBarScreen.Profile
+    val screens = listOf(
+        BottomBarScreen.Home,
+        BottomBarScreen.MealInfo,
+        BottomBarScreen.Shopping,
+        BottomBarScreen.Profile
     )
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -178,7 +187,8 @@ fun RowScope.AddDestination(
         },
         icon = {
             Icon(
-                imageVector = screen.icon, contentDescription = "Navigation Icon"
+                painter = painterResource(id = screen.icon),
+                contentDescription = "Navigation Icon"
             )
         },
         colors = NavigationBarItemDefaults.colors(

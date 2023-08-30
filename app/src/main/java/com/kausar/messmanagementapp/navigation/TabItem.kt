@@ -14,7 +14,7 @@ sealed class TabItem(var title: String, var screen: ComposableFun) {
         val mainViewModel: MainViewModel
     ) :
         TabItem(
-            "Myself",
+            "Mine",
             { SharedHomeScreen(mainViewModel) })
 
     data class Total(

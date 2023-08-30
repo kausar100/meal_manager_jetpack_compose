@@ -56,14 +56,12 @@ import com.kausar.messmanagementapp.data.model.MemberType
 import com.kausar.messmanagementapp.data.model.User
 import com.kausar.messmanagementapp.navigation.Screen
 import com.kausar.messmanagementapp.presentation.AboutScreen
-import com.kausar.messmanagementapp.presentation.viewmodels.FirebaseFirestoreDbViewModel
 import com.kausar.messmanagementapp.presentation.viewmodels.MainViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegistrationScreen(
     mainViewModel: MainViewModel = hiltViewModel(),
-    viewModel: FirebaseFirestoreDbViewModel = hiltViewModel(),
     gotoLoinScreen: () -> Unit,
     onSubmit: (String) -> Unit
 ) {
@@ -100,23 +98,23 @@ fun RegistrationScreen(
                     listOfMess.add(messNamesState.listOfMess[index].messName)
                 }
 
-                RegistrationScreenContent(modifier = Modifier
-                    .fillMaxSize()
-                    .padding(it),
+                RegistrationScreenContent(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(it),
                     viewModel = mainViewModel,
                     toggleScreen = gotoLoinScreen,
-                    firestore = viewModel,
-                    messNames = listOfMess,
-                    onSubmit = { phone, name, mess, type ->
-                        val newUser = User(
-                            userName = name,
-                            contactNo = phone,
-                            userType = type,
-                            messName = mess
-                        )
-                        val json = Gson().toJson(newUser)
-                        onSubmit(json)
-                    })
+                    messNames = listOfMess
+                ) { phone, name, mess, type ->
+                    val newUser = User(
+                        userName = name,
+                        contactNo = phone,
+                        userType = type,
+                        messName = mess
+                    )
+                    val json = Gson().toJson(newUser)
+                    onSubmit(json)
+                }
 
             }
 
@@ -131,7 +129,6 @@ fun RegistrationScreenContent(
     modifier: Modifier = Modifier,
     viewModel: MainViewModel,
     toggleScreen: () -> Unit,
-    firestore: FirebaseFirestoreDbViewModel,
     messNames: List<String> = emptyList(),
     onSubmit: (contact: String, name: String, mess: String, type: String) -> Unit,
 ) {
@@ -345,5 +342,5 @@ fun RegistrationScreenContent(
 @Preview(showBackground = true)
 @Composable
 fun PreviewRegistrationScreen() {
-    RegistrationScreen(gotoLoinScreen = { /*TODO*/ }, onSubmit = {})
+    RegistrationScreen(gotoLoinScreen = { /*TODO*/ }) {}
 }
