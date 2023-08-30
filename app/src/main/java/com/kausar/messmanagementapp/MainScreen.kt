@@ -56,6 +56,10 @@ fun MainScreen(viewModel: MainViewModel) {
                 BottomBarScreen.Home.route,
                 BottomBarScreen.MealInfo.route,
                 BottomBarScreen.Shopping.route,
+                Screen.AddMoney.route,
+                Screen.ShopEntry.route,
+                Screen.Balance.route,
+                Screen.ShoppingHistory.route,
                 BottomBarScreen.Profile.route -> {
                     CustomTopAppBar(
                         title = when (currentRoute(navController)) {
@@ -75,6 +79,22 @@ fun MainScreen(viewModel: MainViewModel) {
                                 BottomBarScreen.Profile.title
                             }
 
+                            Screen.AddMoney.route -> {
+                                Screen.AddMoney.title
+                            }
+
+                            Screen.ShopEntry.route -> {
+                                Screen.ShopEntry.title
+                            }
+
+                            Screen.Balance.route -> {
+                                Screen.Balance.title
+                            }
+
+                            Screen.ShoppingHistory.route -> {
+                                Screen.ShoppingHistory.title
+                            }
+
                             else -> {
                                 null
                             }
@@ -88,11 +108,24 @@ fun MainScreen(viewModel: MainViewModel) {
                                 false
                             }
                         },
-                        canNavigateBack = false, logoutAction = {
+                        canNavigateBack = when (currentRoute(navController)) {
+                            Screen.AddMoney.route,
+                            Screen.ShopEntry.route,
+                            Screen.Balance.route,
+                            Screen.ShoppingHistory.route -> {
+                                true
+                            }
+                            else -> {
+                                false
+                            }
+                        }, logoutAction = {
                             authViewModel.logout()
                             viewModel.saveLoginStatus(false)
                             logoutAndNavigateToLoginPage(navController)
-                        }, scrollBehavior = scrollBehavior
+                        }, scrollBehavior = scrollBehavior,
+                        navigateUp = {
+                            navController.popBackStack()
+                        }
                     )
                 }
             }

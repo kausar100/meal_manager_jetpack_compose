@@ -28,7 +28,7 @@ fun CustomOutlinedTextField(
     suffixIcon: ImageVector? = null,
     onClickTrailingIcon: () -> Unit = {},
     label: @Composable() (() -> Unit)? = null,
-    keyboardOptions: KeyboardOptions,
+    keyboardOptions: KeyboardOptions = KeyboardOptions(),
     onComplete: () -> Unit
 
 ) {

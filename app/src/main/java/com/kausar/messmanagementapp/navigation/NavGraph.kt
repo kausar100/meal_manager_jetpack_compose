@@ -18,6 +18,10 @@ import com.kausar.messmanagementapp.presentation.home_screen.TabScreen
 import com.kausar.messmanagementapp.presentation.meal_info_list.MealListScreen
 import com.kausar.messmanagementapp.presentation.meal_info_list.MealInfoScreen
 import com.kausar.messmanagementapp.presentation.profile_screen.ProfileScreen
+import com.kausar.messmanagementapp.presentation.shopping_info.AccountBalance
+import com.kausar.messmanagementapp.presentation.shopping_info.AddMoney
+import com.kausar.messmanagementapp.presentation.shopping_info.NewShopEntry
+import com.kausar.messmanagementapp.presentation.shopping_info.ShoppingHistory
 import com.kausar.messmanagementapp.presentation.shopping_info.ShoppingScreen
 import com.kausar.messmanagementapp.presentation.viewmodels.MainViewModel
 
@@ -52,7 +56,19 @@ fun BottomNavGraph(
             }
         }
         composable(route = BottomBarScreen.Shopping.route) {
-            ShoppingScreen(mainViewModel)
+            ShoppingScreen(mainViewModel,navController)
+        }
+        composable(route = Screen.AddMoney.route) {
+            AddMoney(mainViewModel,navController)
+        }
+        composable(route = Screen.ShopEntry.route) {
+           NewShopEntry()
+        }
+        composable(route = Screen.Balance.route) {
+           AccountBalance()
+        }
+        composable(route = Screen.ShoppingHistory.route) {
+           ShoppingHistory()
         }
         composable(route = BottomBarScreen.Profile.route) {
             ProfileScreen(mainViewModel)

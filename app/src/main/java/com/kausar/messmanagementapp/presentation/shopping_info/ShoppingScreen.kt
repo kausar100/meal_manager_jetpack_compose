@@ -1,5 +1,6 @@
 package com.kausar.messmanagementapp.presentation.shopping_info
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -21,12 +22,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
 import com.kausar.messmanagementapp.data.model.ShoppingInfo
 import com.kausar.messmanagementapp.data.model.ShoppingListItem
+import com.kausar.messmanagementapp.navigation.Screen
 import com.kausar.messmanagementapp.presentation.viewmodels.MainViewModel
 
 @Composable
-fun ShoppingScreen(mainViewModel: MainViewModel) {
+fun ShoppingScreen(mainViewModel: MainViewModel, navController: NavHostController) {
     Box(
         Modifier
             .fillMaxSize()
@@ -39,7 +42,25 @@ fun ShoppingScreen(mainViewModel: MainViewModel) {
         ) {
             LazyColumn() {
                 items(ShoppingListItem.items) { item ->
-                    ShoppingListItem(item)
+                    MenuItem(item) {
+                        when (item.title) {
+                            ShoppingListItem.itemTitles[0] -> {
+                                navController.navigate(Screen.AddMoney.route)
+                            }
+
+                            ShoppingListItem.itemTitles[1] -> {
+                                navController.navigate(Screen.ShopEntry.route)
+                            }
+
+                            ShoppingListItem.itemTitles[2] -> {
+                                navController.navigate(Screen.Balance.route)
+                            }
+
+                            ShoppingListItem.itemTitles[3] -> {
+                                navController.navigate(Screen.ShoppingHistory.route)
+                            }
+                        }
+                    }
                 }
             }
 
@@ -48,11 +69,14 @@ fun ShoppingScreen(mainViewModel: MainViewModel) {
 }
 
 @Composable
-fun ShoppingListItem(item: ShoppingInfo) {
+fun MenuItem(item: ShoppingInfo, onItemClick: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp), elevation = CardDefaults.elevatedCardElevation(),
+            .padding(16.dp)
+            .clickable {
+                onItemClick()
+            }, elevation = CardDefaults.elevatedCardElevation(),
         colors = CardDefaults.elevatedCardColors(
             containerColor = MaterialTheme.colorScheme.primary,
             contentColor = MaterialTheme.colorScheme.secondary

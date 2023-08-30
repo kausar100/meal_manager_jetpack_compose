@@ -4,8 +4,7 @@ import com.kausar.messmanagementapp.R
 
 
 object ShoppingListItem {
-    private val itemTitles = listOf("Add Money", "Shop Entry", "Show Money", "Show Shopping List")
-
+    val itemTitles = listOf("Add Money", "New Shop Entry", "Account Balance", "Shopping History")
 
     val items = mutableListOf<ShoppingInfo>()
 
