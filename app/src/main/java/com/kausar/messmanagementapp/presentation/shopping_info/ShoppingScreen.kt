@@ -73,7 +73,7 @@ fun MenuItem(item: ShoppingInfo, onItemClick: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp)
+            .padding(8.dp)
             .clickable {
                 onItemClick()
             }, elevation = CardDefaults.elevatedCardElevation(),
@@ -86,7 +86,7 @@ fun MenuItem(item: ShoppingInfo, onItemClick: () -> Unit) {
         Row(
             Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp),
+                .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(painter = painterResource(id = item.icon), contentDescription = item.desc)

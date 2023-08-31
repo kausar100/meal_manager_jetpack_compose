@@ -129,7 +129,9 @@ fun SingleMoney(info: AddMoneyModel) {
         shape = RoundedCornerShape(4.dp)
     ) {
         Row(
-            Modifier.fillMaxWidth().padding(vertical = 8.dp),
+            Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
@@ -165,37 +167,15 @@ fun AddMoneyHeader(
     }
 
     val focusManager = LocalFocusManager.current
-    val context = LocalContext.current
-
-    // Declaring integer values
-    // for year, month and day
-    val mYear: Int
-    val mMonth: Int
-    val mDay: Int
-    // Initializing a Calendar
-    val mCalendar = Calendar.getInstance()
-
-    // Fetching current year, month and day
-    mYear = mCalendar.get(Calendar.YEAR)
-    mMonth = mCalendar.get(Calendar.MONTH)
-    mDay = mCalendar.get(Calendar.DAY_OF_MONTH)
-
-    mCalendar.time = Date()
 
     var selectedDate by remember {
         mutableStateOf("")
     }
 
-    val mDatePickerDialog = DatePickerDialog(
-        context,
-        { _: DatePicker, mYear: Int, mMonth: Int, mDayOfMonth: Int ->
-            selectedDate = "$mDayOfMonth/${mMonth + 1}/$mYear"
-        }, mYear, mMonth, mDay
-    )
-
     Card(
         colors = CardDefaults.cardColors(
-            contentColor = MaterialTheme.colorScheme.onSurface
+            containerColor = MaterialTheme.colorScheme.background,
+            contentColor = MaterialTheme.colorScheme.secondary
         ),
         elevation = CardDefaults.elevatedCardElevation(),
         shape = RoundedCornerShape(4.dp)
@@ -222,12 +202,11 @@ fun AddMoneyHeader(
                         MaterialTheme.colorScheme.secondary,
                         RoundedCornerShape(4.dp)
                     )
-                    .padding(16.dp)
-                    .clickable {
-                        mDatePickerDialog.show()
-                    },
+                    .padding(16.dp),
                 date = selectedDate
-            )
+            ) {
+                selectedDate = it
+            }
             CustomOutlinedTextField(
                 modifier = Modifier.fillMaxWidth(),
                 input = amount,
@@ -290,9 +269,40 @@ fun AddMoneyHeader(
 }
 
 @Composable
-fun ChooseDate(modifier: Modifier, date: String) {
+fun ChooseDate(modifier: Modifier, date: String, onChoose: (String) -> Unit) {
+    val context = LocalContext.current
+
+    // Declaring integer values
+    // for year, month and day
+    val mYear: Int
+    val mMonth: Int
+    val mDay: Int
+    // Initializing a Calendar
+    val mCalendar = Calendar.getInstance()
+
+    // Fetching current year, month and day
+    mYear = mCalendar.get(Calendar.YEAR)
+    mMonth = mCalendar.get(Calendar.MONTH)
+    mDay = mCalendar.get(Calendar.DAY_OF_MONTH)
+
+    mCalendar.time = Date()
+
+    var selectedDate by remember {
+        mutableStateOf(date)
+    }
+
+    val mDatePickerDialog = DatePickerDialog(
+        context,
+        { _: DatePicker, mYear: Int, mMonth: Int, mDayOfMonth: Int ->
+            selectedDate = "$mDayOfMonth/${mMonth + 1}/$mYear"
+            onChoose(selectedDate)
+        }, mYear, mMonth, mDay
+    )
+
     Row(
-        modifier = modifier
+        modifier = modifier.clickable {
+            mDatePickerDialog.show()
+        },
     ) {
         Image(
             painter = painterResource(id = R.drawable.ic_calendar),

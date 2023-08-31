@@ -7,9 +7,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.navigation.NavHostController
+import com.kausar.messmanagementapp.presentation.viewmodels.MainViewModel
 
 @Composable
-fun AccountBalance() {
+fun AccountBalance(mainViewModel: MainViewModel, navController: NavHostController) {
     Box(
         Modifier
             .fillMaxSize()

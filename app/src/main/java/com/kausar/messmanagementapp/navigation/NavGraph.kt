@@ -62,13 +62,13 @@ fun BottomNavGraph(
             AddMoney(mainViewModel,navController)
         }
         composable(route = Screen.ShopEntry.route) {
-           NewShopEntry()
+           NewShopEntry(mainViewModel,navController)
         }
         composable(route = Screen.Balance.route) {
-           AccountBalance()
+           AccountBalance(mainViewModel,navController)
         }
         composable(route = Screen.ShoppingHistory.route) {
-           ShoppingHistory()
+           ShoppingHistory(mainViewModel,navController)
         }
         composable(route = BottomBarScreen.Profile.route) {
             ProfileScreen(mainViewModel)
