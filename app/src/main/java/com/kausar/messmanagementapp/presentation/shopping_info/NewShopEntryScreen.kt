@@ -12,14 +12,17 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material3.ButtonDefaults
@@ -28,20 +31,19 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -53,7 +55,6 @@ import androidx.navigation.NavHostController
 import com.kausar.messmanagementapp.R
 import com.kausar.messmanagementapp.components.CustomDropDownMenu
 import com.kausar.messmanagementapp.components.CustomOutlinedTextField
-import com.kausar.messmanagementapp.components.FieldWithIncDec
 import com.kausar.messmanagementapp.data.model.User
 import com.kausar.messmanagementapp.presentation.viewmodels.MainViewModel
 
@@ -72,7 +73,7 @@ fun NewShopEntry(mainViewModel: MainViewModel, navController: NavHostController)
         ) {
             NewShopEntryHeader(memberInfo.listOfMember, onCancel = {
                 navController.popBackStack()
-            }) { member, date, amount ->
+            }) { _, _, _ ->
                 //need to add this money
 
             }
@@ -165,7 +166,8 @@ fun NewShopEntryHeader(
             ) {
                 focusManager.clearFocus(true)
             }
-            AddBajarNameAndPrice()
+            Spacer(modifier = Modifier.height(8.dp))
+            ShoppingInformation()
             Spacer(modifier = Modifier.height(8.dp))
             Row(
                 Modifier.fillMaxWidth(),
@@ -212,144 +214,139 @@ data class Item(
     val price: String = ""
 )
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddBajarNameAndPrice() {
-    val context = LocalContext.current
-    var expand by remember {
-        mutableStateOf(false)
+fun ShoppingInformation() {
+
+    val rows by remember {
+        mutableStateOf(
+            mutableListOf<Item>(
+//            Item("a","1","1"),
+//            Item("b","2","2"),
+//            Item("c","3","3")
+            )
+        )
     }
 
-    val listOfItems = mutableListOf<Item>()
-
-    var item by remember {
-        mutableStateOf(Item())
+    val saveRows by remember {
+        mutableStateOf(mutableListOf<Item>())
     }
+
+    var rowId by remember {
+        mutableIntStateOf(0)
+    }
+
+    fun addItem() {
+        rows.add(rowId, Item())
+        rowId++
+    }
+
+    Log.d("index: ", rowId.toString())
+    Log.d("row size: ", rows.size.toString())
 
     val focusManager = LocalFocusManager.current
-
-    Column(modifier = Modifier.animateContentSize(tween(500, easing = EaseInOut))) {
+    Column(Modifier.fillMaxHeight(.7f)) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Start,
             modifier = Modifier.clickable {
-                expand = !expand
+                addItem()
             }
         ) {
-            IconButton(onClick = {
-                expand = true
-            }) {
-                Icon(imageVector = Icons.Default.AddCircle, contentDescription = "add desc")
-
-            }
+            Icon(imageVector = Icons.Default.AddCircle, contentDescription = "add desc")
             Spacer(modifier = Modifier.width(16.dp))
             Text(text = "Add Item information")
-
         }
-        if (expand) {
-            Row(Modifier.fillMaxWidth()) {
-                repeat(3) { index ->
-                    val value = when (index) {
-                        0 -> item.name
-                        1 -> item.weight
-                        else -> item.price
-                    }
-
-                    val label = when (index) {
-                        0 -> "Name"
-                        1 -> "Weight"
-                        else -> "Price"
-                    }
-                    val space = when (index) {
-                        0 -> 1.2f
-                        else -> 1f
-                    }
-
-                    val keyBoardOption = when (index) {
-                        0 -> KeyboardOptions(
-                            keyboardType = KeyboardType.Text,
-                            imeAction = ImeAction.Next
-                        )
-
-                        1 -> KeyboardOptions(
-                            keyboardType = KeyboardType.Number,
-                            imeAction = ImeAction.Next
-                        )
-
-                        else -> KeyboardOptions(
-                            keyboardType = KeyboardType.Number,
-                            imeAction = ImeAction.Done
-                        )
-                    }
-
-                    val onFocusChange = {
-                        when (index) {
-                            2 -> focusManager.clearFocus(true)
-                            else -> focusManager.moveFocus(FocusDirection.Next)
+        Spacer(modifier = Modifier.height(8.dp))
+        Column(modifier = Modifier.animateContentSize(tween(500, easing = EaseInOut))) {
+            Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+                repeat(rows.size) { index ->
+                    SingleRow(rows[index]) { new ->
+                        Log.d("ShoppingInformation: ", new.toString())
+                        rows[index] = new
+                        if (rows[index].name.isNotEmpty() && rows[index].price.isNotEmpty()) {
+                            saveRows.add(rows[index])
                         }
-
+                        Log.d("save_entry: ", saveRows.toString())
                     }
-
-                    val onChange: (String) -> Unit = {
-                        item = when (index) {
-                            0 -> item.copy(name = it)
-                            1 -> item.copy(weight = it)
-                            else -> item.copy(price = it)
-                        }
-//                        if (item.name.isNotEmpty() && item.price.isNotEmpty()) {
-//                            listOfItems.add(item)
-//                        }
-                    }
-
-                    if (index == 1) {
-                        FieldWithIncDec(
-                            modifier = Modifier
-                                .weight(space)
-                                .padding(4.dp),
-                            input = value,
-                            label = label,
-                            onValueChange = onChange,
-                            keyboardActions = KeyboardActions(
-                                onNext = {
-                                    onFocusChange()
-                                },
-                                onDone = {
-                                    onFocusChange()
-                                    Log.d("AddBajarNameAndPrice: ", listOfItems.toString())
-                                }
-                            ),
-                            keyboardOptions = keyBoardOption
-                        )
-
-                    } else {
-                        OutlinedTextField(
-                            value = value,
-                            onValueChange = onChange,
-                            modifier = Modifier
-                                .weight(space)
-                                .padding(4.dp),
-                            keyboardOptions = keyBoardOption,
-                            singleLine = true,
-                            label = { Text(text = label) },
-                            keyboardActions = KeyboardActions(
-                                onNext = {
-                                    onFocusChange()
-                                },
-                                onDone = {
-                                    onFocusChange()
-                                    Log.d("AddBajarNameAndPrice: ", listOfItems.toString())
-                                }
-                            )
-                        )
-                    }
-
-
                 }
-
-
             }
+
         }
+    }
+}
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SingleRow(item: Item, onComplete: (Item) -> Unit) {
+    val focusManager = LocalFocusManager.current
 
+    var value by remember {
+        mutableStateOf(item)
+    }
+
+    Row(Modifier.fillMaxWidth()) {
+        OutlinedTextField(
+            value = value.name,
+            onValueChange = {
+                value = value.copy(name = it)
+            },
+            modifier = Modifier
+                .weight(1.3f)
+                .padding(4.dp),
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Text,
+                imeAction = ImeAction.Next
+            ),
+            singleLine = true,
+            label = { Text(text = "Name") },
+            keyboardActions = KeyboardActions(
+                onNext = {
+                    onComplete(value)
+                    focusManager.moveFocus(FocusDirection.Next)
+                }
+            )
+        )
+        OutlinedTextField(
+            value = value.weight,
+            onValueChange = {
+                value = value.copy(weight = it)
+            },
+            modifier = Modifier
+                .weight(1f)
+                .padding(4.dp),
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Text,
+                imeAction = ImeAction.Next
+            ),
+            singleLine = true,
+            label = { Text(text = "Amount") },
+            keyboardActions = KeyboardActions(
+                onDone = {
+                    onComplete(value)
+                    focusManager.moveFocus(FocusDirection.Next)
+                }
+            )
+        )
+        OutlinedTextField(
+            value = value.price,
+            onValueChange = {
+                value = value.copy(price = it)
+            },
+            modifier = Modifier
+                .weight(1f)
+                .padding(4.dp),
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Number,
+                imeAction = ImeAction.Done
+            ),
+            singleLine = true,
+            label = { Text(text = "Price") },
+            keyboardActions = KeyboardActions(
+                onDone = {
+                    onComplete(value)
+                    focusManager.clearFocus(true)
+                }
+            )
+        )
     }
 }
