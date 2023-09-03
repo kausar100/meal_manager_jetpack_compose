@@ -11,6 +11,20 @@ fun fetchDateAsString(calendar: Calendar): String {
     return "$dayName, $dayOfMonth/${month + 1}/$year"
 }
 
+fun getTime(calendar: Calendar): String {
+    var hour = calendar.get(Calendar.HOUR_OF_DAY).toString()
+    var minute = calendar.get(Calendar.MINUTE).toString()
+
+    if(hour.length<2){
+        hour = "0$hour"
+    }
+    if(minute.length<2){
+        minute = "0$minute"
+    }
+    return "$hour : $minute"
+
+}
+
 fun getDayName(date: String): String {
     val start = date.indexOf(',')
     return date.substring(0, start)

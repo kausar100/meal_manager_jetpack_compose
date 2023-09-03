@@ -1,10 +1,10 @@
 package com.kausar.messmanagementapp.presentation.shopping_info
 
-import android.app.DatePickerDialog
-import android.widget.DatePicker
+import android.os.Build
+import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.ButtonDefaults
@@ -46,16 +45,26 @@ import com.kausar.messmanagementapp.R
 import com.kausar.messmanagementapp.components.CustomDropDownMenu
 import com.kausar.messmanagementapp.components.CustomOutlinedTextField
 import com.kausar.messmanagementapp.data.model.AddMoneyModel
-import com.kausar.messmanagementapp.data.model.Demo
 import com.kausar.messmanagementapp.data.model.User
 import com.kausar.messmanagementapp.presentation.viewmodels.MainViewModel
+import com.kausar.messmanagementapp.utils.getDate
+import com.kausar.messmanagementapp.utils.getTime
+import com.kausar.messmanagementapp.utils.showToast
 import java.util.Calendar
-import java.util.Date
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun AddMoney(mainViewModel: MainViewModel, navController: NavHostController) {
 
     val memberInfo = mainViewModel.memberInfo.value
+
+    val listInfo by remember {
+        mutableStateOf(mutableListOf<AddMoneyModel>())
+    }
+
+    var listSize by remember {
+        mutableStateOf(0)
+    }
 
     Box(
         Modifier
@@ -69,11 +78,28 @@ fun AddMoney(mainViewModel: MainViewModel, navController: NavHostController) {
             AddMoneyHeader(memberInfo.listOfMember, onCancel = {
                 navController.popBackStack()
             }) { member, date, amount ->
-                //need to add this money
-
+                val currentTime = getTime(Calendar.getInstance())
+                Log.d( "time : ", currentTime)
+                listInfo.add(
+                    AddMoneyModel(
+                        userId = member.userId,
+                        userName = member.userName,
+                        date = date,
+                        amount = amount
+                    )
+                )
+                listSize++
+                Log.d( "AddMoney: ",listInfo.toString())
             }
             Spacer(modifier = Modifier.height(8.dp))
-            AddMoneyContent()
+            LazyColumn(
+                Modifier
+                    .fillMaxWidth()
+            ) {
+                items(listSize) { index ->
+                    SingleMoney(listInfo[index])
+                }
+            }
         }
     }
 
@@ -87,22 +113,6 @@ fun getNames(members: List<User>): List<String> {
         }
     }
     return names
-
-}
-
-@Composable
-fun AddMoneyContent() {
-
-    LazyColumn(
-        Modifier
-            .fillMaxWidth()
-    ) {
-
-        items(Demo.listOfTestAddMoneyModel) { info ->
-            SingleMoney(info)
-        }
-    }
-
 
 }
 
@@ -131,15 +141,15 @@ fun SingleMoney(info: AddMoneyModel) {
         Row(
             Modifier
                 .fillMaxWidth()
-                .padding(vertical = 8.dp),
+                .padding(vertical = 8.dp, horizontal = 16.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceEvenly
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Column() {
+            Column(verticalArrangement = Arrangement.Center) {
                 Text(text = info.date)
                 Text(text = info.userName)
             }
-            Text(text = info.amount)
+            Text(text = "${ info.amount } Tk")
         }
     }
 
@@ -158,18 +168,26 @@ fun AddMoneyHeader(
         mutableStateOf("")
     }
 
+    val context = LocalContext.current
+
     var memberName by remember {
         mutableStateOf(if (memberNames.isNotEmpty()) memberNames[0] else "")
     }
 
     var selectedMember by remember {
-        mutableStateOf(User())
+        mutableStateOf(
+            if (members.isNotEmpty()) {
+                members[0]
+            } else {
+                User()
+            }
+        )
     }
 
     val focusManager = LocalFocusManager.current
 
     var selectedDate by remember {
-        mutableStateOf("")
+        mutableStateOf(getDate(Calendar.getInstance()))
     }
 
     Card(
@@ -212,7 +230,6 @@ fun AddMoneyHeader(
                 input = amount,
                 onInputChange = {
                     amount = it
-
                 },
                 placeholder = { Text(text = "Enter Amount") },
                 prefixIcon = {
@@ -246,7 +263,12 @@ fun AddMoneyHeader(
                 Spacer(modifier = Modifier.width(16.dp))
                 ElevatedButton(
                     onClick = {
-                        addMoney(selectedMember, selectedDate, amount)
+                        if (amount.isEmpty()) {
+                            context.showToast("Please enter receiving amount!")
+                        } else {
+                            addMoney(selectedMember, selectedDate, amount)
+                        }
+
                     },
                     shape = RoundedCornerShape(4.dp),
                     colors = ButtonDefaults.buttonColors(
@@ -266,49 +288,4 @@ fun AddMoneyHeader(
 
     }
 
-}
-
-@Composable
-fun ChooseDate(modifier: Modifier, date: String, onChoose: (String) -> Unit) {
-    val context = LocalContext.current
-
-    // Declaring integer values
-    // for year, month and day
-    val mYear: Int
-    val mMonth: Int
-    val mDay: Int
-    // Initializing a Calendar
-    val mCalendar = Calendar.getInstance()
-
-    // Fetching current year, month and day
-    mYear = mCalendar.get(Calendar.YEAR)
-    mMonth = mCalendar.get(Calendar.MONTH)
-    mDay = mCalendar.get(Calendar.DAY_OF_MONTH)
-
-    mCalendar.time = Date()
-
-    var selectedDate by remember {
-        mutableStateOf(date)
-    }
-
-    val mDatePickerDialog = DatePickerDialog(
-        context,
-        { _: DatePicker, mYear: Int, mMonth: Int, mDayOfMonth: Int ->
-            selectedDate = "$mDayOfMonth/${mMonth + 1}/$mYear"
-            onChoose(selectedDate)
-        }, mYear, mMonth, mDay
-    )
-
-    Row(
-        modifier = modifier.clickable {
-            mDatePickerDialog.show()
-        },
-    ) {
-        Image(
-            painter = painterResource(id = R.drawable.ic_calendar),
-            contentDescription = "select date"
-        )
-        Spacer(modifier = Modifier.width(16.dp))
-        Text(text = date.ifEmpty { "Enter Date" })
-    }
 }
