@@ -30,3 +30,9 @@ data class ShoppingInfo(
     val icon: Int = 0,
     val desc: String = ""
 )
+
+data class ShoppingItem(
+    val name: String = "",
+    val weight: String = "",
+    val price: String = ""
+)
