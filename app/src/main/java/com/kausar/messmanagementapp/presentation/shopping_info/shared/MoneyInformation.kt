@@ -17,9 +17,9 @@ import androidx.compose.ui.unit.dp
 import com.kausar.messmanagementapp.data.model.AddMoney
 
 @Composable
-fun SingleMoney(modifier: Modifier = Modifier, info: AddMoney) {
+fun MoneyRow(info: AddMoney) {
     Card(
-        modifier.padding(vertical = 4.dp), colors = CardDefaults.cardColors(
+        Modifier.padding(vertical = 4.dp), colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.primary,
             contentColor = MaterialTheme.colorScheme.secondary
         ), elevation = CardDefaults.elevatedCardElevation(), shape = RoundedCornerShape(4.dp)
@@ -27,7 +27,7 @@ fun SingleMoney(modifier: Modifier = Modifier, info: AddMoney) {
         Row(
             Modifier
                 .fillMaxWidth()
-                .padding(vertical = 8.dp, horizontal = 16.dp),
+                .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
@@ -44,7 +44,7 @@ fun SingleMoney(modifier: Modifier = Modifier, info: AddMoney) {
 @Composable
 fun MoneyInfo(modifier: Modifier = Modifier, info: AddMoney) {
     Card(
-        modifier.padding(vertical = 4.dp), colors = CardDefaults.cardColors(
+        modifier.padding(vertical = 8.dp), colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.primary,
             contentColor = MaterialTheme.colorScheme.secondary
         ), elevation = CardDefaults.elevatedCardElevation(), shape = RoundedCornerShape(4.dp)

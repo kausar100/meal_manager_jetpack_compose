@@ -1,5 +1,7 @@
 package com.kausar.messmanagementapp
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.padding
@@ -32,10 +34,12 @@ import com.kausar.messmanagementapp.navigation.BottomNavGraph
 import com.kausar.messmanagementapp.navigation.Screen
 import com.kausar.messmanagementapp.navigation.logoutAndNavigateToLoginPage
 import com.kausar.messmanagementapp.presentation.auth_screen.AuthViewModel
+import com.kausar.messmanagementapp.presentation.shopping_info.ListType
 import com.kausar.messmanagementapp.presentation.viewmodels.MainViewModel
 import com.kausar.messmanagementapp.utils.network_connection.ConnectionState
 import com.kausar.messmanagementapp.utils.network_connection.connectivityState
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(viewModel: MainViewModel) {
@@ -50,105 +54,104 @@ fun MainScreen(viewModel: MainViewModel) {
     val connection by connectivityState()
     val isConnected = (connection === ConnectionState.Available)
 
-    Scaffold(
-        topBar = {
-            when (currentRoute(navController)) {
-                BottomBarScreen.Home.route,
-                BottomBarScreen.MealInfo.route,
-                BottomBarScreen.Shopping.route,
-                Screen.AddMoney.route,
-                Screen.ShopEntry.route,
-                Screen.Balance.route,
-                Screen.ShoppingHistory.route,
-                BottomBarScreen.Profile.route -> {
-                    CustomTopAppBar(
-                        title = when (currentRoute(navController)) {
-                            BottomBarScreen.Home.route -> {
-                                BottomBarScreen.Home.title
-                            }
+    Scaffold(topBar = {
+        when (currentRoute(navController)) {
+            BottomBarScreen.Home.route, BottomBarScreen.MealInfo.route, BottomBarScreen.Shopping.route, Screen.AddMoney.route, Screen.ShopEntry.route, Screen.Balance.route, Screen.ShoppingHistory.route, BottomBarScreen.Profile.route -> {
+                CustomTopAppBar(title = when (currentRoute(navController)) {
+                    BottomBarScreen.Home.route -> {
+                        BottomBarScreen.Home.title
+                    }
 
-                            BottomBarScreen.MealInfo.route -> {
-                                BottomBarScreen.MealInfo.title
-                            }
+                    BottomBarScreen.MealInfo.route -> {
+                        BottomBarScreen.MealInfo.title
+                    }
 
-                            BottomBarScreen.Shopping.route -> {
-                                BottomBarScreen.Shopping.title
-                            }
+                    BottomBarScreen.Shopping.route -> {
+                        BottomBarScreen.Shopping.title
+                    }
 
-                            BottomBarScreen.Profile.route -> {
-                                BottomBarScreen.Profile.title
-                            }
+                    BottomBarScreen.Profile.route -> {
+                        BottomBarScreen.Profile.title
+                    }
 
-                            Screen.AddMoney.route -> {
-                                Screen.AddMoney.title
-                            }
+                    Screen.AddMoney.route -> {
+                        Screen.AddMoney.title
+                    }
 
-                            Screen.ShopEntry.route -> {
-                                Screen.ShopEntry.title
-                            }
+                    Screen.ShopEntry.route -> {
+                        Screen.ShopEntry.title
+                    }
 
-                            Screen.Balance.route -> {
-                                Screen.Balance.title
-                            }
+                    Screen.Balance.route -> {
+                        Screen.Balance.title
+                    }
 
-                            Screen.ShoppingHistory.route -> {
-                                Screen.ShoppingHistory.title
-                            }
+                    Screen.ShoppingHistory.route -> {
+                        Screen.ShoppingHistory.title
+                    }
 
-                            else -> {
-                                null
-                            }
-                        },
-                        canLogout = when (currentRoute(navController)) {
-                            BottomBarScreen.Home.route -> {
-                                true
-                            }
-
-                            else -> {
-                                false
-                            }
-                        },
-                        canNavigateBack = when (currentRoute(navController)) {
-                            Screen.AddMoney.route,
-                            Screen.ShopEntry.route,
-                            Screen.Balance.route,
-                            Screen.ShoppingHistory.route -> {
-                                true
-                            }
-                            else -> {
-                                false
-                            }
-                        }, logoutAction = {
-                            authViewModel.logout()
-                            viewModel.saveLoginStatus(false)
-                            logoutAndNavigateToLoginPage(navController)
-                        }, scrollBehavior = scrollBehavior,
-                        navigateUp = {
-                            navController.popBackStack()
+                    else -> {
+                        null
+                    }
+                },
+                    showAction = when (currentRoute(navController)) {
+                        BottomBarScreen.Shopping.route -> {
+                            true
                         }
-                    )
-                }
+
+                        else -> {
+                            false
+                        }
+                    },
+                    actionIcon = if (viewModel.listType.value == ListType.List) R.drawable.ic_grid else R.drawable.ic_list,
+                    onClickAction = {
+                        viewModel.toggleList()
+                    },
+                    canLogout = when (currentRoute(navController)) {
+                        BottomBarScreen.Home.route -> {
+                            true
+                        }
+
+                        else -> {
+                            false
+                        }
+                    },
+                    canNavigateBack = when (currentRoute(navController)) {
+                        Screen.AddMoney.route, Screen.ShopEntry.route, Screen.Balance.route, Screen.ShoppingHistory.route -> {
+                            true
+                        }
+
+                        else -> {
+                            false
+                        }
+                    },
+                    logoutAction = {
+                        authViewModel.logout()
+                        viewModel.saveLoginStatus(false)
+                        logoutAndNavigateToLoginPage(navController)
+                    },
+                    scrollBehavior = scrollBehavior,
+                    navigateUp = {
+                        navController.popBackStack()
+                    })
             }
-        },
-        bottomBar = {
-            when (currentRoute(navController)) {
-                BottomBarScreen.Home.route, BottomBarScreen.MealInfo.route, BottomBarScreen.Shopping.route, BottomBarScreen.Profile.route -> {
-                    BottomBar(navController = navController)
-                }
+        }
+    }, bottomBar = {
+        when (currentRoute(navController)) {
+            BottomBarScreen.Home.route, BottomBarScreen.MealInfo.route, BottomBarScreen.Shopping.route, BottomBarScreen.Profile.route -> {
+                BottomBar(navController = navController)
             }
-        },
-        snackbarHost = {
-            if (isConnected.not()) {
-                Snackbar(action = {}, modifier = Modifier.padding(8.dp)) {
-                    Text(text = "There is no internet")
-                }
+        }
+    }, snackbarHost = {
+        if (isConnected.not()) {
+            Snackbar(action = {}, modifier = Modifier.padding(8.dp)) {
+                Text(text = "There is no internet")
             }
-        }) {
+        }
+    }) {
         Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier.padding(
-                top = it.calculateTopPadding(),
-                bottom = it.calculateBottomPadding()
+            contentAlignment = Alignment.Center, modifier = Modifier.padding(
+                top = it.calculateTopPadding(), bottom = it.calculateBottomPadding()
             )
         ) {
             BottomNavGraph(
@@ -161,7 +164,6 @@ fun MainScreen(viewModel: MainViewModel) {
 
     }
 }
-
 
 @Composable
 fun currentRoute(navController: NavController): String? {
@@ -220,8 +222,7 @@ fun RowScope.AddDestination(
         },
         icon = {
             Icon(
-                painter = painterResource(id = screen.icon),
-                contentDescription = "Navigation Icon"
+                painter = painterResource(id = screen.icon), contentDescription = "Navigation Icon"
             )
         },
         colors = NavigationBarItemDefaults.colors(

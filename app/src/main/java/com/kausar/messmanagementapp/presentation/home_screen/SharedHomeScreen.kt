@@ -22,6 +22,7 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -125,8 +126,7 @@ fun SharedHomeScreen(
             Box(
                 Modifier
                     .fillMaxHeight()
-                    .fillMaxWidth(1f),
-                contentAlignment = Alignment.Center
+                    .fillMaxWidth(1f), contentAlignment = Alignment.Center
             ) {
 
                 CustomProgressBar(msg = progMsg)
@@ -134,9 +134,7 @@ fun SharedHomeScreen(
             }
         }
         Column(
-            Modifier
-                .fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally
+            Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally
         ) {
             if (newMeal) {
                 Spacer(modifier = Modifier.width(16.dp))
@@ -146,8 +144,7 @@ fun SharedHomeScreen(
                         .border(1.dp, Color.Transparent, RoundedCornerShape(4.dp))
                         .padding(8.dp)) {
                     Text(
-                        text = presentingDate,
-                        textAlign = TextAlign.Center
+                        text = presentingDate, textAlign = TextAlign.Center
                     )
 
                     Spacer(modifier = Modifier.width(16.dp))
@@ -186,26 +183,23 @@ fun SharedHomeScreen(
                             numberOfLunch = it.lunch.toString(),
                             numberOfDinner = it.dinner.toString()
                         )
+                    } ?: if (mealCnt.error.isNotEmpty()) {
+                        Text(
+                            text = mealCnt.error, modifier = Modifier.padding(top = 16.dp)
+                        )
+                    } else {
+                        CircularProgressIndicator(Modifier.padding(top = 8.dp))
                     }
-                        ?: if (mealCnt.error.isNotEmpty()) {
-                            Text(
-                                text = mealCnt.error,
-                                modifier = Modifier.padding(top = 16.dp)
-                            )
-                        } else {
-                            CircularProgressIndicator(Modifier.padding(top = 8.dp))
-                        }
 
                 }
             }
             if (newMeal) {
                 Spacer(modifier = Modifier.height(16.dp))
-                AddNewMeal(
-                    onCancel = {
-                        newMeal = false
-                        selectedDate = getDate(temp)
-                        presentingDate = fetchDateAsString(temp)
-                    },
+                AddNewMeal(onCancel = {
+                    newMeal = false
+                    selectedDate = getDate(temp)
+                    presentingDate = fetchDateAsString(temp)
+                },
                     selectedDate = selectedDate,
                     viewModel = viewModel,
                     updateMeal = { breakfast, lunch, dinner ->
@@ -248,18 +242,13 @@ fun SharedHomeScreen(
                                 }
                             }
                         }
-                    }
-                ) { breakfast, lunch, dinner ->
+                    }) { breakfast, lunch, dinner ->
                     progMsg = "Inserting new meal..."
                     showToast = true
                     scope.launch {
                         viewModel.insert(
                             MealInfo(
-                                selectedDate,
-                                getDayName(presentingDate),
-                                breakfast,
-                                lunch,
-                                dinner
+                                selectedDate, getDayName(presentingDate), breakfast, lunch, dinner
                             )
                         ).collectLatest { result ->
                             when (result) {
@@ -294,17 +283,17 @@ fun SharedHomeScreen(
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = today,
-                        textAlign = TextAlign.Center, fontWeight = FontWeight.Bold
-                    )
+                    Text(text = today,
+                        textAlign = TextAlign.Center,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.clickable {
+                            newMeal = true
+                        })
                     Spacer(modifier = Modifier.width(16.dp))
-                    Icon(
-                        imageVector = Icons.Default.AddCircle,
+                    Icon(imageVector = Icons.Default.AddCircle,
                         contentDescription = "add meal",
                         tint = MaterialTheme.colorScheme.secondary,
-                        modifier = Modifier.clickable { newMeal = true }
-                    )
+                        modifier = Modifier.clickable { newMeal = true })
 
                 }
                 if (mealInfoState.success.isNotEmpty()) {
@@ -324,8 +313,7 @@ fun ShowMessage(mealInfoState: FirebaseFirestoreDbViewModel.SingleMeal) {
     Box(
         Modifier
             .fillMaxHeight()
-            .fillMaxWidth(1f),
-        contentAlignment = Alignment.Center
+            .fillMaxWidth(1f), contentAlignment = Alignment.Center
     ) {
         if (mealInfoState.isLoading) {
             CustomProgressBar(msg = "Fetching meal info...")
@@ -350,8 +338,7 @@ fun PopUpOption(onDismiss: () -> Unit, onSelect: (String, String) -> Unit) {
 
     for (i in 1..3) {
         calendar.add(Calendar.DATE, 1)
-        if (month != calendar[Calendar.MONTH])
-            break
+        if (month != calendar[Calendar.MONTH]) break
         val date = fetchDateAsString(calendar)
         dates.add(date)
 
@@ -359,24 +346,20 @@ fun PopUpOption(onDismiss: () -> Unit, onSelect: (String, String) -> Unit) {
         firestoreDates.add(firestoreDate)
     }
 
-    DropdownMenu(
-        expanded = expanded,
-        onDismissRequest = {
-            expanded = false
-            onDismiss()
-        }
-    ) {
+    DropdownMenu(expanded = expanded, onDismissRequest = {
+        expanded = false
+        onDismiss()
+    }) {
 
         repeat(dates.size) {
-            DropdownMenuItem(
-                text = {
-                    Text(text = dates[it])
-                },
-                onClick = {
-                    expanded = false
-                    onSelect(dates[it], firestoreDates[it])
-                }
-            )
+            DropdownMenuItem(colors = MenuDefaults.itemColors(
+                textColor = MaterialTheme.colorScheme.background
+            ), text = {
+                Text(text = dates[it])
+            }, onClick = {
+                expanded = false
+                onSelect(dates[it], firestoreDates[it])
+            })
         }
     }
 

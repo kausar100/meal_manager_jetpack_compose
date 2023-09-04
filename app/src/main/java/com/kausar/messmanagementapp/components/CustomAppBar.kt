@@ -14,7 +14,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -26,7 +26,7 @@ fun CustomTopAppBar(
     title: String? = null,
     canNavigateBack: Boolean = true,
     showAction: Boolean = false,
-    actionIcon: ImageVector? = null,
+    actionIcon: Int? = null,
     onClickAction: (() -> Unit)? = null,
     canLogout: Boolean = true,
     logoutAction: (() -> Unit)? = null,
@@ -66,7 +66,7 @@ fun CustomTopAppBar(
                         }
                     }, Modifier.padding(end = 16.dp)) {
                         Icon(
-                            imageVector = actionIcon,
+                            painter = painterResource(id = actionIcon),
                             contentDescription = "action"
                         )
                     }

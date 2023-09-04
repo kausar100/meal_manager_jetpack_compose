@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material3.ButtonDefaults
@@ -48,6 +47,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.gson.Gson
+import com.kausar.messmanagementapp.R
 import com.kausar.messmanagementapp.components.CustomDropDownMenu
 import com.kausar.messmanagementapp.components.CustomOutlinedTextField
 import com.kausar.messmanagementapp.components.CustomToast
@@ -83,7 +83,7 @@ fun RegistrationScreen(
                 CustomTopAppBar(
                     title = Screen.SignUp.title,
                     showAction = true,
-                    actionIcon = Icons.Default.Info,
+                    actionIcon = R.drawable.ic_info,
                     onClickAction = {
                         showAboutScreen = true
                     },

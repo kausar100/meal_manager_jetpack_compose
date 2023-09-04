@@ -50,7 +50,7 @@ import com.kausar.messmanagementapp.data.model.User
 import com.kausar.messmanagementapp.presentation.shopping_info.shared.ChooseDate
 import com.kausar.messmanagementapp.presentation.shopping_info.shared.DialogInformation
 import com.kausar.messmanagementapp.presentation.shopping_info.shared.SharedShoppingInfo
-import com.kausar.messmanagementapp.presentation.shopping_info.shared.SingleMoney
+import com.kausar.messmanagementapp.presentation.shopping_info.shared.MoneyRow
 import com.kausar.messmanagementapp.presentation.viewmodels.MainViewModel
 import com.kausar.messmanagementapp.utils.getDate
 import com.kausar.messmanagementapp.utils.getTime
@@ -107,7 +107,7 @@ fun AddMoney(mainViewModel: MainViewModel, navController: NavHostController) {
                     .fillMaxWidth()
             ) {
                 items(listSize) { index ->
-                    SingleMoney(info = listInfo[index])
+                    MoneyRow(info = listInfo[index])
                 }
             }
         }

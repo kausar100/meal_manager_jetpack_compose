@@ -13,6 +13,7 @@ import com.kausar.messmanagementapp.data.model.Mess
 import com.kausar.messmanagementapp.data.model.User
 import com.kausar.messmanagementapp.data.shared_pref.LoginDataStore
 import com.kausar.messmanagementapp.presentation.home_screen.Keys
+import com.kausar.messmanagementapp.presentation.shopping_info.ListType
 import com.kausar.messmanagementapp.utils.ResultState
 import com.kausar.messmanagementapp.utils.getDate
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -23,8 +24,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
-    private val loginPref: LoginDataStore,
-    private val firestoreRepo: FirebaseFirestoreRepo
+    private val loginPref: LoginDataStore, private val firestoreRepo: FirebaseFirestoreRepo
 ) : ViewModel() {
     private val _loginStatus = mutableStateOf(false)
     val isLoggedIn: State<Boolean> = _loginStatus
@@ -83,6 +83,13 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    private var _listType = mutableStateOf(ListType.Grid)
+    val listType: State<ListType> = _listType
+
+    fun toggleList() {
+        _listType.value = if (_listType.value == ListType.List) ListType.Grid else ListType.List
+    }
+
     fun getMessMembers() {
         viewModelScope.launch {
             firestoreRepo.getMessMembers().collectLatest { result ->
@@ -126,8 +133,7 @@ class MainViewModel @Inject constructor(
             when (result) {
                 is ResultState.Success -> {
                     _currentUserMealCnt.value = SingleMealCountState(
-                        cnt = result.data,
-                        success = "Meal count fetched successfully!"
+                        cnt = result.data, success = "Meal count fetched successfully!"
                     )
                 }
 

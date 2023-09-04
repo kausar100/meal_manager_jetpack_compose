@@ -244,7 +244,8 @@ fun NewShopEntry(mainViewModel: MainViewModel, navController: NavHostController)
                                 text = "Item Details",
                                 fontWeight = FontWeight.Bold,
                                 modifier = Modifier
-                                    .padding(4.dp)
+                                    .padding(top = 4.dp)
+                                    .padding(horizontal = 4.dp)
                             )
                         }
                     }
@@ -281,7 +282,8 @@ fun NewShopEntry(mainViewModel: MainViewModel, navController: NavHostController)
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(4.dp),
+                                .padding(horizontal = 4.dp)
+                                .padding(top = 8.dp),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
