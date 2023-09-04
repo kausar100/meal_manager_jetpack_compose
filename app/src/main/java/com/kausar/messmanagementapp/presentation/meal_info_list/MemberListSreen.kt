@@ -26,6 +26,7 @@ import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
@@ -214,6 +215,7 @@ fun MealInfoScreen(
         if (showMealInfoScreen) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.BottomCenter) {
                 AlertDialog(
+                    containerColor = MaterialTheme.colorScheme.background,
                     onDismissRequest = {
                         showMealInfoScreen = false
                     },
@@ -245,6 +247,10 @@ fun MealInfoScreen(
                     },
                     confirmButton = {
                         Button(
+                            colors=ButtonDefaults.buttonColors(
+                                contentColor = MaterialTheme.colorScheme.background,
+                                containerColor = MaterialTheme.colorScheme.secondary
+                            ),
                             onClick = {
                                 showMealInfoScreen = false
                             },
@@ -278,8 +284,7 @@ fun MealInfoTable(itemState: FirebaseFirestoreDbViewModel.ItemState) {
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .shadow(
-                                    elevation = 1.dp,
-                                    clip = true
+                                    elevation = 1.dp, clip = true
                                 ),
                             mealListTitle
                         )

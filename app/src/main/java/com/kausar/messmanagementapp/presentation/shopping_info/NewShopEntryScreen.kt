@@ -58,6 +58,9 @@ import androidx.navigation.NavHostController
 import com.kausar.messmanagementapp.components.CustomDropDownMenu
 import com.kausar.messmanagementapp.data.model.ShoppingItem
 import com.kausar.messmanagementapp.data.model.User
+import com.kausar.messmanagementapp.presentation.shopping_info.shared.ChooseDate
+import com.kausar.messmanagementapp.presentation.shopping_info.shared.DialogInformation
+import com.kausar.messmanagementapp.presentation.shopping_info.shared.SharedShoppingInfo
 import com.kausar.messmanagementapp.presentation.viewmodels.MainViewModel
 import com.kausar.messmanagementapp.utils.getDate
 import kotlinx.coroutines.launch
@@ -67,7 +70,7 @@ import java.util.Calendar
 fun NewShopEntry(mainViewModel: MainViewModel, navController: NavHostController) {
     val memberInfo = mainViewModel.memberInfo.value
 
-    val memberNames = getNames(memberInfo.listOfMember)
+    val memberNames = SharedShoppingInfo.getNames(memberInfo.listOfMember)
 
     var amount by remember {
         mutableStateOf("")
@@ -141,7 +144,7 @@ fun NewShopEntry(mainViewModel: MainViewModel, navController: NavHostController)
                         selectedItem = memberName,
                         onSelect = {
                             memberName = it
-                            selectedMember = getUser(memberInfo.listOfMember, memberName)
+                            selectedMember = SharedShoppingInfo.getUser(memberInfo.listOfMember, memberName)
                         })
                     ChooseDate(
                         modifier = Modifier
@@ -339,21 +342,6 @@ fun calculateCost(itemInfo: MutableList<ShoppingItem>): String {
         }
     }
     return if (amount == 0.0) "" else amount.toString()
-}
-
-@Composable
-fun DialogInformation(title: String, data: String) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(4.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Text(text = title, fontWeight = FontWeight.Bold)
-        Text(text = data)
-    }
-
 }
 
 @Composable

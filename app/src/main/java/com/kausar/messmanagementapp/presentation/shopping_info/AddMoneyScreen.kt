@@ -45,8 +45,12 @@ import androidx.navigation.NavHostController
 import com.kausar.messmanagementapp.R
 import com.kausar.messmanagementapp.components.CustomDropDownMenu
 import com.kausar.messmanagementapp.components.CustomOutlinedTextField
-import com.kausar.messmanagementapp.data.model.AddMoneyModel
+import com.kausar.messmanagementapp.data.model.AddMoney
 import com.kausar.messmanagementapp.data.model.User
+import com.kausar.messmanagementapp.presentation.shopping_info.shared.ChooseDate
+import com.kausar.messmanagementapp.presentation.shopping_info.shared.DialogInformation
+import com.kausar.messmanagementapp.presentation.shopping_info.shared.SharedShoppingInfo
+import com.kausar.messmanagementapp.presentation.shopping_info.shared.SingleMoney
 import com.kausar.messmanagementapp.presentation.viewmodels.MainViewModel
 import com.kausar.messmanagementapp.utils.getDate
 import com.kausar.messmanagementapp.utils.getTime
@@ -60,7 +64,7 @@ fun AddMoney(mainViewModel: MainViewModel, navController: NavHostController) {
     val memberInfo = mainViewModel.memberInfo.value
 
     val listInfo by remember {
-        mutableStateOf(mutableListOf<AddMoneyModel>())
+        mutableStateOf(mutableListOf<AddMoney>())
     }
 
     var listSize by remember {
@@ -72,7 +76,7 @@ fun AddMoney(mainViewModel: MainViewModel, navController: NavHostController) {
     }
 
     var save by remember {
-        mutableStateOf(AddMoneyModel())
+        mutableStateOf(AddMoney())
     }
 
     Box(
@@ -89,7 +93,7 @@ fun AddMoney(mainViewModel: MainViewModel, navController: NavHostController) {
             }) { member, date, amount ->
                 val currentTime = getTime(Calendar.getInstance())
                 Log.d("time : ", currentTime)
-                save = AddMoneyModel(
+                save = AddMoney(
                     userId = member.userId,
                     userName = member.userName,
                     date = date,
@@ -103,7 +107,7 @@ fun AddMoney(mainViewModel: MainViewModel, navController: NavHostController) {
                     .fillMaxWidth()
             ) {
                 items(listSize) { index ->
-                    SingleMoney(listInfo[index])
+                    SingleMoney(info = listInfo[index])
                 }
             }
         }
@@ -191,56 +195,6 @@ fun AddMoney(mainViewModel: MainViewModel, navController: NavHostController) {
 
 }
 
-fun getNames(members: List<User>): List<String> {
-    val names = mutableListOf<String>()
-    if (members.isNotEmpty()) {
-        for (member in members) {
-            names.add(member.userName)
-        }
-    }
-    return names
-
-}
-
-fun getUser(members: List<User>, name: String): User {
-    var selectedMember = User()
-    for (member in members) {
-        if (member.userName == name) {
-            selectedMember = member
-            break
-        }
-    }
-    return selectedMember
-}
-
-@Composable
-fun SingleMoney(info: AddMoneyModel) {
-    Card(
-        Modifier.padding(vertical = 4.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primary,
-            contentColor = MaterialTheme.colorScheme.secondary
-        ),
-        elevation = CardDefaults.elevatedCardElevation(),
-        shape = RoundedCornerShape(4.dp)
-    ) {
-        Row(
-            Modifier
-                .fillMaxWidth()
-                .padding(vertical = 8.dp, horizontal = 16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Column(verticalArrangement = Arrangement.Center) {
-                Text(text = info.date)
-                Text(text = info.userName)
-            }
-            Text(text = "${info.amount} Tk")
-        }
-    }
-
-}
-
 @Composable
 fun AddMoneyHeader(
     members: List<User>,
@@ -248,7 +202,7 @@ fun AddMoneyHeader(
     addMoney: (User, String, String) -> Unit
 ) {
 
-    val memberNames = getNames(members)
+    val memberNames = SharedShoppingInfo.getNames(members)
 
     var amount by remember {
         mutableStateOf("")
@@ -296,7 +250,7 @@ fun AddMoneyHeader(
                 selectedItem = memberName,
                 onSelect = {
                     memberName = it
-                    selectedMember = getUser(members, memberName)
+                    selectedMember = SharedShoppingInfo.getUser(members, memberName)
                 })
             ChooseDate(
                 modifier = Modifier

@@ -1,4 +1,4 @@
-package com.kausar.messmanagementapp.presentation.shopping_info
+package com.kausar.messmanagementapp.presentation.shopping_info.shared
 
 import android.app.DatePickerDialog
 import android.widget.DatePicker
