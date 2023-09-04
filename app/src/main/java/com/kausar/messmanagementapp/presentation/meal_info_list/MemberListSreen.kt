@@ -163,7 +163,7 @@ fun MealInfoScreen(
                             items(
                                 memberState.listOfMember,
                             ) { user ->
-                                ShowUser(user, false, onClickUser = {
+                                ShowUser(user, expand = false, onClickUser = {
                                     scope.launch {
                                         viewModel.getMealByUserId(user.userId)
                                         delay(500)
@@ -396,6 +396,7 @@ fun ShowInfo(modifier: Modifier, item: MealInfo) {
 @Composable
 fun ShowUser(
     userInfo: User,
+    showInfo: Boolean = true,
     expand: Boolean = false,
     onClickUser: () -> Unit = {},
     onClickInfo: () -> Unit = {}
@@ -460,12 +461,15 @@ fun ShowUser(
                     }
                     if (!expand) {
                         Spacer(modifier = Modifier.width(8.dp))
-                        IconButton(onClick = onClickInfo) {
-                            Icon(
-                                imageVector = Icons.Default.Info,
-                                contentDescription = "meal_info"
-                            )
+                        if(showInfo){
+                            IconButton(onClick = onClickInfo) {
+                                Icon(
+                                    imageVector = Icons.Default.Info,
+                                    contentDescription = "meal_info"
+                                )
+                            }
                         }
+
                     }
 
                 }
@@ -474,6 +478,4 @@ fun ShowUser(
             overlineText = { Text(text = userInfo.userType) }
         )
     }
-
-
 }

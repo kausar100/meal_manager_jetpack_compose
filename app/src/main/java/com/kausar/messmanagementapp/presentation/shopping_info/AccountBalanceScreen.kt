@@ -66,8 +66,11 @@ fun AccountBalance(mainViewModel: MainViewModel, navController: NavHostControlle
                 ) {
                     val members = memberInfo.listOfMember
                     repeat(members.size) {
-                        DialogInformation(title = members[it].userName, data = "1000")
+                        DialogInformation(title = members[it].userName, data = "1000 Tk")
                     }
+
+                    DialogInformation(title = "Total", data = "2000 Tk")
+
                 }
 
             }
@@ -88,7 +91,11 @@ fun ShowUserInformation(user: User) {
 
     var expand by remember { mutableStateOf(false) }
     Column(Modifier.animateContentSize(tween(500, easing = EaseInOut))) {
-        ShowUser(userInfo = user, onClickUser = { expand = !expand }, onClickInfo = {})
+        ShowUser(
+            userInfo = user,
+            showInfo = false,
+            expand = expand,
+            onClickUser = { expand = !expand })
         if (expand) {
             Spacer(modifier = Modifier.height(4.dp))
             LazyRow {
