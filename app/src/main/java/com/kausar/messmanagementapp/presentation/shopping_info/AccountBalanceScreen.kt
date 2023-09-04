@@ -36,7 +36,6 @@ import com.kausar.messmanagementapp.presentation.meal_info_list.ShowUser
 import com.kausar.messmanagementapp.presentation.shopping_info.shared.DialogInformation
 import com.kausar.messmanagementapp.presentation.shopping_info.shared.MoneyInfo
 import com.kausar.messmanagementapp.presentation.viewmodels.MainViewModel
-import com.kausar.messmanagementapp.utils.fetchCurrentMonthName
 
 @Composable
 fun AccountBalance(mainViewModel: MainViewModel, navController: NavHostController) {
@@ -65,14 +64,14 @@ fun AccountBalance(mainViewModel: MainViewModel, navController: NavHostControlle
                         .padding(8.dp),
                     verticalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    DialogInformation(title = "Date", data = fetchCurrentMonthName())
-                    DialogInformation(title = "Total meal", data = "244")
-                    DialogInformation(title = "Total Shopping cost", data = "17000")
-                    DialogInformation(title = "Cost per meal", data = "60")
-                    DialogInformation(title = "Remaining Money", data = "100")
+                    val members = memberInfo.listOfMember
+                    repeat(members.size) {
+                        DialogInformation(title = members[it].userName, data = "1000")
+                    }
                 }
 
             }
+
             LazyColumn(Modifier.fillMaxHeight()) {
                 items(memberInfo.listOfMember) { member ->
                     ShowUserInformation(user = member)
@@ -96,7 +95,7 @@ fun ShowUserInformation(user: User) {
                 itemsIndexed(listAddMoney) { index, info ->
                     MoneyInfo(
                         modifier = Modifier
-                            .width(widthInDp/2.15f)
+                            .width(widthInDp / 2.15f)
                             .padding(
                                 start = if (index == 0) 0.dp else 4.dp,
                                 end = if (index == listAddMoney.lastIndex) 0.dp else 4.dp

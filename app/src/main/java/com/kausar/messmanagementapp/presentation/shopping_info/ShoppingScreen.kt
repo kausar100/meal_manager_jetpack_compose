@@ -32,7 +32,9 @@ import androidx.navigation.NavHostController
 import com.kausar.messmanagementapp.data.model.ShoppingInfo
 import com.kausar.messmanagementapp.data.model.ShoppingListItem
 import com.kausar.messmanagementapp.navigation.Screen
+import com.kausar.messmanagementapp.presentation.shopping_info.shared.DialogInformation
 import com.kausar.messmanagementapp.presentation.viewmodels.MainViewModel
+import com.kausar.messmanagementapp.utils.fetchCurrentMonthName
 
 enum class ListType {
     List, Grid
@@ -48,6 +50,29 @@ fun ShoppingScreen(mainViewModel: MainViewModel, navController: NavHostControlle
         Column(
             Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            Card(
+                modifier = Modifier.padding(8.dp).fillMaxWidth(1f),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.secondary
+                ),
+                elevation = CardDefaults.elevatedCardElevation(),
+                shape = RoundedCornerShape(4.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
+                    verticalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    DialogInformation(title = "Date", data = fetchCurrentMonthName())
+                    DialogInformation(title = "Total meal", data = "244")
+                    DialogInformation(title = "Total Shopping cost", data = "17000")
+                    DialogInformation(title = "Cost per meal", data = "60")
+                    DialogInformation(title = "Remaining Money", data = "100")
+                }
+
+            }
             if (mainViewModel.listType.value == ListType.List) {
                 LazyColumn {
                     items(ShoppingListItem.items) { item ->
