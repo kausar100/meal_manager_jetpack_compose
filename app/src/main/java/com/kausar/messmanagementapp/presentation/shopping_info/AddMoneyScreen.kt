@@ -40,6 +40,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavHostController
 import com.kausar.messmanagementapp.R
 import com.kausar.messmanagementapp.components.CustomDropDownMenu
@@ -66,6 +67,14 @@ fun AddMoney(mainViewModel: MainViewModel, navController: NavHostController) {
         mutableStateOf(0)
     }
 
+    var showDialog by remember {
+        mutableStateOf(false)
+    }
+
+    var save by remember {
+        mutableStateOf(AddMoneyModel())
+    }
+
     Box(
         Modifier
             .fillMaxSize()
@@ -79,17 +88,14 @@ fun AddMoney(mainViewModel: MainViewModel, navController: NavHostController) {
                 navController.popBackStack()
             }) { member, date, amount ->
                 val currentTime = getTime(Calendar.getInstance())
-                Log.d( "time : ", currentTime)
-                listInfo.add(
-                    AddMoneyModel(
-                        userId = member.userId,
-                        userName = member.userName,
-                        date = date,
-                        amount = amount
-                    )
+                Log.d("time : ", currentTime)
+                save = AddMoneyModel(
+                    userId = member.userId,
+                    userName = member.userName,
+                    date = date,
+                    amount = amount
                 )
-                listSize++
-                Log.d( "AddMoney: ",listInfo.toString())
+                showDialog = true
             }
             Spacer(modifier = Modifier.height(8.dp))
             LazyColumn(
@@ -98,6 +104,86 @@ fun AddMoney(mainViewModel: MainViewModel, navController: NavHostController) {
             ) {
                 items(listSize) { index ->
                     SingleMoney(listInfo[index])
+                }
+            }
+        }
+        if (showDialog) {
+            Dialog(onDismissRequest = { showDialog = false }) {
+                Card(
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.background,
+                        contentColor = MaterialTheme.colorScheme.secondary
+                    ),
+                    elevation = CardDefaults.elevatedCardElevation(),
+                    shape = RoundedCornerShape(4.dp)
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(
+                            text = "Review entry information",
+                            fontWeight = FontWeight.Bold,
+                            style = MaterialTheme.typography.titleLarge,
+                            modifier = Modifier.padding(horizontal = 4.dp)
+                        )
+                        DialogInformation(
+                            title = "Member",
+                            data = save.userName
+                        )
+                        DialogInformation(
+                            title = "Date",
+                            data = save.date
+                        )
+
+                        DialogInformation(
+                            title = "Amount",
+                            data = "${save.amount} Tk"
+                        )
+
+                        Row(
+                            Modifier
+                                .fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceEvenly,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            OutlinedButton(
+                                onClick = {
+                                    showDialog = false
+                                }, shape = RoundedCornerShape(4.dp)
+                            ) {
+                                Text(
+                                    text = "Edit",
+                                    letterSpacing = 2.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(16.dp))
+                            ElevatedButton(
+                                onClick = {
+                                    listInfo.add(save)
+                                    listSize++
+                                    Log.d("AddMoney: ", listInfo.toString())
+                                    showDialog = false
+                                },
+                                shape = RoundedCornerShape(4.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.primary,
+                                    contentColor = MaterialTheme.colorScheme.secondary
+                                ),
+                            ) {
+                                Text(
+                                    text = "Continue",
+                                    letterSpacing = 2.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+
+                        }
+
+
+                    }
                 }
             }
         }
@@ -149,7 +235,7 @@ fun SingleMoney(info: AddMoneyModel) {
                 Text(text = info.date)
                 Text(text = info.userName)
             }
-            Text(text = "${ info.amount } Tk")
+            Text(text = "${info.amount} Tk")
         }
     }
 
