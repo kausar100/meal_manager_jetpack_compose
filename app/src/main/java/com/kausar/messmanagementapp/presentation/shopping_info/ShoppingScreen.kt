@@ -144,7 +144,7 @@ fun MenuItem(item: ShoppingScreenListInfo, gridView: Boolean = false, onItemClic
     ) {
         if (gridView) {
             Column(
-                Modifier
+                Modifier.fillMaxSize()
                     .padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
@@ -162,7 +162,7 @@ fun MenuItem(item: ShoppingScreenListInfo, gridView: Boolean = false, onItemClic
         } else {
             Row(
                 Modifier
-                    .fillMaxWidth()
+                    .fillMaxSize()
                     .padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {

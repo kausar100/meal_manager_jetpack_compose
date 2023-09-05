@@ -13,7 +13,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Edit
@@ -132,21 +134,20 @@ fun SharedHomeScreen(
                     .fillMaxHeight()
                     .fillMaxWidth(1f), contentAlignment = Alignment.Center
             ) {
-
                 CustomProgressBar(msg = progMsg)
-
             }
         }
         Column(
-            Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally
+            Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState()), horizontalAlignment = Alignment.CenterHorizontally
         ) {
             if (newMeal) {
                 Spacer(modifier = Modifier.width(16.dp))
-                Row(
-                    Modifier
-                        .clickable { showPopup = true }
-                        .border(1.dp, Color.Transparent, RoundedCornerShape(4.dp))
-                        .padding(8.dp)) {
+                Row(Modifier
+                    .clickable { showPopup = true }
+                    .border(1.dp, Color.Transparent, RoundedCornerShape(4.dp))
+                    .padding(8.dp)) {
                     Text(
                         text = presentingDate, textAlign = TextAlign.Center
                     )
@@ -181,7 +182,7 @@ fun SharedHomeScreen(
                         MealSummary(
                             modifier = Modifier
                                 .fillMaxWidth(1f)
-                                .height(screenHeight/3f),
+                                .height(screenHeight / 3f),
                             totalMeal = it.total.toString(),
                             numberOfBreakfast = it.breakfast.toString(),
                             numberOfLunch = it.lunch.toString(),
