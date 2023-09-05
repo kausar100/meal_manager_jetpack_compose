@@ -29,7 +29,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.kausar.messmanagementapp.data.model.ShoppingInfo
+import com.kausar.messmanagementapp.data.model.ShoppingScreenListInfo
 import com.kausar.messmanagementapp.data.model.ShoppingListItem
 import com.kausar.messmanagementapp.navigation.Screen
 import com.kausar.messmanagementapp.presentation.shopping_info.shared.DialogInformation
@@ -127,7 +127,7 @@ fun ShoppingScreen(mainViewModel: MainViewModel, navController: NavHostControlle
 }
 
 @Composable
-fun MenuItem(item: ShoppingInfo, gridView: Boolean = false, onItemClick: () -> Unit) {
+fun MenuItem(item: ShoppingScreenListInfo, gridView: Boolean = false, onItemClick: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxSize()

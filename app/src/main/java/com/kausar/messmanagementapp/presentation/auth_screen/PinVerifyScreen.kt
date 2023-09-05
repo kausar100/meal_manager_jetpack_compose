@@ -76,7 +76,6 @@ fun OtpVerifyScreen(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
-
     val userInformation = Gson().fromJson(info, User::class.java)
 
     var showProgress by rememberSaveable {

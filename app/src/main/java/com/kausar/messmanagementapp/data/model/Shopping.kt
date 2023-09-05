@@ -6,7 +6,7 @@ import com.kausar.messmanagementapp.R
 object ShoppingListItem {
     val itemTitles = listOf("Add Member Money", "New Shop Entry", "Account Balance", "Shopping History")
 
-    val items = mutableListOf<ShoppingInfo>()
+    val items = mutableListOf<ShoppingScreenListInfo>()
 
     init {
         repeat(itemTitles.size) {
@@ -18,14 +18,14 @@ object ShoppingListItem {
                 else -> 0
             }
             items.add(
-                ShoppingInfo(itemTitles[it], resId, itemTitles[it])
+                ShoppingScreenListInfo(itemTitles[it], resId, itemTitles[it])
             )
         }
     }
 
 }
 
-data class ShoppingInfo(
+data class ShoppingScreenListInfo(
     val title: String = "",
     val icon: Int = 0,
     val desc: String = ""
@@ -33,6 +33,32 @@ data class ShoppingInfo(
 
 data class ShoppingItem(
     val name: String = "",
-    val weight: String = "",
+    val unit: String = "",
     val price: String = ""
 )
+
+val listOfShoppingItem = (1..10).map {
+    ShoppingItem(
+        name = "item $it",
+        unit = "$it$it",
+        price = "${it*2}"
+    )
+}
+
+data class MemberShoppingList(val info: List<Shopping>)
+
+data class Shopping(
+    val member: User = User(),
+    val date: String = "",
+    val itemDetails: List<ShoppingItem> = emptyList(),
+    val totalCost: String = ""
+)
+
+val listOfShopping = (1..5).map {
+    Shopping(
+        member = User(userName = "user $it"),
+        date = "$it/09/2023",
+        itemDetails = listOfShoppingItem,
+        totalCost = "2322"
+    )
+}

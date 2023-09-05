@@ -77,8 +77,7 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun MealInfoScreen(
-    mainViewModel: MainViewModel,
-    viewModel: FirebaseFirestoreDbViewModel = hiltViewModel()
+    mainViewModel: MainViewModel, viewModel: FirebaseFirestoreDbViewModel = hiltViewModel()
 ) {
 
     val itemState = viewModel.response.value
@@ -137,8 +136,7 @@ fun MealInfoScreen(
             .padding(16.dp)
     ) {
         Column(
-            Modifier
-                .fillMaxSize(),
+            Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top
         ) {
@@ -158,31 +156,27 @@ fun MealInfoScreen(
 
             } else {
                 if (memberState.listOfMember.isNotEmpty()) {
-                    LazyColumn(
-                        content = {
-                            items(
-                                memberState.listOfMember,
-                            ) { user ->
-                                ShowUser(user, expand = false, onClickUser = {
-                                    scope.launch {
-                                        viewModel.getMealByUserId(user.userId)
-                                        delay(500)
-                                        memberInfo = user
-                                        showList = true
-                                    }
-                                },
-                                    onClickInfo = {
-                                        scope.launch {
-                                            viewModel.getMemberMealCount(user.userId)
-                                            delay(1000)
-                                            memberInfo = user
-                                            showMealInfoScreen = true
-                                        }
-                                    }
-                                )
-                            }
+                    LazyColumn(content = {
+                        items(
+                            memberState.listOfMember,
+                        ) { user ->
+                            ShowUser(user, expand = false, onClickUser = {
+                                scope.launch {
+                                    viewModel.getMealByUserId(user.userId)
+                                    delay(500)
+                                    memberInfo = user
+                                    showList = true
+                                }
+                            }, onClickInfo = {
+                                scope.launch {
+                                    viewModel.getMemberMealCount(user.userId)
+                                    delay(1000)
+                                    memberInfo = user
+                                    showMealInfoScreen = true
+                                }
+                            })
                         }
-                    )
+                    })
                 } else {
                     Box(
                         Modifier
@@ -197,8 +191,7 @@ fun MealInfoScreen(
                         } else {
                             if (memberState.listOfMember.isEmpty()) {
                                 Text(
-                                    text = "Mess member not found!",
-                                    textAlign = TextAlign.Center
+                                    text = "Mess member not found!", textAlign = TextAlign.Center
                                 )
                             }
 
@@ -214,8 +207,7 @@ fun MealInfoScreen(
         }
         if (showMealInfoScreen) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.BottomCenter) {
-                AlertDialog(
-                    containerColor = MaterialTheme.colorScheme.background,
+                AlertDialog(containerColor = MaterialTheme.colorScheme.background,
                     onDismissRequest = {
                         showMealInfoScreen = false
                     },
@@ -247,7 +239,7 @@ fun MealInfoScreen(
                     },
                     confirmButton = {
                         Button(
-                            colors=ButtonDefaults.buttonColors(
+                            colors = ButtonDefaults.buttonColors(
                                 contentColor = MaterialTheme.colorScheme.background,
                                 containerColor = MaterialTheme.colorScheme.secondary
                             ),
@@ -260,8 +252,7 @@ fun MealInfoScreen(
                     },
                     dismissButton = {
 
-                    }
-                )
+                    })
             }
 
         }
@@ -277,40 +268,34 @@ fun MealInfoTable(itemState: FirebaseFirestoreDbViewModel.ItemState) {
     ) {
         if (itemState.item.isNotEmpty()) {
             val mealResponseList = itemState.item
-            LazyColumn(
-                content = {
-                    item {
-                        ShowTitle(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .shadow(
-                                    elevation = 1.dp, clip = true
-                                ),
-                            mealListTitle
-                        )
+            LazyColumn(content = {
+                item {
+                    ShowTitle(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .shadow(
+                                elevation = 1.dp, clip = true
+                            ), mealListTitle
+                    )
 
-                    }
-                    items(
-                        mealResponseList,
-                    ) { item ->
-                        ShowInfo(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .shadow(
-                                    elevation = 1.dp,
-                                    clip = true
-                                ),
-                            item = item
-                        )
-                    }
                 }
-            )
+                items(
+                    mealResponseList,
+                ) { item ->
+                    ShowInfo(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .shadow(
+                                elevation = 1.dp, clip = true
+                            ), item = item
+                    )
+                }
+            })
         } else {
             Box(
                 Modifier
                     .fillMaxHeight()
-                    .fillMaxWidth(.9f),
-                contentAlignment = Alignment.Center
+                    .fillMaxWidth(.9f), contentAlignment = Alignment.Center
             ) {
                 if (itemState.isLoading) {
                     CustomProgressBar("Fetching data...")
@@ -331,8 +316,7 @@ fun MealInfoTable(itemState: FirebaseFirestoreDbViewModel.ItemState) {
 @Composable
 fun ShowTitle(modifier: Modifier, items: List<String>) {
     Row(
-        modifier = modifier
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+        modifier = modifier.padding(horizontal = 16.dp, vertical = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -353,8 +337,7 @@ fun ShowTitle(modifier: Modifier, items: List<String>) {
 @Composable
 fun ShowInfo(modifier: Modifier, item: MealInfo) {
     Row(
-        modifier = modifier
-            .padding(vertical = 8.dp),
+        modifier = modifier.padding(vertical = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -398,6 +381,7 @@ fun ShowUser(
     userInfo: User,
     showInfo: Boolean = true,
     expand: Boolean = false,
+    expandable: Boolean = true,
     onClickUser: () -> Unit = {},
     onClickInfo: () -> Unit = {}
 ) {
@@ -406,7 +390,8 @@ fun ShowUser(
             .padding(vertical = 8.dp)
             .clickable {
                 onClickUser()
-            }, elevation = CardDefaults.elevatedCardElevation(),
+            },
+        elevation = CardDefaults.elevatedCardElevation(),
         colors = CardDefaults.elevatedCardColors(
             containerColor = MaterialTheme.colorScheme.primary,
             contentColor = MaterialTheme.colorScheme.secondary
@@ -415,67 +400,62 @@ fun ShowUser(
     ) {
         ListItem(headlineText = {
             Text(text = userInfo.userName)
-        },
-            colors = ListItemDefaults.colors(
-                containerColor = MaterialTheme.colorScheme.primary
-            ),
-            leadingContent = {
-                if (userInfo.profilePhoto.isNotEmpty()) {
-                    AsyncImage(
-                        model = ImageRequest.Builder(LocalContext.current)
-                            .data(userInfo.profilePhoto)
-                            .crossfade(true).build(),
-                        placeholder = painterResource(id = R.drawable.ic_person),
-                        contentDescription = stringResource(id = R.string.mess_picture),
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .size(50.dp)
-                            .clip(CircleShape)
-                    )
+        }, colors = ListItemDefaults.colors(
+            containerColor = MaterialTheme.colorScheme.primary
+        ), leadingContent = {
+            if (userInfo.profilePhoto.isNotEmpty()) {
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current).data(userInfo.profilePhoto)
+                        .crossfade(true).build(),
+                    placeholder = painterResource(id = R.drawable.ic_person),
+                    contentDescription = stringResource(id = R.string.mess_picture),
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .size(50.dp)
+                        .clip(CircleShape)
+                )
 
-                } else {
-                    Icon(
-                        imageVector = Icons.Default.Person,
-                        contentDescription = "profile",
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier
-                            .size(50.dp)
-                            .border(
-                                1.dp,
-                                color = MaterialTheme.colorScheme.surface,
-                                shape = CircleShape
-                            )
-                            .background(color = Color.Transparent, shape = CircleShape)
-                            .clip(CircleShape)
-                    )
-                }
+            } else {
+                Icon(
+                    imageVector = Icons.Default.Person,
+                    contentDescription = "profile",
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier
+                        .size(50.dp)
+                        .border(
+                            1.dp, color = MaterialTheme.colorScheme.surface, shape = CircleShape
+                        )
+                        .background(color = Color.Transparent, shape = CircleShape)
+                        .clip(CircleShape)
+                )
+            }
 
-            },
-            trailingContent = {
-                Row {
+        }, trailingContent = {
+            Row {
+                if (expandable) {
                     IconButton(onClick = onClickUser) {
                         Icon(
                             imageVector = if (expand) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
                             contentDescription = "show_hide_list"
                         )
                     }
-                    if (!expand) {
-                        Spacer(modifier = Modifier.width(8.dp))
-                        if(showInfo){
-                            IconButton(onClick = onClickInfo) {
-                                Icon(
-                                    imageVector = Icons.Default.Info,
-                                    contentDescription = "meal_info"
-                                )
-                            }
-                        }
+                }
 
+                if (!expand) {
+                    Spacer(modifier = Modifier.width(8.dp))
+                    if (showInfo) {
+                        IconButton(onClick = onClickInfo) {
+                            Icon(
+                                imageVector = Icons.Default.Info,
+                                contentDescription = "meal_info"
+                            )
+                        }
                     }
 
                 }
 
-            },
-            overlineText = { Text(text = userInfo.userType) }
-        )
+            }
+
+        }, overlineText = { Text(text = userInfo.userType) })
     }
 }

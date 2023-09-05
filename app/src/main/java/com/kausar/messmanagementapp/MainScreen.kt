@@ -56,7 +56,7 @@ fun MainScreen(viewModel: MainViewModel) {
 
     Scaffold(topBar = {
         when (currentRoute(navController)) {
-            BottomBarScreen.Home.route, BottomBarScreen.MealInfo.route, BottomBarScreen.Shopping.route, Screen.AddMoney.route, Screen.ShopEntry.route, Screen.Balance.route, Screen.ShoppingHistory.route, BottomBarScreen.Profile.route -> {
+            BottomBarScreen.Home.route, BottomBarScreen.MealInfo.route, BottomBarScreen.Shopping.route, Screen.AddMoney.route, Screen.ShopEntry.route, Screen.Balance.route, Screen.ShoppingHistory.route, Screen.ShoppingList.route, BottomBarScreen.Profile.route -> {
                 CustomTopAppBar(title = when (currentRoute(navController)) {
                     BottomBarScreen.Home.route -> {
                         BottomBarScreen.Home.title
@@ -90,6 +90,10 @@ fun MainScreen(viewModel: MainViewModel) {
                         Screen.ShoppingHistory.title
                     }
 
+                    Screen.ShoppingList.route -> {
+                        Screen.ShoppingList.title
+                    }
+
                     else -> {
                         null
                     }
@@ -117,7 +121,7 @@ fun MainScreen(viewModel: MainViewModel) {
                         }
                     },
                     canNavigateBack = when (currentRoute(navController)) {
-                        Screen.AddMoney.route, Screen.ShopEntry.route, Screen.Balance.route, Screen.ShoppingHistory.route -> {
+                        Screen.AddMoney.route, Screen.ShopEntry.route, Screen.Balance.route, Screen.ShoppingHistory.route, Screen.ShoppingList.route -> {
                             true
                         }
 

@@ -160,7 +160,7 @@ fun NewShopEntry(mainViewModel: MainViewModel, navController: NavHostController)
                         selectedDate = it
                     }
                     Spacer(modifier = Modifier.height(8.dp))
-                    ShoppingInformation {
+                    ShoppingItemInfo {
                         itemInformation = it
                         amount = calculateCost(it)
                     }
@@ -271,7 +271,7 @@ fun NewShopEntry(mainViewModel: MainViewModel, navController: NavHostController)
                             ) {
                                 Text(text = info.name)
 
-                                Text(text = info.weight)
+                                Text(text = info.unit)
 
                                 Text(text = info.price)
 
@@ -347,7 +347,7 @@ fun calculateCost(itemInfo: MutableList<ShoppingItem>): String {
 }
 
 @Composable
-fun ShoppingInformation(info: (MutableList<ShoppingItem>) -> Unit) {
+fun ShoppingItemInfo(info: (MutableList<ShoppingItem>) -> Unit) {
 
     val rows by remember {
         mutableStateOf(mutableListOf<ShoppingItem>())
@@ -454,9 +454,9 @@ fun SingleRow(item: ShoppingItem, onChanged: (ShoppingItem) -> Unit) {
             )
         )
         OutlinedTextField(
-            value = value.weight,
+            value = value.unit,
             onValueChange = {
-                value = value.copy(weight = it)
+                value = value.copy(unit = it)
                 onChanged(value)
             },
             modifier = Modifier
@@ -467,7 +467,7 @@ fun SingleRow(item: ShoppingItem, onChanged: (ShoppingItem) -> Unit) {
                 imeAction = ImeAction.Next
             ),
             singleLine = true,
-            label = { Text(text = "Amount") },
+            label = { Text(text = "Unit") },
             keyboardActions = KeyboardActions(
                 onDone = {
                     focusManager.moveFocus(FocusDirection.Next)

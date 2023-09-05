@@ -23,6 +23,7 @@ import com.kausar.messmanagementapp.presentation.shopping_info.AccountBalance
 import com.kausar.messmanagementapp.presentation.shopping_info.AddMoney
 import com.kausar.messmanagementapp.presentation.shopping_info.NewShopEntry
 import com.kausar.messmanagementapp.presentation.shopping_info.ShoppingHistory
+import com.kausar.messmanagementapp.presentation.shopping_info.ShoppingListInformation
 import com.kausar.messmanagementapp.presentation.shopping_info.ShoppingScreen
 import com.kausar.messmanagementapp.presentation.viewmodels.MainViewModel
 
@@ -46,9 +47,9 @@ fun BottomNavGraph(
     isLoggedIn: Boolean,
     startDestination: String
 ) {
+    var shoppingData = ""
     NavHost(
-        navController = navController,
-        startDestination = startDestination
+        navController = navController, startDestination = startDestination
     ) {
         composable(route = BottomBarScreen.Home.route) {
             if (mainViewModel.userInfo.value.userType == MemberType.Member.name) {
@@ -58,19 +59,25 @@ fun BottomNavGraph(
             }
         }
         composable(route = BottomBarScreen.Shopping.route) {
-            ShoppingScreen(mainViewModel,navController)
+            ShoppingScreen(mainViewModel, navController)
         }
         composable(route = Screen.AddMoney.route) {
-            AddMoney(mainViewModel,navController)
+            AddMoney(mainViewModel, navController)
+        }
+        composable(route = Screen.ShoppingList.route) {
+            ShoppingListInformation(shoppingData)
         }
         composable(route = Screen.ShopEntry.route) {
-           NewShopEntry(mainViewModel,navController)
+            NewShopEntry(mainViewModel, navController)
         }
         composable(route = Screen.Balance.route) {
-           AccountBalance(mainViewModel,navController)
+            AccountBalance(mainViewModel, navController)
         }
         composable(route = Screen.ShoppingHistory.route) {
-           ShoppingHistory(mainViewModel,navController)
+            ShoppingHistory(mainViewModel) {
+                shoppingData = it
+                navController.navigate(Screen.ShoppingList.route)
+            }
         }
         composable(route = BottomBarScreen.Profile.route) {
             ProfileScreen(mainViewModel)
@@ -125,8 +132,7 @@ fun BottomNavGraph(
                 navController.popBackStack()
                 if (isLoggedIn) {
                     navController.navigate(BottomBarScreen.Home.route)
-                } else
-                    navController.navigate(Screen.Login.route)
+                } else navController.navigate(Screen.Login.route)
             }
 
         }
