@@ -51,6 +51,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -130,6 +131,9 @@ fun MealInfoScreen(
 
     val scope = rememberCoroutineScope()
 
+    val config = LocalConfiguration.current
+    val screenHeight = config.screenHeightDp.dp
+
     Box(
         Modifier
             .fillMaxSize()
@@ -206,7 +210,7 @@ fun MealInfoScreen(
 
         }
         if (showMealInfoScreen) {
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.BottomCenter) {
+            Box(Modifier.height(screenHeight / 2f), contentAlignment = Alignment.Center) {
                 AlertDialog(containerColor = MaterialTheme.colorScheme.background,
                     onDismissRequest = {
                         showMealInfoScreen = false
@@ -217,7 +221,12 @@ fun MealInfoScreen(
                     shape = RoundedCornerShape(8.dp),
                     text = {
                         if (mealCnt.cnt == null) {
-                            Box(contentAlignment = Alignment.Center) {
+                            Box(
+                                Modifier
+                                    .fillMaxWidth(1f)
+                                    .height(screenHeight / 2.5f),
+                                contentAlignment = Alignment.Center
+                            ) {
                                 if (mealCnt.error.isNotEmpty()) {
                                     Text(text = mealCnt.error, textAlign = TextAlign.Center)
                                 } else {
@@ -228,7 +237,7 @@ fun MealInfoScreen(
                             MealSummary(
                                 modifier = Modifier
                                     .fillMaxWidth(1f)
-                                    .fillMaxHeight(.6f),
+                                    .height(screenHeight / 2.5f),
                                 totalMeal = mealCnt.cnt.total.toString(),
                                 numberOfBreakfast = mealCnt.cnt.breakfast.toString(),
                                 numberOfLunch = mealCnt.cnt.lunch.toString(),
