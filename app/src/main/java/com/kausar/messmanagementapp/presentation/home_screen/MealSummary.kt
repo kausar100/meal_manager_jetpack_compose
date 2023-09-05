@@ -14,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -68,17 +69,15 @@ fun MealSummary(
             Text(text = numberOfDinner)
         }
         Divider(Modifier.height(1.dp), color = MaterialTheme.colorScheme.primary)
-        Row(
-            Modifier
+        Text(
+            text = "Breakfast(0.5) Lunch(1.0) Dinner(1.0)",
+            fontSize = MaterialTheme.typography.titleSmall.fontSize,
+            fontWeight = FontWeight.ExtraBold,
+            textAlign = TextAlign.Center,
+            modifier = Modifier
                 .fillMaxWidth()
-                .padding(2.dp),
-            horizontalArrangement = Arrangement.Center
-        ) {
-            Text(text = "Breakfast(0.5)", fontSize = MaterialTheme.typography.titleSmall.fontSize, fontWeight = FontWeight.ExtraBold)
-            Text(text = " Lunch(1.0)", fontSize = MaterialTheme.typography.titleSmall.fontSize, fontWeight = FontWeight.ExtraBold)
-            Text(text = " Dinner(1.0)", fontSize = MaterialTheme.typography.titleSmall.fontSize, fontWeight = FontWeight.ExtraBold)
-        }
-
+                .padding(2.dp)
+        )
 
     }
 
