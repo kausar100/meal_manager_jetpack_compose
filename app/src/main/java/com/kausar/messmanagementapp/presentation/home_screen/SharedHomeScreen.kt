@@ -132,7 +132,7 @@ fun SharedHomeScreen(
             Box(
                 Modifier
                     .fillMaxHeight()
-                    .fillMaxWidth(1f), contentAlignment = Alignment.Center
+                    .fillMaxWidth(1f), contentAlignment = Alignment.BottomCenter
             ) {
                 CustomProgressBar(msg = progMsg)
             }

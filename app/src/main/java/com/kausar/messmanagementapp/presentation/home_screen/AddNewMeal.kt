@@ -13,13 +13,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ElevatedButton
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -31,6 +27,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -60,12 +57,16 @@ fun AddNewMeal(
     var lunch by rememberSaveable { mutableStateOf(false) }
     var dinner by rememberSaveable { mutableStateOf(false) }
 
-
+    val configuration = LocalConfiguration.current
+    val screenHeight = configuration.screenHeightDp.dp
 
     Box(
         Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
+        if (mealInfoState.isLoading) {
+            CustomProgressBar(msg = "Fetching meal info...")
+        }
         if (mealInfoState.success.isNotEmpty() || mealInfoState.error.isNotEmpty()) {
             LaunchedEffect(key1 = selectedDate) {
                 if (mealInfoState.success.isNotEmpty()) {
@@ -82,11 +83,11 @@ fun AddNewMeal(
             }
             Column(
                 modifier = Modifier
-                    .fillMaxHeight(),
+                    .height(screenHeight / 1.8f),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Top
             ) {
-                Column(Modifier.fillMaxHeight(.6f)) {
+                Column(Modifier.height(screenHeight / 3f)) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -198,27 +199,23 @@ fun AddNewMeal(
                         fontWeight = FontWeight.Bold
                     )
                 }
-            }
-            if (!toUpdate) {
-                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.BottomEnd) {
-                    FloatingActionButton(
-                        onClick = {
-                            toUpdate = true
-                        },
-                        containerColor = MaterialTheme.colorScheme.secondary
+                Spacer(Modifier.height(8.dp))
+                AnimatedVisibility(visible = !toUpdate) {
+                    OutlinedButton(
+                        onClick = { toUpdate = true }, shape = RoundedCornerShape(4.dp),
+                        modifier = Modifier.fillMaxWidth(1f)
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.Edit,
-                            contentDescription = "update meal",
+                        Text(
+                            text = "Edit Meal",
+                            letterSpacing = 2.sp,
+                            fontWeight = FontWeight.Bold
                         )
                     }
-                }
 
+                }
             }
         }
-        if (mealInfoState.isLoading) {
-            CustomProgressBar(msg = "Fetching meal info...")
-        }
+
     }
 
 }
