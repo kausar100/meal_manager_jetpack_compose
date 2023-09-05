@@ -35,6 +35,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -117,6 +118,9 @@ fun SharedHomeScreen(
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
 
+    val configuration = LocalConfiguration.current
+    val screenHeight = configuration.screenHeightDp.dp
+
     Box(
         Modifier
             .fillMaxSize()
@@ -177,7 +181,7 @@ fun SharedHomeScreen(
                         MealSummary(
                             modifier = Modifier
                                 .fillMaxWidth(1f)
-                                .fillMaxHeight(.4f),
+                                .height(screenHeight/3f),
                             totalMeal = it.total.toString(),
                             numberOfBreakfast = it.breakfast.toString(),
                             numberOfLunch = it.lunch.toString(),

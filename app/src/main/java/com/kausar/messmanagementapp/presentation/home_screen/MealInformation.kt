@@ -4,8 +4,8 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Checkbox
@@ -19,6 +19,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -32,15 +33,19 @@ fun MealInformation(
     var lunch by rememberSaveable { mutableStateOf(mealInfo?.lunch ?: false) }
     var dinner by rememberSaveable { mutableStateOf(mealInfo?.dinner ?: false) }
 
+    val configuration = LocalConfiguration.current
+    val screenHeight = configuration.screenHeightDp.dp
+
     Column(
         modifier = Modifier
-            .fillMaxHeight()
+            .height(screenHeight/3f)
             .padding(bottom = 8.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
     ) {
         Row(
             modifier = Modifier
+                .weight(1f)
                 .fillMaxWidth()
                 .padding(horizontal = 8.dp, vertical = 4.dp),
             verticalAlignment = Alignment.CenterVertically,
@@ -64,8 +69,8 @@ fun MealInformation(
         Divider(Modifier.padding(horizontal = 8.dp))
         Column(
             Modifier
+                .weight(3f)
                 .fillMaxWidth()
-                .fillMaxHeight()
                 .border(
                     width = 1.dp,
                     color = MaterialTheme.colorScheme.background,
