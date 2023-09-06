@@ -8,8 +8,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kausar.messmanagementapp.data.firebase_firestore.FirebaseFirestoreRepo
+import com.kausar.messmanagementapp.data.model.AddMoney
+import com.kausar.messmanagementapp.data.model.AddMoneyWithUser
 import com.kausar.messmanagementapp.data.model.MealCount
 import com.kausar.messmanagementapp.data.model.MealInfo
+import com.kausar.messmanagementapp.data.model.TotalMoneyPerMember
 import com.kausar.messmanagementapp.data.model.User
 import com.kausar.messmanagementapp.utils.ResultState
 import com.kausar.messmanagementapp.utils.getDate
@@ -40,6 +43,13 @@ class FirebaseFirestoreDbViewModel @Inject constructor(
 
     private val _singleMemberMealCount = mutableStateOf(SingleMealCount())
     val selectedMemberMealCnt: State<SingleMealCount> = _singleMemberMealCount
+
+    private val _addMoney = mutableStateOf(AddMoneyStatus())
+    val addMoneyInfo: State<AddMoneyStatus> = _addMoney
+
+    val moneyPerMember = mutableStateOf(HashMap<String, TotalMoneyPerMember>()) //userid,total money
+    val addMoneyListPerMember = mutableStateOf(HashMap<String, List<AddMoney>>()) //userId,list<info>
+    val moneySum = mutableStateOf("") //members total money
 
     fun getAllMeal(userId: String) {
         viewModelScope.launch {
@@ -95,24 +105,93 @@ class FirebaseFirestoreDbViewModel @Inject constructor(
         getMealForToday()
     }
 
+    fun addMemberMoney(data: AddMoneyWithUser) =
+        repo.addMoneyInfo(user = data.user, newEntry = data.info)
+
+    fun clearMoneyInfo() {
+        _addMoney.value = AddMoneyStatus()
+    }
+
+    private fun getTotalSum() {
+        var sum = 0.0
+        if (moneyPerMember.value.isNotEmpty()) {
+            for (money in moneyPerMember.value) {
+                if (money.value.total.isNotEmpty()) {
+                    sum += money.value.total.toDouble()
+                }
+
+            }
+        }
+        moneySum.value = sum.toString()
+    }
+
+    private fun getSum(data: List<AddMoney>): String {
+        var total = 0.0
+        if (data.isNotEmpty()) {
+            for (item in data) {
+                if (item.amount.isNotEmpty()) {
+                    total += item.amount.toDouble()
+                }
+
+            }
+        }
+        return total.toString()
+    }
+
+    fun getMoneyInfo(member: User) {
+        viewModelScope.launch {
+            repo.getUserMoneyInfo(member).collectLatest {
+                when (it) {
+                    is ResultState.Success -> {
+                        it.data?.let { data ->
+                            _addMoney.value = AddMoneyStatus(
+                                info = data
+                            )
+                            addMoneyListPerMember.value[member.userId] = data
+                            val sum = getSum(data)
+                            moneyPerMember.value[member.userId] =
+                                TotalMoneyPerMember(userId = member.userId, total = sum)
+                            getTotalSum()
+                        }
+
+                    }
+
+                    is ResultState.Failure -> {
+                        _addMoney.value = AddMoneyStatus(
+                            error = it.message.localizedMessage!!.toString()
+                        )
+                    }
+
+                    is ResultState.Loading -> {
+                        _addMoney.value = AddMoneyStatus(
+                            isLoading = true
+                        )
+                    }
+                }
+
+            }
+        }
+
+    }
+
     fun getMemberMealCount(userId: String) = viewModelScope.launch {
         repo.getSingleMealCount(userId).collectLatest { result ->
             when (result) {
                 is ResultState.Success -> {
-                    _singleMemberMealCount.value =  SingleMealCount(
+                    _singleMemberMealCount.value = SingleMealCount(
                         cnt = result.data,
                     )
-                    Log.d( "getMemberMealCount: ",selectedMemberMealCnt.value.cnt.toString())
+                    Log.d("getMemberMealCount: ", selectedMemberMealCnt.value.cnt.toString())
                 }
 
                 is ResultState.Failure -> {
-                    _singleMemberMealCount.value =  SingleMealCount(
+                    _singleMemberMealCount.value = SingleMealCount(
                         error = result.message.localizedMessage ?: "some error occurred"
                     )
                 }
 
                 is ResultState.Loading -> {
-                    _singleMemberMealCount.value =  SingleMealCount(
+                    _singleMemberMealCount.value = SingleMealCount(
                         isLoading = true
                     )
                 }
@@ -138,6 +217,7 @@ class FirebaseFirestoreDbViewModel @Inject constructor(
                     }
 
                 }
+
                 is ResultState.Failure -> {
                     _todayMeal.value = SingleMeal(
                         error = it.message.localizedMessage!!.toString()
@@ -201,6 +281,12 @@ class FirebaseFirestoreDbViewModel @Inject constructor(
 
     data class SingleMealCount(
         val cnt: MealCount? = null,
+        val error: String = "",
+        val isLoading: Boolean = false
+    )
+
+    data class AddMoneyStatus(
+        val info: List<AddMoney> = emptyList(),
         val error: String = "",
         val isLoading: Boolean = false
     )

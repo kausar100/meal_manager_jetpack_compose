@@ -71,7 +71,7 @@ fun BottomNavGraph(
             NewShopEntry(mainViewModel, navController)
         }
         composable(route = Screen.Balance.route) {
-            AccountBalance(mainViewModel, navController)
+            AccountBalance(mainViewModel)
         }
         composable(route = Screen.ShoppingHistory.route) {
             ShoppingHistory(mainViewModel) {

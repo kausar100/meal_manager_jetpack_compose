@@ -1,17 +1,22 @@
 package com.kausar.messmanagementapp.data.model
 
+import kotlin.reflect.full.memberProperties
+
 data class AddMoney(
-    val userId: String = "",
     val userName: String = "",
     val date: String = "",
     val amount: String = ""
 )
 
-val listAddMoney = (1..5).map {
-    AddMoney(
-        userId = "${it*5}abdicladljdjsjd$it",
-        userName = "user ${it+1}",
-        date = "$it/09/2023",
-        amount = "$it$it"
-    )
+data class AddMoneyWithUser(
+    val user : User = User(),
+    val info : AddMoney = AddMoney()
+)
+data class TotalMoneyPerMember(
+    val userId: String = "",
+    val total: String = ""
+)
+
+fun AddMoney.toMap(): Map<String, Any?> = AddMoney::class.memberProperties.associate {
+    it.name to it.get(this)
 }

@@ -14,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.kausar.messmanagementapp.data.model.AddMoney
 
 @Composable
@@ -56,8 +57,8 @@ fun MoneyInfo(modifier: Modifier = Modifier, info: AddMoney) {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text(text = info.date)
-            Text(text = "${info.amount} Tk")
+            Text(text = info.date, fontSize = 12.sp)
+            Text(text = "${info.amount} Tk", fontSize = 12.sp)
         }
     }
 

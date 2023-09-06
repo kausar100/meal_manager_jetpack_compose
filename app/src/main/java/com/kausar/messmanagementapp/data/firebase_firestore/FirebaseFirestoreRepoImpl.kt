@@ -7,6 +7,7 @@ import androidx.annotation.RequiresApi
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.toObject
+import com.kausar.messmanagementapp.data.model.AddMoney
 import com.kausar.messmanagementapp.data.model.MealCount
 import com.kausar.messmanagementapp.data.model.MealInfo
 import com.kausar.messmanagementapp.data.model.MemberType
@@ -40,6 +41,7 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
         const val userDb = "UserInfo"
         const val mealDb = "MealInfo"
         const val messNameDb = "MessNameInfo"
+        const val moneyDb = "MoneyInfo"
     }
 
     private fun getMonthYear(date: String): String {
@@ -157,6 +159,86 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
                         trySend(ResultState.Failure(e))
                     }
             }
+        } else {
+            trySend(ResultState.Failure(Exception("Please check your internet connection!")))
+        }
+
+        awaitClose {
+            close()
+        }
+
+    }
+
+    override fun addMoneyInfo(user: User, newEntry: AddMoney): Flow<ResultState<String>> =
+        callbackFlow {
+            trySend(ResultState.Loading)
+
+
+            val currentUser = firebaseAuth.currentUser?.uid
+
+            if (Network.isNetworkAvailable(context)) {
+
+                currentUser?.let {
+                    firestore.collection(CollectionRef.moneyDb).document(user.messName)
+                        .collection(user.messId).document(user.userId)
+                        .collection(getMonthYear)
+                        .add(newEntry.toMap())
+                        .addOnSuccessListener {
+                            it?.let {
+                                trySend(
+                                    ResultState.Success(
+                                        "Money added successfully!"
+                                    )
+                                )
+                            }
+                        }
+                        .addOnFailureListener { e ->
+                            trySend(ResultState.Failure(e))
+                        }
+
+                }
+
+            } else {
+                trySend(ResultState.Failure(Exception("Please check your internet connection!")))
+            }
+
+            awaitClose {
+                close()
+            }
+
+        }
+
+    override fun getUserMoneyInfo(user: User): Flow<ResultState<List<AddMoney>>> = callbackFlow {
+        trySend(ResultState.Loading)
+
+
+        val currentUser = firebaseAuth.currentUser?.uid
+
+        if (Network.isNetworkAvailable(context)) {
+
+            currentUser?.let {
+                firestore.collection(CollectionRef.moneyDb).document(user.messName)
+                    .collection(user.messId).document(user.userId)
+                    .collection(getMonthYear)
+                    .get()
+                    .addOnSuccessListener {
+                        it?.let { result ->
+                            val lisOfInfo = mutableListOf<AddMoney>()
+                            for (document in result.documents) {
+                                val info = document.toObject(AddMoney::class.java)
+                                info?.let {
+                                    lisOfInfo.add(info)
+                                }
+                            }
+                            trySend(ResultState.Success(lisOfInfo))
+                        }
+                    }
+                    .addOnFailureListener { e ->
+                        trySend(ResultState.Failure(e))
+                    }
+
+            }
+
         } else {
             trySend(ResultState.Failure(Exception("Please check your internet connection!")))
         }
@@ -464,9 +546,9 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
                                 is ResultState.Failure -> {
                                     Log.d("failed: ", member.userName)
                                     if (member == messMembers.last()) {
-                                        if(membersMealCount.isNotEmpty()){
+                                        if (membersMealCount.isNotEmpty()) {
                                             trySend(ResultState.Success(membersMealCount))
-                                        }else{
+                                        } else {
                                             trySend(ResultState.Failure(Exception("No meal information found!")))
                                         }
                                     }
@@ -784,12 +866,13 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
                                         }
 
                                     }
+
                                     is ResultState.Failure -> {
                                         Log.d("failed: ", member.userName)
-                                        if(member == messMembers.last()){
-                                            if(membersMealToday.isNotEmpty()){
+                                        if (member == messMembers.last()) {
+                                            if (membersMealToday.isNotEmpty()) {
                                                 trySend(ResultState.Success(membersMealToday))
-                                            }else{
+                                            } else {
                                                 trySend(ResultState.Failure(Exception("No meal information found for today!")))
                                             }
                                         }
@@ -843,7 +926,8 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
                                                     trySend(ResultState.Success(mealInformation))
                                                 }
 
-                                            } ?: trySend(ResultState.Failure(Exception("Not found any meal for today!")))
+                                            }
+                                                ?: trySend(ResultState.Failure(Exception("Not found any meal for today!")))
 
                                         }
                                         .addOnFailureListener {

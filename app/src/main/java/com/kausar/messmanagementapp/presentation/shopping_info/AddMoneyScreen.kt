@@ -29,6 +29,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -41,25 +42,36 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.kausar.messmanagementapp.R
 import com.kausar.messmanagementapp.components.CustomDropDownMenu
 import com.kausar.messmanagementapp.components.CustomOutlinedTextField
+import com.kausar.messmanagementapp.components.CustomProgressBar
 import com.kausar.messmanagementapp.data.model.AddMoney
+import com.kausar.messmanagementapp.data.model.AddMoneyWithUser
 import com.kausar.messmanagementapp.data.model.User
 import com.kausar.messmanagementapp.presentation.shopping_info.shared.ChooseDate
 import com.kausar.messmanagementapp.presentation.shopping_info.shared.DialogInformation
-import com.kausar.messmanagementapp.presentation.shopping_info.shared.SharedShoppingInfo
 import com.kausar.messmanagementapp.presentation.shopping_info.shared.MoneyRow
+import com.kausar.messmanagementapp.presentation.shopping_info.shared.SharedShoppingInfo
+import com.kausar.messmanagementapp.presentation.viewmodels.FirebaseFirestoreDbViewModel
 import com.kausar.messmanagementapp.presentation.viewmodels.MainViewModel
+import com.kausar.messmanagementapp.utils.ResultState
 import com.kausar.messmanagementapp.utils.getDate
 import com.kausar.messmanagementapp.utils.getTime
 import com.kausar.messmanagementapp.utils.showToast
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import java.util.Calendar
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun AddMoney(mainViewModel: MainViewModel, navController: NavHostController) {
+fun AddMoney(
+    mainViewModel: MainViewModel,
+    navController: NavHostController,
+    firestore: FirebaseFirestoreDbViewModel = hiltViewModel()
+) {
 
     val memberInfo = mainViewModel.memberInfo.value
 
@@ -76,13 +88,21 @@ fun AddMoney(mainViewModel: MainViewModel, navController: NavHostController) {
     }
 
     var save by remember {
-        mutableStateOf(AddMoney())
+        mutableStateOf(AddMoneyWithUser())
     }
+
+    var showProgress by remember {
+        mutableStateOf(false)
+    }
+
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
 
     Box(
         Modifier
             .fillMaxSize()
-            .padding(16.dp)
+            .padding(16.dp),
+        contentAlignment = Alignment.Center
     ) {
         Column(
             Modifier
@@ -93,12 +113,13 @@ fun AddMoney(mainViewModel: MainViewModel, navController: NavHostController) {
             }) { member, date, amount ->
                 val currentTime = getTime(Calendar.getInstance())
                 Log.d("time : ", currentTime)
-                save = AddMoney(
-                    userId = member.userId,
+
+                val info = AddMoney(
                     userName = member.userName,
                     date = date,
                     amount = amount
                 )
+                save = AddMoneyWithUser(user = member, info)
                 showDialog = true
             }
             Spacer(modifier = Modifier.height(8.dp))
@@ -129,21 +150,21 @@ fun AddMoney(mainViewModel: MainViewModel, navController: NavHostController) {
                         Text(
                             text = "Review entry information",
                             fontWeight = FontWeight.Bold,
-                            style = MaterialTheme.typography.titleLarge,
+                            style = MaterialTheme.typography.titleMedium,
                             modifier = Modifier.padding(horizontal = 4.dp)
                         )
                         DialogInformation(
                             title = "Member",
-                            data = save.userName
+                            data = save.user.userName
                         )
                         DialogInformation(
                             title = "Date",
-                            data = save.date
+                            data = save.info.date
                         )
 
                         DialogInformation(
                             title = "Amount",
-                            data = "${save.amount} Tk"
+                            data = "${save.info.amount} Tk"
                         )
 
                         Row(
@@ -166,10 +187,32 @@ fun AddMoney(mainViewModel: MainViewModel, navController: NavHostController) {
                             Spacer(modifier = Modifier.width(16.dp))
                             ElevatedButton(
                                 onClick = {
-                                    listInfo.add(save)
-                                    listSize++
-                                    Log.d("AddMoney: ", listInfo.toString())
-                                    showDialog = false
+                                    scope.launch {
+                                        showDialog = false
+                                        firestore.addMemberMoney(data = save).collectLatest {
+                                            when (it) {
+                                                is ResultState.Success -> {
+                                                    showProgress = false
+                                                    context.showToast(it.data)
+                                                    listInfo.add(save.info)
+                                                    listSize++
+                                                    Log.d("AddMoney: ", listInfo.toString())
+                                                }
+
+                                                is ResultState.Failure -> {
+                                                    showProgress = false
+                                                    context.showToast(
+                                                        it.message.localizedMessage
+                                                            ?: "Some error occurred!"
+                                                    )
+                                                }
+
+                                                is ResultState.Loading -> {
+                                                    showProgress = true
+                                                }
+                                            }
+                                        }
+                                    }
                                 },
                                 shape = RoundedCornerShape(4.dp),
                                 colors = ButtonDefaults.buttonColors(
@@ -190,6 +233,9 @@ fun AddMoney(mainViewModel: MainViewModel, navController: NavHostController) {
                     }
                 }
             }
+        }
+        if (showProgress) {
+            CustomProgressBar("Adding money...")
         }
     }
 
