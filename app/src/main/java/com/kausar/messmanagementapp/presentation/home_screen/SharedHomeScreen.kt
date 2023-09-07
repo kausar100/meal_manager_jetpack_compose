@@ -132,101 +132,135 @@ fun SharedHomeScreen(
             Box(
                 Modifier
                     .fillMaxHeight()
-                    .fillMaxWidth(1f), contentAlignment = Alignment.BottomCenter
+                    .fillMaxWidth(1f), contentAlignment = Alignment.Center
             ) {
                 CustomProgressBar(msg = progMsg)
             }
-        }
-        Column(
-            Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState()), horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            if (newMeal) {
-                Spacer(modifier = Modifier.width(16.dp))
-                Row(Modifier
-                    .clickable { showPopup = true }
-                    .border(1.dp, Color.Transparent, RoundedCornerShape(4.dp))
-                    .padding(8.dp)) {
-                    Text(
-                        text = presentingDate, textAlign = TextAlign.Center
-                    )
-
+        }else{
+            Column(
+                Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState()), horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                if (newMeal) {
                     Spacer(modifier = Modifier.width(16.dp))
-
-                    Icon(imageVector = Icons.Default.Edit, contentDescription = "choose date")
-
-                }
-
-                if (showPopup) {
-                    Box(contentAlignment = Alignment.CenterEnd) {
-                        PopUpOption(onDismiss = {
-                            showPopup = !showPopup
-                        }, onSelect = { show, insert ->
-                            showPopup = false
-                            presentingDate = show
-                            selectedDate = insert
-                        })
-                    }
-                }
-            } else {
-                if (userInfo.userType.isNotEmpty()) {
-                    Text(
-                        text = "Number of meal until today",
-                        fontSize = MaterialTheme.typography.titleMedium.fontSize,
-                        textAlign = TextAlign.Center,
-                        textDecoration = TextDecoration.Underline,
-                        fontWeight = FontWeight.Bold
-                    )
-                    mealCnt.cnt?.let {
-                        MealSummary(
-                            modifier = Modifier
-                                .fillMaxWidth(1f)
-                                .height(screenHeight / 3f),
-                            totalMeal = it.total.toString(),
-                            numberOfBreakfast = it.breakfast.toString(),
-                            numberOfLunch = it.lunch.toString(),
-                            numberOfDinner = it.dinner.toString()
-                        )
-                    } ?: if (mealCnt.error.isNotEmpty()) {
+                    Row(Modifier
+                        .clickable { showPopup = true }
+                        .border(1.dp, Color.Transparent, RoundedCornerShape(4.dp))
+                        .padding(8.dp)) {
                         Text(
-                            text = mealCnt.error, modifier = Modifier.padding(top = 16.dp)
+                            text = presentingDate, textAlign = TextAlign.Center
                         )
-                    } else {
-                        CircularProgressIndicator(Modifier.padding(top = 8.dp))
+
+                        Spacer(modifier = Modifier.width(16.dp))
+
+                        Icon(imageVector = Icons.Default.Edit, contentDescription = "choose date")
+
                     }
 
+                    if (showPopup) {
+                        Box(contentAlignment = Alignment.CenterEnd) {
+                            PopUpOption(onDismiss = {
+                                showPopup = !showPopup
+                            }, onSelect = { show, insert ->
+                                showPopup = false
+                                presentingDate = show
+                                selectedDate = insert
+                            })
+                        }
+                    }
+                } else {
+                    if (userInfo.userType.isNotEmpty()) {
+                        Text(
+                            text = "Number of meal until today",
+                            fontSize = MaterialTheme.typography.titleMedium.fontSize,
+                            textAlign = TextAlign.Center,
+                            textDecoration = TextDecoration.Underline,
+                            fontWeight = FontWeight.Bold
+                        )
+                        mealCnt.cnt?.let {
+                            MealSummary(
+                                modifier = Modifier
+                                    .fillMaxWidth(1f)
+                                    .height(screenHeight / 3f),
+                                totalMeal = it.total.toString(),
+                                numberOfBreakfast = it.breakfast.toString(),
+                                numberOfLunch = it.lunch.toString(),
+                                numberOfDinner = it.dinner.toString()
+                            )
+                        } ?: if (mealCnt.error.isNotEmpty()) {
+                            Text(
+                                text = mealCnt.error, modifier = Modifier.padding(top = 16.dp)
+                            )
+                        } else {
+                            CircularProgressIndicator(Modifier.padding(top = 8.dp))
+                        }
+
+                    }
                 }
-            }
-            if (newMeal) {
-                Spacer(modifier = Modifier.height(16.dp))
-                AddNewMeal(onCancel = {
-                    newMeal = false
-                    selectedDate = getDate(temp)
-                    presentingDate = fetchDateAsString(temp)
-                },
-                    selectedDate = selectedDate,
-                    viewModel = viewModel,
-                    updateMeal = { breakfast, lunch, dinner ->
-                        progMsg = "Updating meal info..."
+                if (newMeal) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    AddNewMeal(onCancel = {
+                        newMeal = false
+                        selectedDate = getDate(temp)
+                        presentingDate = fetchDateAsString(temp)
+                    },
+                        selectedDate = selectedDate,
+                        viewModel = viewModel,
+                        updateMeal = { breakfast, lunch, dinner ->
+                            val tempSelectedDate = selectedDate
+                            val tempPresentingDate = presentingDate
+                            selectedDate = getDate(temp)
+                            presentingDate = fetchDateAsString(temp)
+                            newMeal = false
+                            progMsg = "Updating meal info..."
+                            showToast = true
+
+                            scope.launch {
+                                viewModel.update(
+                                    MealInfo(
+                                        tempSelectedDate,
+                                        getDayName(tempPresentingDate),
+                                        breakfast,
+                                        lunch,
+                                        dinner
+                                    )
+                                ).collectLatest { result ->
+                                    when (result) {
+                                        is ResultState.Success -> {
+                                            showToast = false
+                                            context.showToast(result.data)
+                                        }
+
+                                        is ResultState.Failure -> {
+                                            showToast = false
+                                            result.message.localizedMessage?.let { msg ->
+                                                context.showToast(
+                                                    msg
+                                                )
+                                            }
+                                        }
+
+                                        is ResultState.Loading -> {
+
+                                        }
+                                    }
+                                }
+                            }
+                        }) { breakfast, lunch, dinner ->
+                        newMeal = false
+                        progMsg = "Inserting new meal..."
                         showToast = true
                         scope.launch {
-                            viewModel.update(
+                            viewModel.insert(
                                 MealInfo(
-                                    selectedDate,
-                                    getDayName(presentingDate),
-                                    breakfast,
-                                    lunch,
-                                    dinner
+                                    selectedDate, getDayName(presentingDate), breakfast, lunch, dinner
                                 )
                             ).collectLatest { result ->
                                 when (result) {
                                     is ResultState.Success -> {
                                         showToast = false
                                         context.showToast(result.data)
-                                        selectedDate = getDate(temp)
-                                        presentingDate = fetchDateAsString(temp)
-                                        newMeal = false
                                     }
 
                                     is ResultState.Failure -> {
@@ -235,9 +269,6 @@ fun SharedHomeScreen(
                                             context.showToast(
                                                 msg
                                             )
-                                            selectedDate = getDate(temp)
-                                            presentingDate = fetchDateAsString(temp)
-                                            newMeal = false
                                         }
                                     }
 
@@ -247,69 +278,39 @@ fun SharedHomeScreen(
                                 }
                             }
                         }
-                    }) { breakfast, lunch, dinner ->
-                    progMsg = "Inserting new meal..."
-                    showToast = true
-                    scope.launch {
-                        viewModel.insert(
-                            MealInfo(
-                                selectedDate, getDayName(presentingDate), breakfast, lunch, dinner
-                            )
-                        ).collectLatest { result ->
-                            when (result) {
-                                is ResultState.Success -> {
-                                    showToast = false
-                                    context.showToast(result.data)
-                                    newMeal = false
-                                }
-
-                                is ResultState.Failure -> {
-                                    showToast = false
-                                    result.message.localizedMessage?.let { msg ->
-                                        context.showToast(
-                                            msg
-                                        )
-                                        newMeal = false
-                                    }
-                                }
-
-                                is ResultState.Loading -> {
-
-                                }
-                            }
-                        }
                     }
-                }
-            } else {
-                Row(
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp),
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(text = today,
-                        textAlign = TextAlign.Center,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.clickable {
-                            newMeal = true
-                        })
-                    Spacer(modifier = Modifier.width(16.dp))
-                    Icon(imageVector = Icons.Default.AddCircle,
-                        contentDescription = "add meal",
-                        tint = MaterialTheme.colorScheme.secondary,
-                        modifier = Modifier.clickable { newMeal = true })
+                } else {
+                    Row(
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(text = today,
+                            textAlign = TextAlign.Center,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.clickable {
+                                newMeal = true
+                            })
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Icon(imageVector = Icons.Default.AddCircle,
+                            contentDescription = "add meal",
+                            tint = MaterialTheme.colorScheme.secondary,
+                            modifier = Modifier.clickable { newMeal = true })
 
+                    }
+                    if (mealInfoState.success.isNotEmpty()) {
+                        MealInformation(
+                            mealInfo = mealInfoState.meal,
+                        )
+                    }
+                    ShowMessage(mealInfoState)
                 }
-                if (mealInfoState.success.isNotEmpty()) {
-                    MealInformation(
-                        mealInfo = mealInfoState.meal,
-                    )
-                }
-                ShowMessage(mealInfoState)
+
             }
-
         }
+
     }
 }
 
