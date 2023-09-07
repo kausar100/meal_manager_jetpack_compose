@@ -160,9 +160,9 @@ fun MealListScreen(
                                     )
                                     .background(
                                         if (selectedIndex == index) {
-                                            MaterialTheme.colorScheme.inversePrimary
+                                            MaterialTheme.colorScheme.primaryContainer
                                         } else {
-                                            MaterialTheme.colorScheme.surface
+                                            MaterialTheme.colorScheme.background
                                         },
                                         CircleShape
                                     )
