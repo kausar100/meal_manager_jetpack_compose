@@ -12,6 +12,7 @@ data class AddMoneyWithUser(
     val user : User = User(),
     val info : AddMoney = AddMoney()
 )
+
 data class TotalMoneyPerMember(
     val userId: String = "",
     val total: String = ""

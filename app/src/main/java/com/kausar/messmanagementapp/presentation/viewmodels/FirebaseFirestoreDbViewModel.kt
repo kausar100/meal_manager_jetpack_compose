@@ -12,6 +12,8 @@ import com.kausar.messmanagementapp.data.model.AddMoney
 import com.kausar.messmanagementapp.data.model.AddMoneyWithUser
 import com.kausar.messmanagementapp.data.model.MealCount
 import com.kausar.messmanagementapp.data.model.MealInfo
+import com.kausar.messmanagementapp.data.model.MemberShoppingList
+import com.kausar.messmanagementapp.data.model.Shopping
 import com.kausar.messmanagementapp.data.model.TotalMoneyPerMember
 import com.kausar.messmanagementapp.data.model.User
 import com.kausar.messmanagementapp.utils.ResultState
@@ -48,8 +50,17 @@ class FirebaseFirestoreDbViewModel @Inject constructor(
     val addMoneyInfo: State<AddMoneyStatus> = _addMoney
 
     val moneyPerMember = mutableStateOf(HashMap<String, TotalMoneyPerMember>()) //userid,total money
-    val addMoneyListPerMember = mutableStateOf(HashMap<String, List<AddMoney>>()) //userId,list<info>
+    val addMoneyListPerMember =
+        mutableStateOf(HashMap<String, List<AddMoney>>()) //userId,list<info>
     val moneySum = mutableStateOf("") //members total money
+
+    val shoppingPerMember =
+        mutableStateOf(HashMap<String, MemberShoppingList>()) //userid, (shopping list, cost)
+    val shoppingCostSum = mutableStateOf("") //members shopping total cost
+    val shoppingList = mutableListOf<Shopping>()
+
+    private val _newShopping = mutableStateOf(NewShoppingStatus())
+    val newShoppingInfo: State<NewShoppingStatus> = _newShopping
 
     fun getAllMeal(userId: String) {
         viewModelScope.launch {
@@ -108,11 +119,13 @@ class FirebaseFirestoreDbViewModel @Inject constructor(
     fun addMemberMoney(data: AddMoneyWithUser) =
         repo.addMoneyInfo(user = data.user, newEntry = data.info)
 
+    fun addNewShopping(user: User, data: Shopping) = repo.newShoppingEntry(user, data)
+
     fun clearMoneyInfo() {
         _addMoney.value = AddMoneyStatus()
     }
 
-    private fun getTotalSum() {
+    private fun getTotalMoneySum() {
         var sum = 0.0
         if (moneyPerMember.value.isNotEmpty()) {
             for (money in moneyPerMember.value) {
@@ -125,7 +138,20 @@ class FirebaseFirestoreDbViewModel @Inject constructor(
         moneySum.value = sum.toString()
     }
 
-    private fun getSum(data: List<AddMoney>): String {
+    private fun getTotalShoppingCostSum() {
+        var sum = 0.0
+        if (shoppingPerMember.value.isNotEmpty()) {
+            for (money in shoppingPerMember.value) {
+                if (money.value.totalCost.isNotEmpty()) {
+                    sum += money.value.totalCost.toDouble()
+                }
+
+            }
+        }
+        shoppingCostSum.value = sum.toString()
+    }
+
+    private fun getMoneySumPerMember(data: List<AddMoney>): String {
         var total = 0.0
         if (data.isNotEmpty()) {
             for (item in data) {
@@ -138,6 +164,57 @@ class FirebaseFirestoreDbViewModel @Inject constructor(
         return total.toString()
     }
 
+    private fun getShoppingCostPerMember(data: List<Shopping>): String {
+        var total = 0.0
+        if (data.isNotEmpty()) {
+            for (item in data) {
+                if (item.totalCost.isNotEmpty()) {
+                    total += item.totalCost.toDouble()
+                }
+
+            }
+        }
+        return total.toString()
+    }
+
+    fun getShoppingInfo(member: User) {
+        viewModelScope.launch {
+            repo.getUserShoppingInfo(member).collectLatest {
+                when (it) {
+                    is ResultState.Success -> {
+                        it.data?.let { data ->
+                            _newShopping.value = NewShoppingStatus(
+                                info = data
+                            )
+                            val sum = getShoppingCostPerMember(data)
+                            shoppingPerMember.value[member.userId] =
+                                MemberShoppingList(info = data, totalCost = sum)
+
+                            shoppingList.addAll(data)
+                            getTotalShoppingCostSum()
+                            repo.addShoppingCost(shoppingCostSum.value).collectLatest { }
+                        }
+
+                    }
+
+                    is ResultState.Failure -> {
+                        _newShopping.value = NewShoppingStatus(
+                            error = it.message.localizedMessage!!.toString()
+                        )
+                    }
+
+                    is ResultState.Loading -> {
+                        _newShopping.value = NewShoppingStatus(
+                            isLoading = true
+                        )
+                    }
+                }
+
+            }
+
+        }
+    }
+
     fun getMoneyInfo(member: User) {
         viewModelScope.launch {
             repo.getUserMoneyInfo(member).collectLatest {
@@ -148,10 +225,11 @@ class FirebaseFirestoreDbViewModel @Inject constructor(
                                 info = data
                             )
                             addMoneyListPerMember.value[member.userId] = data
-                            val sum = getSum(data)
+                            val sum = getMoneySumPerMember(data)
                             moneyPerMember.value[member.userId] =
                                 TotalMoneyPerMember(userId = member.userId, total = sum)
-                            getTotalSum()
+                            getTotalMoneySum()
+                            repo.addAccountBalance(moneySum.value).collectLatest { }
                         }
 
                     }
@@ -210,8 +288,7 @@ class FirebaseFirestoreDbViewModel @Inject constructor(
                 is ResultState.Success -> {
                     it.data?.let { meal ->
                         _todayMeal.value = SingleMeal(
-                            meal = meal,
-                            success = "Meal fetch successfully!"
+                            meal = meal, success = "Meal fetch successfully!"
                         )
 
                     }
@@ -241,8 +318,7 @@ class FirebaseFirestoreDbViewModel @Inject constructor(
                 is ResultState.Success -> {
                     it.data?.let { meal ->
                         _newMeal.value = SingleMeal(
-                            meal = meal,
-                            success = "Meal fetch successfully!"
+                            meal = meal, success = "Meal fetch successfully!"
                         )
 
                     }
@@ -280,13 +356,17 @@ class FirebaseFirestoreDbViewModel @Inject constructor(
     )
 
     data class SingleMealCount(
-        val cnt: MealCount? = null,
-        val error: String = "",
-        val isLoading: Boolean = false
+        val cnt: MealCount? = null, val error: String = "", val isLoading: Boolean = false
     )
 
     data class AddMoneyStatus(
         val info: List<AddMoney> = emptyList(),
+        val error: String = "",
+        val isLoading: Boolean = false
+    )
+
+    data class NewShoppingStatus(
+        val info: List<Shopping> = emptyList(),
         val error: String = "",
         val isLoading: Boolean = false
     )

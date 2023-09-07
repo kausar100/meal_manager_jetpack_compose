@@ -23,6 +23,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -35,6 +36,9 @@ import com.kausar.messmanagementapp.navigation.Screen
 import com.kausar.messmanagementapp.presentation.shopping_info.shared.DialogInformation
 import com.kausar.messmanagementapp.presentation.viewmodels.MainViewModel
 import com.kausar.messmanagementapp.utils.fetchCurrentMonthName
+import java.lang.Exception
+import java.math.RoundingMode
+import java.text.DecimalFormat
 
 enum class ListType {
     List, Grid
@@ -42,6 +46,12 @@ enum class ListType {
 
 @Composable
 fun ShoppingScreen(mainViewModel: MainViewModel, navController: NavHostController) {
+
+    val balance = mainViewModel.balanceInfo.value
+    LaunchedEffect(key1 = Unit){
+        mainViewModel.getBalanceInformation()
+    }
+
     Box(
         Modifier
             .fillMaxSize()
@@ -51,7 +61,9 @@ fun ShoppingScreen(mainViewModel: MainViewModel, navController: NavHostControlle
             Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Card(
-                modifier = Modifier.padding(8.dp).fillMaxWidth(1f),
+                modifier = Modifier
+                    .padding(8.dp)
+                    .fillMaxWidth(1f),
                 colors = CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.primary,
                     contentColor = MaterialTheme.colorScheme.secondary
@@ -66,10 +78,18 @@ fun ShoppingScreen(mainViewModel: MainViewModel, navController: NavHostControlle
                     verticalArrangement = Arrangement.SpaceEvenly
                 ) {
                     DialogInformation(title = "Date", data = fetchCurrentMonthName())
-                    DialogInformation(title = "Total meal", data = "244")
-                    DialogInformation(title = "Total Shopping cost", data = "17000")
-                    DialogInformation(title = "Cost per meal", data = "60")
-                    DialogInformation(title = "Remaining Money", data = "100")
+                    DialogInformation(title = "Total meal", data = balance.totalMeal)
+                    DialogInformation(
+                        title = "Total Shopping cost", data = balance.totalShoppingCost
+                    )
+                    DialogInformation(
+                        title = "Total Receiving Amount", data = balance.totalReceivingAmount
+                    )
+                    DialogInformation(
+                        title = "Cost per meal",
+                        data = getCostPerMeal(balance.totalMeal, balance.totalShoppingCost)
+                    )
+                    DialogInformation(title = "Remaining Money", data = balance.remainingAmount)
                 }
 
             }
@@ -126,6 +146,18 @@ fun ShoppingScreen(mainViewModel: MainViewModel, navController: NavHostControlle
     }
 }
 
+fun getCostPerMeal(totalMeal: String, totalShoppingCost: String): String {
+    var cost: String
+    try {
+        val df = DecimalFormat("#.##")
+        df.roundingMode = RoundingMode.DOWN
+        cost = df.format(totalShoppingCost.ifEmpty { "0.0" }.toDouble() / totalMeal.ifEmpty { "0.0" }.toDouble())
+    } catch (e: Exception) {
+        cost = "0.0"
+    }
+    return cost
+}
+
 @Composable
 fun MenuItem(item: ShoppingScreenListInfo, gridView: Boolean = false, onItemClick: () -> Unit) {
     Card(
@@ -144,7 +176,8 @@ fun MenuItem(item: ShoppingScreenListInfo, gridView: Boolean = false, onItemClic
     ) {
         if (gridView) {
             Column(
-                Modifier.fillMaxSize()
+                Modifier
+                    .fillMaxSize()
                     .padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center

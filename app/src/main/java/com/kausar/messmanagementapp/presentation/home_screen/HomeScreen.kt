@@ -26,7 +26,6 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.kausar.messmanagementapp.presentation.viewmodels.FirebaseFirestoreDbViewModel
 import com.kausar.messmanagementapp.presentation.viewmodels.MainViewModel
 import com.kausar.messmanagementapp.utils.fetchDateAsString
 import java.util.Calendar
@@ -38,7 +37,6 @@ enum class Keys {
 @Composable
 fun HomeScreen(
     mainViewModel: MainViewModel = hiltViewModel(),
-    viewModel: FirebaseFirestoreDbViewModel = hiltViewModel(),
 ) {
     val calendar = Calendar.getInstance()
     val today by rememberSaveable {

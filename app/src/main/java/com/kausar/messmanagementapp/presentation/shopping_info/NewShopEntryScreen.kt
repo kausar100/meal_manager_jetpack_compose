@@ -47,6 +47,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -54,20 +55,31 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.kausar.messmanagementapp.components.CustomDropDownMenu
+import com.kausar.messmanagementapp.components.CustomProgressBar
+import com.kausar.messmanagementapp.data.model.Shopping
 import com.kausar.messmanagementapp.data.model.ShoppingItem
 import com.kausar.messmanagementapp.data.model.User
 import com.kausar.messmanagementapp.presentation.shopping_info.shared.ChooseDate
 import com.kausar.messmanagementapp.presentation.shopping_info.shared.DialogInformation
 import com.kausar.messmanagementapp.presentation.shopping_info.shared.SharedShoppingInfo
+import com.kausar.messmanagementapp.presentation.viewmodels.FirebaseFirestoreDbViewModel
 import com.kausar.messmanagementapp.presentation.viewmodels.MainViewModel
+import com.kausar.messmanagementapp.utils.ResultState
 import com.kausar.messmanagementapp.utils.getDate
+import com.kausar.messmanagementapp.utils.showToast
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.util.Calendar
 
 @Composable
-fun NewShopEntry(mainViewModel: MainViewModel, navController: NavHostController) {
+fun NewShopEntry(
+    mainViewModel: MainViewModel,
+    navController: NavHostController,
+    firestore: FirebaseFirestoreDbViewModel = hiltViewModel()
+) {
     val memberInfo = mainViewModel.memberInfo.value
 
     val memberNames = SharedShoppingInfo.getNames(memberInfo.listOfMember)
@@ -102,14 +114,20 @@ fun NewShopEntry(mainViewModel: MainViewModel, navController: NavHostController)
         mutableStateOf(false)
     }
 
+    var showProgress by remember {
+        mutableStateOf(false)
+    }
+
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+
     Box(
         Modifier
             .fillMaxSize()
-            .padding(16.dp)
+            .padding(16.dp), contentAlignment = Alignment.Center
     ) {
         Column(
-            Modifier
-                .fillMaxSize()
+            Modifier.fillMaxSize()
         ) {
             Card(
                 colors = CardDefaults.cardColors(
@@ -120,9 +138,7 @@ fun NewShopEntry(mainViewModel: MainViewModel, navController: NavHostController)
                 shape = RoundedCornerShape(4.dp)
             ) {
                 Column(
-                    Modifier
-                        .padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                    Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -130,7 +146,7 @@ fun NewShopEntry(mainViewModel: MainViewModel, navController: NavHostController)
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text(text = "New Shop Entry", fontWeight = FontWeight.ExtraBold)
-                        if(amount.isNotEmpty()) {
+                        if (amount.isNotEmpty()) {
                             Text(
                                 text = "Cost : $amount Tk"
                             )
@@ -138,24 +154,21 @@ fun NewShopEntry(mainViewModel: MainViewModel, navController: NavHostController)
 
                     }
 
-                    CustomDropDownMenu(
-                        title = "Select Member Name",
+                    CustomDropDownMenu(title = "Select Member Name",
                         items = memberNames,
                         selectedItem = memberName,
                         onSelect = {
                             memberName = it
-                            selectedMember = SharedShoppingInfo.getUser(memberInfo.listOfMember, memberName)
+                            selectedMember =
+                                SharedShoppingInfo.getUser(memberInfo.listOfMember, memberName)
                         })
                     ChooseDate(
                         modifier = Modifier
                             .fillMaxWidth()
                             .border(
-                                1.dp,
-                                MaterialTheme.colorScheme.secondary,
-                                RoundedCornerShape(4.dp)
+                                1.dp, MaterialTheme.colorScheme.secondary, RoundedCornerShape(4.dp)
                             )
-                            .padding(16.dp),
-                        date = selectedDate
+                            .padding(16.dp), date = selectedDate
                     ) {
                         selectedDate = it
                     }
@@ -176,9 +189,7 @@ fun NewShopEntry(mainViewModel: MainViewModel, navController: NavHostController)
                             }, shape = RoundedCornerShape(4.dp)
                         ) {
                             Text(
-                                text = "Cancel",
-                                letterSpacing = 2.sp,
-                                fontWeight = FontWeight.Bold
+                                text = "Cancel", letterSpacing = 2.sp, fontWeight = FontWeight.Bold
                             )
                         }
                         Spacer(modifier = Modifier.width(16.dp))
@@ -205,141 +216,172 @@ fun NewShopEntry(mainViewModel: MainViewModel, navController: NavHostController)
             }
 
         }
-    }
-    if (showDialog) {
-        Dialog(onDismissRequest = { showDialog = false }) {
-            Card(
-                modifier = Modifier
-                    .fillMaxHeight(.8f),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.background,
-                    contentColor = MaterialTheme.colorScheme.secondary
-                ),
-                elevation = CardDefaults.elevatedCardElevation(),
-                shape = RoundedCornerShape(4.dp)
-            ) {
-                Column(
-                    modifier = Modifier
-                        .padding(16.dp),
-                    verticalArrangement = Arrangement.SpaceEvenly
+        if (showDialog) {
+            Dialog(onDismissRequest = { showDialog = false }) {
+                Card(
+                    modifier = Modifier.fillMaxHeight(.8f),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.background,
+                        contentColor = MaterialTheme.colorScheme.secondary
+                    ),
+                    elevation = CardDefaults.elevatedCardElevation(),
+                    shape = RoundedCornerShape(4.dp)
                 ) {
-                    Column(Modifier.weight(2f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        Text(
-                            text = "Review entry information",
-                            fontWeight = FontWeight.Bold,
-                            style = MaterialTheme.typography.titleLarge,
-                            modifier = Modifier.padding(horizontal = 4.dp)
-                        )
-                        DialogInformation(
-                            title = "Member",
-                            data = selectedMember.userName
-                        )
-                        DialogInformation(
-                            title = "Date",
-                            data = selectedDate
-                        )
-
-                        if (itemInformation.isNotEmpty()) {
-                            Text(
-                                text = "Item Details",
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier
-                                    .padding(top = 4.dp)
-                                    .padding(horizontal = 4.dp)
-                            )
-                        }
-                    }
-                    LazyColumn(
-                        modifier = Modifier
-                            .weight(2f)
-                            .padding(horizontal = 4.dp),
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.SpaceEvenly
                     ) {
-                        items(itemInformation) { info ->
+                        Column(
+                            Modifier.weight(2f), verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Text(
+                                text = "Review entry information",
+                                fontWeight = FontWeight.Bold,
+                                style = MaterialTheme.typography.titleMedium,
+                                modifier = Modifier.padding(horizontal = 4.dp)
+                            )
+                            DialogInformation(
+                                title = "Member", data = selectedMember.userName
+                            )
+                            DialogInformation(
+                                title = "Date", data = selectedDate
+                            )
 
+                            if (itemInformation.isNotEmpty()) {
+                                Text(
+                                    text = "Item Details",
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier
+                                        .padding(top = 4.dp)
+                                        .padding(horizontal = 4.dp)
+                                )
+                            }
+                        }
+                        LazyColumn(
+                            modifier = Modifier
+                                .weight(2f)
+                                .padding(horizontal = 4.dp),
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            items(itemInformation) { info ->
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .border(
+                                            1.dp,
+                                            MaterialTheme.colorScheme.primary,
+                                            shape = RoundedCornerShape(4.dp)
+                                        )
+                                        .padding(8.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text(text = info.name)
+
+                                    Text(text = info.unit)
+
+                                    Text(text = info.price)
+
+                                }
+                            }
+                        }
+                        AnimatedVisibility(itemInformation.isNotEmpty()) {
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .border(
-                                        1.dp,
-                                        MaterialTheme.colorScheme.primary,
-                                        shape = RoundedCornerShape(4.dp)
-                                    )
-                                    .padding(8.dp),
+                                    .padding(horizontal = 4.dp)
+                                    .padding(top = 8.dp),
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
-                                Text(text = info.name)
-
-                                Text(text = info.unit)
-
-                                Text(text = info.price)
-
+                                Text(text = "Total cost", fontWeight = FontWeight.Bold)
+                                Text(text = amount, fontWeight = FontWeight.Bold)
                             }
                         }
-                    }
-                    AnimatedVisibility(itemInformation.isNotEmpty()) {
                         Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 4.dp)
-                                .padding(top = 8.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
+                            Modifier
+                                .weight(1f)
+                                .fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceEvenly,
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(text = "Total cost", fontWeight = FontWeight.Bold)
-                            Text(text = amount, fontWeight = FontWeight.Bold)
+                            OutlinedButton(
+                                onClick = {
+                                    showDialog = false
+                                }, shape = RoundedCornerShape(4.dp)
+                            ) {
+                                Text(
+                                    text = "Edit",
+                                    letterSpacing = 2.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(16.dp))
+                            ElevatedButton(
+                                onClick = {
+                                    scope.launch {
+                                        showDialog = false
+                                        firestore.addNewShopping(
+                                            user = selectedMember, data = Shopping(
+                                                userName = selectedMember.userName,
+                                                date = selectedDate,
+                                                itemDetails = itemInformation,
+                                                totalCost = amount
+                                            )
+                                        ).collectLatest {
+                                            when (it) {
+                                                is ResultState.Success -> {
+                                                    showProgress = false
+                                                    context.showToast(it.data)
+                                                }
+
+                                                is ResultState.Failure -> {
+                                                    showProgress = false
+                                                    context.showToast(
+                                                        it.message.localizedMessage
+                                                            ?: "Some error occurred!"
+                                                    )
+                                                }
+
+                                                is ResultState.Loading -> {
+                                                    showProgress = true
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                },
+                                shape = RoundedCornerShape(4.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.primary,
+                                    contentColor = MaterialTheme.colorScheme.secondary
+                                ),
+                            ) {
+                                Text(
+                                    text = "Continue",
+                                    letterSpacing = 2.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+
                         }
-                    }
-                    Row(
-                        Modifier
-                            .weight(1f)
-                            .fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceEvenly,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        OutlinedButton(
-                            onClick = {
-                                showDialog = false
-                            }, shape = RoundedCornerShape(4.dp)
-                        ) {
-                            Text(
-                                text = "Edit",
-                                letterSpacing = 2.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                        Spacer(modifier = Modifier.width(16.dp))
-                        ElevatedButton(
-                            onClick = {
-                                showDialog = false
-                            },
-                            shape = RoundedCornerShape(4.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.primary,
-                                contentColor = MaterialTheme.colorScheme.secondary
-                            ),
-                        ) {
-                            Text(
-                                text = "Continue",
-                                letterSpacing = 2.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
+
 
                     }
-
-
                 }
             }
         }
+        if (showProgress) {
+            CustomProgressBar("Adding shopping...")
+        }
     }
+
 }
 
 fun calculateCost(itemInfo: MutableList<ShoppingItem>): String {
     var amount = 0.0
     for (item in itemInfo) {
-        if(item.price.isNotEmpty()){
+        if (item.price.isNotEmpty()) {
             amount += item.price.toDouble()
         }
     }
@@ -372,33 +414,27 @@ fun ShoppingItemInfo(info: (MutableList<ShoppingItem>) -> Unit) {
     }
     Column(Modifier.fillMaxHeight(.7f)) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.clickable {
-                    addItem()
-                }
-            ) {
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable {
+                addItem()
+            }) {
                 Icon(imageVector = Icons.Default.AddCircle, contentDescription = "add desc")
                 Spacer(modifier = Modifier.width(16.dp))
                 Text(text = "Add Item information")
             }
             AnimatedVisibility(rowId != 0) {
-                Icon(
-                    imageVector = Icons.Default.Delete,
+                Icon(imageVector = Icons.Default.Delete,
                     contentDescription = "remove desc",
                     tint = MaterialTheme.colorScheme.error,
                     modifier = Modifier.clickable {
                         if (rowId >= 1) {
                             removeItem()
                         }
-                    }
-                )
+                    })
             }
         }
         Spacer(modifier = Modifier.height(8.dp))
         LazyColumn(
-            Modifier.animateContentSize(tween(500, easing = EaseInOut)),
-            state = lazyListState
+            Modifier.animateContentSize(tween(500, easing = EaseInOut)), state = lazyListState
         ) {
             scope.launch {
                 if (rowId > 0) {
@@ -432,8 +468,7 @@ fun SingleRow(item: ShoppingItem, onChanged: (ShoppingItem) -> Unit) {
     }
 
     Row(Modifier.fillMaxWidth()) {
-        OutlinedTextField(
-            value = value.name,
+        OutlinedTextField(value = value.name,
             onValueChange = {
                 value = value.copy(name = it)
                 onChanged(value)
@@ -442,19 +477,15 @@ fun SingleRow(item: ShoppingItem, onChanged: (ShoppingItem) -> Unit) {
                 .weight(1.3f)
                 .padding(4.dp),
             keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Text,
-                imeAction = ImeAction.Next
+                keyboardType = KeyboardType.Text, imeAction = ImeAction.Next
             ),
             singleLine = true,
             label = { Text(text = "Name") },
-            keyboardActions = KeyboardActions(
-                onNext = {
-                    focusManager.moveFocus(FocusDirection.Next)
-                }
-            )
+            keyboardActions = KeyboardActions(onNext = {
+                focusManager.moveFocus(FocusDirection.Next)
+            })
         )
-        OutlinedTextField(
-            value = value.unit,
+        OutlinedTextField(value = value.unit,
             onValueChange = {
                 value = value.copy(unit = it)
                 onChanged(value)
@@ -463,19 +494,15 @@ fun SingleRow(item: ShoppingItem, onChanged: (ShoppingItem) -> Unit) {
                 .weight(1f)
                 .padding(4.dp),
             keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Text,
-                imeAction = ImeAction.Next
+                keyboardType = KeyboardType.Text, imeAction = ImeAction.Next
             ),
             singleLine = true,
             label = { Text(text = "Unit") },
-            keyboardActions = KeyboardActions(
-                onDone = {
-                    focusManager.moveFocus(FocusDirection.Next)
-                }
-            )
+            keyboardActions = KeyboardActions(onDone = {
+                focusManager.moveFocus(FocusDirection.Next)
+            })
         )
-        OutlinedTextField(
-            value = value.price,
+        OutlinedTextField(value = value.price,
             onValueChange = {
                 value = value.copy(price = it)
                 onChanged(value)
@@ -484,16 +511,13 @@ fun SingleRow(item: ShoppingItem, onChanged: (ShoppingItem) -> Unit) {
                 .weight(1f)
                 .padding(4.dp),
             keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Number,
-                imeAction = ImeAction.Done
+                keyboardType = KeyboardType.Number, imeAction = ImeAction.Done
             ),
             singleLine = true,
             label = { Text(text = "Price") },
-            keyboardActions = KeyboardActions(
-                onDone = {
-                    focusManager.clearFocus(true)
-                }
-            )
+            keyboardActions = KeyboardActions(onDone = {
+                focusManager.clearFocus(true)
+            })
         )
     }
 }

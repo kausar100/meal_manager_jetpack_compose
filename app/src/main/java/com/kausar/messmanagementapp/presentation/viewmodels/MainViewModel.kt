@@ -7,6 +7,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kausar.messmanagementapp.data.firebase_firestore.FirebaseFirestoreRepo
+import com.kausar.messmanagementapp.data.model.Balance
 import com.kausar.messmanagementapp.data.model.MealCount
 import com.kausar.messmanagementapp.data.model.MealInfo
 import com.kausar.messmanagementapp.data.model.Mess
@@ -71,6 +72,11 @@ class MainViewModel @Inject constructor(
 
     private val today: String
         get() = getDate(calender)
+
+
+    private var _balance = mutableStateOf(Balance())
+    val balanceInfo: State<Balance> = _balance
+
 
     init {
         getContactNumber()
@@ -188,6 +194,26 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    fun getBalanceInformation() {
+        viewModelScope.launch {
+            firestoreRepo.getBalanceInformation().collectLatest {
+                when (it) {
+                    is ResultState.Success -> {
+                        _balance.value = it.data
+                    }
+
+                    is ResultState.Failure -> {
+
+                    }
+
+                    is ResultState.Loading -> {
+
+                    }
+                }
+            }
+        }
+    }
+
     private fun getTodayMealCount(): HashMap<String, Double> {
         membersTodayMealCount.value.info.isNotEmpty().let {
             var breakfast = 0.0
@@ -223,6 +249,9 @@ class MainViewModel @Inject constructor(
                         cnt = result.data
                     )
                     _totalMealCnt.value = getTotalCount()
+                    //add meal count to firebase
+                    firestoreRepo.addTotalMeal(_totalMealCnt.value[Keys.Total.name].toString())
+                        .collectLatest {}
                 }
 
                 is ResultState.Failure -> {

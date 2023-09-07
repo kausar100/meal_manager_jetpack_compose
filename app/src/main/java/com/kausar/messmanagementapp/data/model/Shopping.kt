@@ -1,6 +1,7 @@
 package com.kausar.messmanagementapp.data.model
 
 import com.kausar.messmanagementapp.R
+import kotlin.reflect.full.memberProperties
 
 
 object ShoppingListItem {
@@ -37,28 +38,15 @@ data class ShoppingItem(
     val price: String = ""
 )
 
-val listOfShoppingItem = (1..10).map {
-    ShoppingItem(
-        name = "item $it",
-        unit = "$it$it",
-        price = "${it*2}"
-    )
-}
-
-data class MemberShoppingList(val info: List<Shopping>)
+data class MemberShoppingList(val info: List<Shopping>, val totalCost: String = "")
 
 data class Shopping(
-    val member: User = User(),
+    val userName: String = "",
     val date: String = "",
     val itemDetails: List<ShoppingItem> = emptyList(),
     val totalCost: String = ""
 )
 
-val listOfShopping = (1..5).map {
-    Shopping(
-        member = User(userName = "user $it"),
-        date = "$it/09/2023",
-        itemDetails = listOfShoppingItem,
-        totalCost = "2322"
-    )
+fun Shopping.toMap(): Map<String, Any?> = Shopping::class.memberProperties.associate {
+    it.name to it.get(this)
 }

@@ -1,9 +1,11 @@
 package com.kausar.messmanagementapp.data.firebase_firestore
 
 import com.kausar.messmanagementapp.data.model.AddMoney
+import com.kausar.messmanagementapp.data.model.Balance
 import com.kausar.messmanagementapp.data.model.MealCount
 import com.kausar.messmanagementapp.data.model.MealInfo
 import com.kausar.messmanagementapp.data.model.Mess
+import com.kausar.messmanagementapp.data.model.Shopping
 import com.kausar.messmanagementapp.data.model.User
 import com.kausar.messmanagementapp.utils.ResultState
 import kotlinx.coroutines.flow.Flow
@@ -14,6 +16,15 @@ interface FirebaseFirestoreRepo {
 
     fun addMoneyInfo(user: User,newEntry: AddMoney): Flow<ResultState<String>>
     fun getUserMoneyInfo(user: User): Flow<ResultState<List<AddMoney>>>
+
+    fun newShoppingEntry(user: User,entry: Shopping): Flow<ResultState<String>>
+    fun getUserShoppingInfo(user: User): Flow<ResultState<List<Shopping>>>
+
+    fun addAccountBalance(amount: String) : Flow<ResultState<String>>
+    fun addShoppingCost(cost: String) : Flow<ResultState<String>>
+    fun addTotalMeal(unit: String) : Flow<ResultState<String>>
+
+    fun getBalanceInformation() : Flow<ResultState<Balance>>
 
     fun getCurrentUserInfo(): Flow<ResultState<User?>>
 

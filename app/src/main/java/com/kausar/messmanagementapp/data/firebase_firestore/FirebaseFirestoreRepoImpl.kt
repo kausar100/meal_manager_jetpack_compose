@@ -8,10 +8,12 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.toObject
 import com.kausar.messmanagementapp.data.model.AddMoney
+import com.kausar.messmanagementapp.data.model.Balance
 import com.kausar.messmanagementapp.data.model.MealCount
 import com.kausar.messmanagementapp.data.model.MealInfo
 import com.kausar.messmanagementapp.data.model.MemberType
 import com.kausar.messmanagementapp.data.model.Mess
+import com.kausar.messmanagementapp.data.model.Shopping
 import com.kausar.messmanagementapp.data.model.User
 import com.kausar.messmanagementapp.data.model.toMap
 import com.kausar.messmanagementapp.utils.ResultState
@@ -42,6 +44,8 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
         const val mealDb = "MealInfo"
         const val messNameDb = "MessNameInfo"
         const val moneyDb = "MoneyInfo"
+        const val shopDb = "ShoppingInfo"
+        const val balanceDb = "BalanceInfo"
     }
 
     private fun getMonthYear(date: String): String {
@@ -61,8 +65,7 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
                 //for manager
                 //check if new mess or not
                 firestore.collection(CollectionRef.messNameDb)
-                    .whereEqualTo("messName", user.messName).get()
-                    .addOnSuccessListener {
+                    .whereEqualTo("messName", user.messName).get().addOnSuccessListener {
                         if (it.documents.isNotEmpty()) {
                             //old mess
                             val mess = it.documents[0].toObject<Mess>()
@@ -86,40 +89,32 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
                                 val ref =
                                     firestore.collection(CollectionRef.userDb).document(currentUser)
 
-                                ref.set(userInfo)
-                                    .addOnSuccessListener {
-                                        val newMess =
-                                            Mess(
-                                                user.messName,
-                                                currentUser,
-                                                user.contactNo,
-                                                ""
-                                            ).toMap()
+                                ref.set(userInfo).addOnSuccessListener {
+                                    val newMess = Mess(
+                                        user.messName, currentUser, user.contactNo, ""
+                                    ).toMap()
 
-                                        //new mess entry
-                                        firestore.collection(CollectionRef.messNameDb).add(
-                                            newMess
-                                        ).addOnSuccessListener {
-                                            trySend(
-                                                ResultState.Success(
-                                                    "Registration completed successfully!"
-                                                )
+                                    //new mess entry
+                                    firestore.collection(CollectionRef.messNameDb).add(
+                                        newMess
+                                    ).addOnSuccessListener {
+                                        trySend(
+                                            ResultState.Success(
+                                                "Registration completed successfully!"
                                             )
-                                        }
-                                            .addOnFailureListener { e ->
-                                                trySend(ResultState.Failure(e))
-                                            }
-
-                                    }
-                                    .addOnFailureListener { e ->
+                                        )
+                                    }.addOnFailureListener { e ->
                                         trySend(ResultState.Failure(e))
                                     }
+
+                                }.addOnFailureListener { e ->
+                                    trySend(ResultState.Failure(e))
+                                }
 
                             }
 
                         }
-                    }
-                    .addOnFailureListener { e ->
+                    }.addOnFailureListener { e ->
                         trySend(ResultState.Failure(e))
                     }
 
@@ -127,8 +122,7 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
                 //for member
                 //find mess_id
                 firestore.collection(CollectionRef.messNameDb)
-                    .whereEqualTo("messName", user.messName).get()
-                    .addOnSuccessListener {
+                    .whereEqualTo("messName", user.messName).get().addOnSuccessListener {
                         if (it.documents.isNotEmpty()) {
                             val mess = it.documents[0].toObject<Mess>()
 
@@ -141,21 +135,18 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
 
                                 val ref =
                                     firestore.collection(CollectionRef.userDb).document(currentUser)
-                                ref.set(userInfo)
-                                    .addOnSuccessListener {
-                                        trySend(
-                                            ResultState.Success(
-                                                "Registration completed successfully!"
-                                            )
+                                ref.set(userInfo).addOnSuccessListener {
+                                    trySend(
+                                        ResultState.Success(
+                                            "Registration completed successfully!"
                                         )
-                                    }
-                                    .addOnFailureListener { e ->
-                                        trySend(ResultState.Failure(e))
-                                    }
+                                    )
+                                }.addOnFailureListener { e ->
+                                    trySend(ResultState.Failure(e))
+                                }
                             }
                         }
-                    }
-                    .addOnFailureListener { e ->
+                    }.addOnFailureListener { e ->
                         trySend(ResultState.Failure(e))
                     }
             }
@@ -180,10 +171,8 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
 
                 currentUser?.let {
                     firestore.collection(CollectionRef.moneyDb).document(user.messName)
-                        .collection(user.messId).document(user.userId)
-                        .collection(getMonthYear)
-                        .add(newEntry.toMap())
-                        .addOnSuccessListener {
+                        .collection(user.messId).document(user.userId).collection(getMonthYear)
+                        .add(newEntry.toMap()).addOnSuccessListener {
                             it?.let {
                                 trySend(
                                     ResultState.Success(
@@ -191,8 +180,7 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
                                     )
                                 )
                             }
-                        }
-                        .addOnFailureListener { e ->
+                        }.addOnFailureListener { e ->
                             trySend(ResultState.Failure(e))
                         }
 
@@ -218,9 +206,7 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
 
             currentUser?.let {
                 firestore.collection(CollectionRef.moneyDb).document(user.messName)
-                    .collection(user.messId).document(user.userId)
-                    .collection(getMonthYear)
-                    .get()
+                    .collection(user.messId).document(user.userId).collection(getMonthYear).get()
                     .addOnSuccessListener {
                         it?.let { result ->
                             val lisOfInfo = mutableListOf<AddMoney>()
@@ -232,8 +218,7 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
                             }
                             trySend(ResultState.Success(lisOfInfo))
                         }
-                    }
-                    .addOnFailureListener { e ->
+                    }.addOnFailureListener { e ->
                         trySend(ResultState.Failure(e))
                     }
 
@@ -249,21 +234,324 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
 
     }
 
+    override fun newShoppingEntry(user: User, entry: Shopping): Flow<ResultState<String>> =
+        callbackFlow {
+            trySend(ResultState.Loading)
+
+            val currentUser = firebaseAuth.currentUser?.uid
+
+            if (Network.isNetworkAvailable(context)) {
+
+                currentUser?.let {
+                    firestore.collection(CollectionRef.shopDb).document(user.messName)
+                        .collection(user.messId).document(user.userId).collection(getMonthYear)
+                        .add(entry.toMap()).addOnSuccessListener {
+                            it?.let {
+                                trySend(
+                                    ResultState.Success(
+                                        "Shopping added successfully!"
+                                    )
+                                )
+                            }
+                        }
+
+                        .addOnFailureListener { e ->
+                            trySend(ResultState.Failure(e))
+                        }
+
+                }
+
+            } else {
+                trySend(ResultState.Failure(Exception("Please check your internet connection!")))
+            }
+
+            awaitClose {
+                close()
+            }
+
+        }
+
+    override fun getUserShoppingInfo(user: User): Flow<ResultState<List<Shopping>>> = callbackFlow {
+        trySend(ResultState.Loading)
+
+
+        val currentUser = firebaseAuth.currentUser?.uid
+
+        if (Network.isNetworkAvailable(context)) {
+
+            currentUser?.let {
+                firestore.collection(CollectionRef.shopDb).document(user.messName)
+                    .collection(user.messId).document(user.userId).collection(getMonthYear).get()
+                    .addOnSuccessListener {
+                        it?.let { result ->
+                            val lisOfInfo = mutableListOf<Shopping>()
+                            for (document in result.documents) {
+                                val info = document.toObject(Shopping::class.java)
+                                info?.let {
+                                    lisOfInfo.add(info)
+                                }
+                            }
+                            trySend(ResultState.Success(lisOfInfo))
+                        }
+                    }.addOnFailureListener { e ->
+                        trySend(ResultState.Failure(e))
+                    }
+
+            }
+
+        } else {
+            trySend(ResultState.Failure(Exception("Please check your internet connection!")))
+        }
+
+        awaitClose {
+            close()
+        }
+
+    }
+
+    override fun addAccountBalance(amount: String): Flow<ResultState<String>> = callbackFlow {
+        trySend(ResultState.Loading)
+
+        val currentUser = firebaseAuth.currentUser?.uid
+
+        if (Network.isNetworkAvailable(context)) {
+
+            currentUser?.let {
+                firestore.collection(CollectionRef.userDb).document(currentUser).get()
+                    .addOnSuccessListener {
+                        it?.let {
+                            val user = it.toObject(User::class.java)
+                            user?.let {
+                                val ref = firestore.collection(CollectionRef.balanceDb)
+                                    .document(user.messName).collection(user.messId)
+                                    .document(getMonthYear)
+
+                                ref.get().addOnSuccessListener { b ->
+                                    b?.let { obj ->
+                                        val data = obj.toObject(Balance::class.java)
+                                        data?.let {
+                                            ref.update("totalReceivingAmount", amount)
+                                                .addOnSuccessListener {
+                                                    Log.d(
+                                                        "addbalance", "success: "
+                                                    )
+                                                    trySend(ResultState.Success("Balance added successfully!"))
+                                                }.addOnFailureListener { exp ->
+                                                    Log.d(
+                                                        "addbalance", "failure: "
+                                                    )
+                                                    trySend(ResultState.Failure(exp))
+                                                }
+                                        }
+
+                                    } ?: ref.set(Balance(totalReceivingAmount = amount).toMap())
+                                }.addOnFailureListener { e -> trySend(ResultState.Failure(e)) }
+                            }
+                        }
+                    }.addOnFailureListener { exp ->
+                        trySend(ResultState.Failure(exp))
+                    }
+            }
+
+        } else {
+            trySend(ResultState.Failure(Exception("Please check your internet connection!")))
+        }
+
+        awaitClose {
+            close()
+        }
+
+    }
+
+    override fun addShoppingCost(cost: String): Flow<ResultState<String>> = callbackFlow {
+        trySend(ResultState.Loading)
+
+        val currentUser = firebaseAuth.currentUser?.uid
+
+        if (Network.isNetworkAvailable(context)) {
+
+            currentUser?.let {
+                firestore.collection(CollectionRef.userDb).document(currentUser).get()
+                    .addOnSuccessListener {
+                        it?.let {
+                            val user = it.toObject(User::class.java)
+                            user?.let {
+                                val ref = firestore.collection(CollectionRef.balanceDb)
+                                    .document(user.messName).collection(user.messId)
+                                    .document(getMonthYear)
+
+                                ref.get().addOnSuccessListener { b ->
+                                    b?.let { obj ->
+                                        val data = obj.toObject(Balance::class.java)
+                                        data?.let {
+                                            val available =
+                                                data.totalReceivingAmount.ifEmpty { "0.0" }
+                                                    .toDouble() - cost.toDouble()
+                                            ref.update(
+                                                "totalShoppingCost", cost, "remainingAmount", available.toString()
+                                            ).addOnSuccessListener {
+                                                Log.d(
+                                                    "addcost", "success: "
+                                                )
+                                                trySend(ResultState.Success("Shopping cost added successfully!"))
+                                            }.addOnFailureListener { exp ->
+                                                Log.d(
+                                                    "addcost", "failure: "
+                                                )
+                                                trySend(ResultState.Failure(exp))
+                                            }
+                                        }
+
+                                    } ?: ref.set(
+                                        Balance(
+                                            totalReceivingAmount = "0.0", totalShoppingCost = cost
+                                        ).toMap()
+                                    )
+                                }.addOnFailureListener { e -> trySend(ResultState.Failure(e)) }
+                            }
+                        }
+                    }.addOnFailureListener { exp ->
+                        trySend(ResultState.Failure(exp))
+                    }
+            }
+
+        } else {
+            trySend(ResultState.Failure(Exception("Please check your internet connection!")))
+        }
+
+        awaitClose {
+            close()
+        }
+
+    }
+
+    override fun addTotalMeal(unit: String): Flow<ResultState<String>> = callbackFlow {
+        trySend(ResultState.Loading)
+
+        val currentUser = firebaseAuth.currentUser?.uid
+
+        if (Network.isNetworkAvailable(context)) {
+
+            currentUser?.let {
+                firestore.collection(CollectionRef.userDb).document(currentUser).get()
+                    .addOnSuccessListener {
+                        it?.let {
+                            val user = it.toObject(User::class.java)
+                            user?.let {
+                                val ref = firestore.collection(CollectionRef.balanceDb)
+                                    .document(user.messName).collection(user.messId)
+                                    .document(getMonthYear)
+
+                                ref.get().addOnSuccessListener { b ->
+                                    b?.let { obj ->
+                                        val data = obj.toObject(Balance::class.java)
+                                        data?.let {
+                                            ref.update(
+                                                "totalMeal", unit
+                                            ).addOnSuccessListener {
+                                                Log.d(
+                                                    "addmealcnt", "success: "
+                                                )
+                                                trySend(ResultState.Success("Meal cnt added successfully!"))
+                                            }.addOnFailureListener { exp ->
+                                                Log.d(
+                                                    "addmealcnt", "failure: "
+                                                )
+                                                trySend(ResultState.Failure(exp))
+                                            }
+                                        }?: ref.set(Balance(totalMeal = unit).toMap()).addOnSuccessListener {
+                                            Log.d( "addTotalMeal: ","success")
+                                        }.addOnFailureListener {
+                                            Log.d(
+                                                "addTotalMeal: ","failed"
+                                            ) }
+
+                                    } ?: ref.set(Balance(totalMeal = unit).toMap()).addOnSuccessListener {
+                                        Log.d( "addTotalMeal: ","success")
+                                    }.addOnFailureListener {
+                                        Log.d(
+                                            "addTotalMeal: ","failed"
+                                        ) }
+                                }.addOnFailureListener { e -> trySend(ResultState.Failure(e)) }
+                            }
+                        }
+                    }.addOnFailureListener { exp ->
+                        trySend(ResultState.Failure(exp))
+                    }
+            }
+        } else {
+            trySend(ResultState.Failure(Exception("Please check your internet connection!")))
+        }
+
+        awaitClose {
+            close()
+        }
+    }
+
+    override fun getBalanceInformation(): Flow<ResultState<Balance>> = callbackFlow {
+        trySend(ResultState.Loading)
+
+        val currentUser = firebaseAuth.currentUser?.uid
+
+        if (Network.isNetworkAvailable(context)) {
+
+            currentUser?.let {
+                firestore.collection(CollectionRef.userDb).document(currentUser).get()
+                    .addOnSuccessListener {
+                        it?.let {
+                            val user = it.toObject(User::class.java)
+                            user?.let {
+                                val ref = firestore.collection(CollectionRef.balanceDb)
+                                    .document(user.messName).collection(user.messId)
+                                    .document(getMonthYear)
+
+                                ref.get().addOnSuccessListener { b ->
+                                    b?.let { obj ->
+                                        val data = obj.toObject(Balance::class.java)
+                                        data?.let {
+                                            trySend(ResultState.Success(data))
+                                        }
+                                    } ?: trySend(
+                                        ResultState.Success(
+                                            Balance(
+                                                totalMeal = "0.0",
+                                                totalReceivingAmount = "0.0",
+                                                totalShoppingCost = "0.0",
+                                                remainingAmount = "0.0"
+                                            )
+                                        )
+                                    )
+                                }.addOnFailureListener { e -> trySend(ResultState.Failure(e)) }
+                            }
+                        }
+                    }.addOnFailureListener { exp ->
+                        trySend(ResultState.Failure(exp))
+                    }
+            }
+        } else {
+            trySend(ResultState.Failure(Exception("Please check your internet connection!")))
+        }
+
+        awaitClose {
+            close()
+        }
+    }
+
+
     override fun getCurrentUserInfo(): Flow<ResultState<User?>> = callbackFlow {
         trySend(ResultState.Loading)
         if (Network.isNetworkAvailable(context)) {
 
             val currentUser = firebaseAuth.currentUser?.uid
             currentUser?.let {
-                firestore.collection(CollectionRef.userDb).document(currentUser)
-                    .get().addOnSuccessListener {
+                firestore.collection(CollectionRef.userDb).document(currentUser).get()
+                    .addOnSuccessListener {
                         val user = it.toObject(User::class.java)
                         user?.let {
                             trySend(ResultState.Success(user))
                         }
 
-                    }
-                    .addOnFailureListener {
+                    }.addOnFailureListener {
                         trySend(ResultState.Failure(it))
                     }
             }
@@ -281,20 +569,19 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
         trySend(ResultState.Loading)
 
         if (Network.isNetworkAvailable(context)) {
-            firestore.collection(CollectionRef.messNameDb).get()
-                .addOnSuccessListener { result ->
-                    val lisOfMess = mutableListOf<Mess>()
-                    for (document in result.documents) {
-                        val mess = document.toObject(Mess::class.java)
-                        if (mess != null) {
-                            lisOfMess.add(mess)
-                        }
+            firestore.collection(CollectionRef.messNameDb).get().addOnSuccessListener { result ->
+                val lisOfMess = mutableListOf<Mess>()
+                for (document in result.documents) {
+                    val mess = document.toObject(Mess::class.java)
+                    if (mess != null) {
+                        lisOfMess.add(mess)
                     }
-                    trySend(ResultState.Success(lisOfMess))
-
-                }.addOnFailureListener {
-                    trySend(ResultState.Failure(it))
                 }
+                trySend(ResultState.Success(lisOfMess))
+
+            }.addOnFailureListener {
+                trySend(ResultState.Failure(it))
+            }
 
         } else {
             trySend(ResultState.Failure(Exception("Please check your internet connection!")))
@@ -321,19 +608,15 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
             if (Network.isNetworkAvailable(context)) {
                 val userId = currentUID ?: firebaseAuth.currentUser?.uid
                 userId?.let {
-                    firestore.collection(CollectionRef.userDb).document(userId)
-                        .get().addOnSuccessListener {
+                    firestore.collection(CollectionRef.userDb).document(userId).get()
+                        .addOnSuccessListener {
                             if (it.exists()) {
                                 val user = it.toObject(User::class.java)
                                 user?.let {
                                     firestore.collection(CollectionRef.mealDb)
-                                        .document(user.messName)
-                                        .collection(user.messId)
-                                        .document(user.userId)
-                                        .collection(getMonthYear)
-                                        .document(user.userId)
-                                        .get()
-                                        .addOnSuccessListener { cnt ->
+                                        .document(user.messName).collection(user.messId)
+                                        .document(user.userId).collection(getMonthYear)
+                                        .document(user.userId).get().addOnSuccessListener { cnt ->
                                             cnt?.let {
                                                 val count = cnt.toObject(MealCount::class.java)
                                                 count?.let {
@@ -342,8 +625,7 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
                                                 }
 
                                             }
-                                        }
-                                        .addOnFailureListener { e ->
+                                        }.addOnFailureListener { e ->
                                             Log.d("getSingleMealCount: ", "failed")
                                             trySend(ResultState.Failure(Exception(e)))
                                         }
@@ -351,8 +633,7 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
                             }
 
 
-                        }
-                        .addOnFailureListener {
+                        }.addOnFailureListener {
                             trySend(ResultState.Failure(it))
                         }
                 }
@@ -372,13 +653,12 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
         if (Network.isNetworkAvailable(context)) {
             val currentUser = firebaseAuth.currentUser?.uid
             currentUser?.let {
-                firestore.collection(CollectionRef.userDb).document(currentUser)
-                    .get().addOnSuccessListener {
+                firestore.collection(CollectionRef.userDb).document(currentUser).get()
+                    .addOnSuccessListener {
                         val user = it.toObject(User::class.java)
                         user?.let {
                             firestore.collection(CollectionRef.userDb)
-                                .whereEqualTo("messId", user.messId)
-                                .get()
+                                .whereEqualTo("messId", user.messId).get()
                                 .addOnSuccessListener { res ->
                                     val listOfMessMembers = mutableListOf<User>()
                                     for (info in res.documents) {
@@ -390,14 +670,12 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
                                     messMembers = listOfMessMembers
                                     Log.d("getMessMembers: ", messMembers.toString())
                                     trySend(ResultState.Success(listOfMessMembers))
-                                }
-                                .addOnFailureListener { exp ->
+                                }.addOnFailureListener { exp ->
                                     trySend(ResultState.Failure(exp))
                                 }
                         }
 
-                    }
-                    .addOnFailureListener {
+                    }.addOnFailureListener {
                         trySend(ResultState.Failure(it))
                     }
             }
@@ -419,80 +697,72 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun updateMealCount(
-        member: User,
-        monthYear: String
-    ): Flow<ResultState<String>> =
-        callbackFlow {
-            var cntBreakfast = 0.0
-            var cntLunch = 0.0
-            var cntDinner = 0.0
+        member: User, monthYear: String
+    ): Flow<ResultState<String>> = callbackFlow {
+        var cntBreakfast = 0.0
+        var cntLunch = 0.0
+        var cntDinner = 0.0
 
 
-            Log.d("updateMealCount: ", member.userName)
+        Log.d("updateMealCount: ", member.userName)
 
-            getUserMealByMonth(member.userId).collectLatest { response ->
-                when (response) {
-                    is ResultState.Success -> {
-                        if (response.data.isNotEmpty()) {
-                            for (meal in response.data) {
-                                if (needToCount(meal.date!!)) {
-                                    if (meal.breakfast!!) {
-                                        cntBreakfast += 1.0
-                                    }
-                                    if (meal.lunch!!) {
-                                        cntLunch += 1.0
-                                    }
-                                    if (meal.dinner!!) {
-                                        cntDinner += 1.0
-                                    }
+        getUserMealByMonth(member.userId).collectLatest { response ->
+            when (response) {
+                is ResultState.Success -> {
+                    if (response.data.isNotEmpty()) {
+                        for (meal in response.data) {
+                            if (needToCount(meal.date!!)) {
+                                if (meal.breakfast!!) {
+                                    cntBreakfast += 1.0
+                                }
+                                if (meal.lunch!!) {
+                                    cntLunch += 1.0
+                                }
+                                if (meal.dinner!!) {
+                                    cntDinner += 1.0
                                 }
                             }
-                            val cntTotal = cntBreakfast * 0.5 + cntLunch * 1.0 + cntDinner * 1.0
-
-                            val cnt = MealCount(
-                                breakfast = cntBreakfast,
-                                lunch = cntLunch,
-                                dinner = cntDinner,
-                                total = cntTotal
-                            )
-
-                            firestore.collection(CollectionRef.mealDb)
-                                .document(member.messName)
-                                .collection(member.messId)
-                                .document(member.userId)
-                                .collection(monthYear)
-                                .document(member.userId)
-                                .set(cnt.toMap())
-                                .addOnSuccessListener {
-                                    Log.d("updateMealCount: ", "success")
-                                    trySend(
-                                        ResultState.Success(
-                                            "Data inserted successfully!"
-                                        )
-                                    )
-
-                                }
-                                .addOnFailureListener { e ->
-                                    Log.d("updateMealCount: ", "failed")
-                                    trySend(ResultState.Failure(Exception(e)))
-                                }
-
-                        } else {
-                            trySend(ResultState.Failure(Exception("No meal history found!")))
                         }
-                    }
+                        val cntTotal = cntBreakfast * 0.5 + cntLunch * 1.0 + cntDinner * 1.0
 
-                    is ResultState.Failure -> {
+                        val cnt = MealCount(
+                            breakfast = cntBreakfast,
+                            lunch = cntLunch,
+                            dinner = cntDinner,
+                            total = cntTotal
+                        )
+
+                        firestore.collection(CollectionRef.mealDb).document(member.messName)
+                            .collection(member.messId).document(member.userId).collection(monthYear)
+                            .document(member.userId).set(cnt.toMap()).addOnSuccessListener {
+                                Log.d("updateMealCount: ", "success")
+                                trySend(
+                                    ResultState.Success(
+                                        "Data inserted successfully!"
+                                    )
+                                )
+
+                            }.addOnFailureListener { e ->
+                                Log.d("updateMealCount: ", "failed")
+                                trySend(ResultState.Failure(Exception(e)))
+                            }
+
+                    } else {
                         trySend(ResultState.Failure(Exception("No meal history found!")))
                     }
+                }
 
-                    else -> {
+                is ResultState.Failure -> {
+                    trySend(ResultState.Failure(Exception("No meal history found!")))
+                }
 
-                    }
+                else -> {
+
                 }
             }
-
         }
+
+    }
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun countMeal(
@@ -618,12 +888,9 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
                                                 )
 
                                                 firestore.collection(CollectionRef.mealDb)
-                                                    .document(user.messName)
-                                                    .collection(user.messId)
-                                                    .document(user.userId)
-                                                    .collection(monthYear)
-                                                    .document(user.userId)
-                                                    .set(cnt.toMap())
+                                                    .document(user.messName).collection(user.messId)
+                                                    .document(user.userId).collection(monthYear)
+                                                    .document(user.userId).set(cnt.toMap())
                                                     .addOnSuccessListener {
                                                         Log.d("updateMealCount: ", "success")
                                                         trySend(
@@ -632,8 +899,7 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
                                                             )
                                                         )
 
-                                                    }
-                                                    .addOnFailureListener { e ->
+                                                    }.addOnFailureListener { e ->
                                                         Log.d("updateMealCount: ", "failed")
                                                         trySend(ResultState.Failure(Exception(e)))
                                                     }
@@ -680,79 +946,70 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
     }
 
 
-    override fun insertCurrentUserMeal(meal: MealInfo): Flow<ResultState<String>> =
-        callbackFlow {
-            trySend(ResultState.Loading)
+    override fun insertCurrentUserMeal(meal: MealInfo): Flow<ResultState<String>> = callbackFlow {
+        trySend(ResultState.Loading)
 
-            val monthYear = getMonthYear(meal.date!!)
-            val currentUser = firebaseAuth.currentUser?.uid
+        val monthYear = getMonthYear(meal.date!!)
+        val currentUser = firebaseAuth.currentUser?.uid
 
-            if (Network.isNetworkAvailable(context)) {
+        if (Network.isNetworkAvailable(context)) {
 
-                currentUser?.let {
-                    firestore.collection(CollectionRef.userDb).document(currentUser)
-                        .get()
-                        .addOnSuccessListener { data ->
-                            data?.let {
-                                val user = data.toObject(User::class.java)
-                                user?.let {
-                                    firestore.collection(CollectionRef.mealDb)
-                                        .document(user.messName)
-                                        .collection(user.messId).document(currentUser)
-                                        .collection(monthYear).whereEqualTo("date", meal.date).get()
-                                        .addOnSuccessListener {
-                                            it?.let { result ->
-                                                if (result.documents.isNotEmpty()) {
-                                                    trySend(ResultState.Failure(Exception("Data already exists!")))
-                                                } else {
-                                                    val hashMeal = meal.toMap()
+            currentUser?.let {
+                firestore.collection(CollectionRef.userDb).document(currentUser).get()
+                    .addOnSuccessListener { data ->
+                        data?.let {
+                            val user = data.toObject(User::class.java)
+                            user?.let {
+                                firestore.collection(CollectionRef.mealDb).document(user.messName)
+                                    .collection(user.messId).document(currentUser)
+                                    .collection(monthYear).whereEqualTo("date", meal.date).get()
+                                    .addOnSuccessListener {
+                                        it?.let { result ->
+                                            if (result.documents.isNotEmpty()) {
+                                                trySend(ResultState.Failure(Exception("Data already exists!")))
+                                            } else {
+                                                val hashMeal = meal.toMap()
 
-                                                    val ref =
-                                                        firestore.collection(CollectionRef.mealDb)
-                                                            .document(user.messName)
-                                                            .collection(user.messId)
-                                                            .document(currentUser)
-                                                            .collection(monthYear)
+                                                val ref = firestore.collection(CollectionRef.mealDb)
+                                                    .document(user.messName).collection(user.messId)
+                                                    .document(currentUser).collection(monthYear)
 
-                                                    ref.add(hashMeal)
-                                                        .addOnSuccessListener { rst ->
-                                                            if (rst?.id != null) {
-                                                                trySend(
-                                                                    ResultState.Success(
-                                                                        "Meal info inserted successfully!"
-                                                                    )
-                                                                )
+                                                ref.add(hashMeal).addOnSuccessListener { rst ->
+                                                    if (rst?.id != null) {
+                                                        trySend(
+                                                            ResultState.Success(
+                                                                "Meal info inserted successfully!"
+                                                            )
+                                                        )
 
-                                                            }
-                                                        }.addOnFailureListener { exp ->
-                                                            trySend(ResultState.Failure(exp))
-                                                        }
+                                                    }
+                                                }.addOnFailureListener { exp ->
+                                                    trySend(ResultState.Failure(exp))
                                                 }
                                             }
-
                                         }
-                                        .addOnFailureListener { exp ->
-                                            trySend(ResultState.Failure(exp))
-                                        }
-                                }
 
+                                    }.addOnFailureListener { exp ->
+                                        trySend(ResultState.Failure(exp))
+                                    }
                             }
 
                         }
-                        .addOnFailureListener { exp ->
-                            trySend(ResultState.Failure(exp))
-                        }
-                }
 
-            } else {
-                trySend(ResultState.Failure(Exception("Please check your internet connection!")))
+                    }.addOnFailureListener { exp ->
+                        trySend(ResultState.Failure(exp))
+                    }
             }
 
-
-            awaitClose {
-                close()
-            }
+        } else {
+            trySend(ResultState.Failure(Exception("Please check your internet connection!")))
         }
+
+
+        awaitClose {
+            close()
+        }
+    }
 
     override fun updateCurrentUserMeal(meal: MealInfo): Flow<ResultState<String>> = callbackFlow {
         trySend(ResultState.Loading)
@@ -763,16 +1020,15 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
 
         if (Network.isNetworkAvailable(context)) {
             currentUser?.let {
-                firestore.collection(CollectionRef.userDb).document(currentUser)
-                    .get()
+                firestore.collection(CollectionRef.userDb).document(currentUser).get()
                     .addOnSuccessListener { data ->
                         data?.let {
                             val user = data.toObject(User::class.java)
                             user?.let {
                                 firestore.collection(CollectionRef.mealDb).document(user.messName)
                                     .collection(user.messId).document(currentUser)
-                                    .collection(monthYear).whereEqualTo("date", meal.date)
-                                    .get().addOnSuccessListener {
+                                    .collection(monthYear).whereEqualTo("date", meal.date).get()
+                                    .addOnSuccessListener {
                                         it?.let { result ->
                                             if (result.documents.isNotEmpty()) {
                                                 val doc = result.documents[0]
@@ -800,8 +1056,7 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
 
                         }
 
-                    }
-                    .addOnFailureListener { exp ->
+                    }.addOnFailureListener { exp ->
                         trySend(ResultState.Failure(exp))
                     }
 
@@ -821,20 +1076,19 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
         trySend(ResultState.Loading)
 
         if (Network.isNetworkAvailable(context)) {
-            firestore.collection(CollectionRef.userDb).get()
-                .addOnSuccessListener { result ->
-                    val lisOfUser = mutableListOf<User>()
-                    for (document in result.documents) {
-                        val user = document.toObject(User::class.java)
-                        user?.let {
-                            lisOfUser.add(user)
-                        }
+            firestore.collection(CollectionRef.userDb).get().addOnSuccessListener { result ->
+                val lisOfUser = mutableListOf<User>()
+                for (document in result.documents) {
+                    val user = document.toObject(User::class.java)
+                    user?.let {
+                        lisOfUser.add(user)
                     }
-                    trySend(ResultState.Success(lisOfUser))
-
-                }.addOnFailureListener {
-                    trySend(ResultState.Failure(it))
                 }
+                trySend(ResultState.Success(lisOfUser))
+
+            }.addOnFailureListener {
+                trySend(ResultState.Failure(it))
+            }
 
         } else {
             trySend(ResultState.Failure(Exception("Please check your internet connection!")))
@@ -906,17 +1160,16 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
 
             if (Network.isNetworkAvailable(context)) {
                 currentUser?.let {
-                    firestore.collection(CollectionRef.userDb).document(currentUser)
-                        .get()
+                    firestore.collection(CollectionRef.userDb).document(currentUser).get()
                         .addOnSuccessListener { data ->
                             data?.let {
                                 val user = data.toObject(User::class.java)
                                 user?.let {
                                     firestore.collection(CollectionRef.mealDb)
-                                        .document(user.messName)
-                                        .collection(user.messId).document(currentUser)
-                                        .collection(monthYear).whereEqualTo("date", date)
-                                        .get().addOnSuccessListener { result ->
+                                        .document(user.messName).collection(user.messId)
+                                        .document(currentUser).collection(monthYear)
+                                        .whereEqualTo("date", date).get()
+                                        .addOnSuccessListener { result ->
                                             result?.let {
                                                 if (it.documents.size == 0) {
                                                     trySend(ResultState.Failure(Exception("Not found any meal for today!")))
@@ -929,16 +1182,14 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
                                             }
                                                 ?: trySend(ResultState.Failure(Exception("Not found any meal for today!")))
 
-                                        }
-                                        .addOnFailureListener {
+                                        }.addOnFailureListener {
                                             trySend(ResultState.Failure(it))
                                         }
                                 }
 
                             }
 
-                        }
-                        .addOnFailureListener { exp ->
+                        }.addOnFailureListener { exp ->
                             trySend(ResultState.Failure(exp))
                         }
 
@@ -963,16 +1214,14 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
 
         if (Network.isNetworkAvailable(context)) {
             currentUser?.let {
-                firestore.collection(CollectionRef.userDb).document(currentUser)
-                    .get()
+                firestore.collection(CollectionRef.userDb).document(currentUser).get()
                     .addOnSuccessListener { data ->
                         data?.let {
                             val user = data.toObject(User::class.java)
                             user?.let {
                                 firestore.collection(CollectionRef.mealDb).document(user.messName)
                                     .collection(user.messId).document(currentUser)
-                                    .collection(monthYear).get()
-                                    .addOnSuccessListener { result ->
+                                    .collection(monthYear).get().addOnSuccessListener { result ->
                                         val meals = mutableListOf<MealInfo>()
                                         for (document in result.documents) {
                                             document?.data.let { data ->
@@ -993,13 +1242,11 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
                                         //sort by date ascending
                                         val formatter: DateTimeFormatter =
                                             DateTimeFormatter.ofPattern("dd/MM/yyyy")
-                                        val sortedMeals =
-                                            meals.sortedByDescending {
-                                                LocalDate.parse(
-                                                    it.date,
-                                                    formatter
-                                                )
-                                            }
+                                        val sortedMeals = meals.sortedByDescending {
+                                            LocalDate.parse(
+                                                it.date, formatter
+                                            )
+                                        }
 
                                         trySend(ResultState.Success(sortedMeals))
 
@@ -1010,8 +1257,7 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
 
                         }
 
-                    }
-                    .addOnFailureListener { exp ->
+                    }.addOnFailureListener { exp ->
                         trySend(ResultState.Failure(exp))
                     }
             }

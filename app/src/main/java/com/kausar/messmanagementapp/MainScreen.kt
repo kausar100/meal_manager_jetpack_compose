@@ -50,6 +50,7 @@ fun MainScreen(viewModel: MainViewModel) {
 
     val isLogin = viewModel.isLoggedIn.value
     viewModel.getUserInfo()
+    viewModel.getBalanceInformation()
 
     val connection by connectivityState()
     val isConnected = (connection === ConnectionState.Available)
