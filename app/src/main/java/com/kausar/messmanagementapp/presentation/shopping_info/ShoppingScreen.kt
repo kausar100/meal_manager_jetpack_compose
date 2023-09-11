@@ -29,11 +29,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.kausar.messmanagementapp.data.model.ShoppingScreenListInfo
 import com.kausar.messmanagementapp.data.model.ShoppingListItem
 import com.kausar.messmanagementapp.navigation.Screen
 import com.kausar.messmanagementapp.presentation.shopping_info.shared.DialogInformation
+import com.kausar.messmanagementapp.presentation.viewmodels.FirebaseFirestoreDbViewModel
 import com.kausar.messmanagementapp.presentation.viewmodels.MainViewModel
 import com.kausar.messmanagementapp.utils.fetchCurrentMonthName
 import java.lang.Exception
@@ -45,10 +47,19 @@ enum class ListType {
 }
 
 @Composable
-fun ShoppingScreen(mainViewModel: MainViewModel, navController: NavHostController) {
+fun ShoppingScreen(
+    mainViewModel: MainViewModel,
+    navController: NavHostController,
+    firestore: FirebaseFirestoreDbViewModel = hiltViewModel()
+) {
 
+    val memberInfo = mainViewModel.memberInfo.value
     val balance = mainViewModel.balanceInfo.value
-    LaunchedEffect(key1 = Unit){
+
+    LaunchedEffect(key1 = Unit) {
+        for (member in memberInfo.listOfMember) {
+            firestore.getMoneyInfo(member)
+        }
         mainViewModel.getBalanceInformation()
     }
 
@@ -151,7 +162,9 @@ fun getCostPerMeal(totalMeal: String, totalShoppingCost: String): String {
     try {
         val df = DecimalFormat("#.##")
         df.roundingMode = RoundingMode.DOWN
-        cost = df.format(totalShoppingCost.ifEmpty { "0.0" }.toDouble() / totalMeal.ifEmpty { "0.0" }.toDouble())
+        cost =
+            df.format(totalShoppingCost.ifEmpty { "0.0" }.toDouble() / totalMeal.ifEmpty { "0.0" }
+                .toDouble())
     } catch (e: Exception) {
         cost = "0.0"
     }
