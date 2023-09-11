@@ -8,11 +8,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.google.accompanist.pager.*
-import com.kausar.messmanagementapp.R
 import com.kausar.messmanagementapp.navigation.TabItem
 import com.kausar.messmanagementapp.presentation.viewmodels.MainViewModel
 import kotlinx.coroutines.launch
@@ -48,7 +46,7 @@ fun Tabs(tabs: List<TabItem>, pagerState: PagerState) {
         // Our selected tab is our current page
         selectedTabIndex = pagerState.currentPage,
         // Override the indicator, using the provided pagerTabIndicatorOffset modifier
-        backgroundColor = colorResource(id = R.color.black),
+        backgroundColor = MaterialTheme.colors.onSurface,
         contentColor = Color.White,
         indicator = { tabPositions ->
             TabRowDefaults.Indicator(

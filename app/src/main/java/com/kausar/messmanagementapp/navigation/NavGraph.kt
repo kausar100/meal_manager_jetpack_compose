@@ -79,7 +79,7 @@ fun BottomNavGraph(
                 navController.navigate(Screen.ShoppingList.route)
             }
         }
-        composable(route = BottomBarScreen.Profile.route) {
+        composable(route = Screen.Profile.route) {
             ProfileScreen(mainViewModel)
         }
         composable(route = BottomBarScreen.MealInfo.route) {

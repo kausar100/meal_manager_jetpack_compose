@@ -24,6 +24,8 @@ sealed class Screen(
     object Balance : Screen(route = "balance_screen", title = "Account Balance")
     object ShoppingHistory : Screen(route = "shopping_history_screen", title = "Shopping History")
     object ShoppingList : Screen(route = "shopping_info_screen", title = "Shopping Information")
+
+    object Profile : Screen(route = "profile", title = "Profile")
 }
 
 
@@ -40,10 +42,6 @@ sealed class BottomBarScreen(
 
     object Shopping : BottomBarScreen(
         route = "shop_info", title = "Shopping", icon = R.drawable.ic_shopping
-    )
-
-    object Profile : BottomBarScreen(
-        route = "profile", title = "Profile", icon = R.drawable.ic_person
     )
 
 }

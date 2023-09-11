@@ -57,11 +57,8 @@ fun MainScreen(viewModel: MainViewModel) {
 
     Scaffold(topBar = {
         when (currentRoute(navController)) {
-            BottomBarScreen.Home.route, BottomBarScreen.MealInfo.route, BottomBarScreen.Shopping.route, Screen.AddMoney.route, Screen.ShopEntry.route, Screen.Balance.route, Screen.ShoppingHistory.route, Screen.ShoppingList.route, BottomBarScreen.Profile.route -> {
+            BottomBarScreen.Home.route, BottomBarScreen.MealInfo.route, BottomBarScreen.Shopping.route, Screen.AddMoney.route, Screen.ShopEntry.route, Screen.Balance.route, Screen.Profile.route, Screen.ShoppingHistory.route, Screen.ShoppingList.route -> {
                 CustomTopAppBar(title = when (currentRoute(navController)) {
-                    BottomBarScreen.Home.route -> {
-                        BottomBarScreen.Home.title
-                    }
 
                     BottomBarScreen.MealInfo.route -> {
                         BottomBarScreen.MealInfo.title
@@ -71,12 +68,12 @@ fun MainScreen(viewModel: MainViewModel) {
                         BottomBarScreen.Shopping.title
                     }
 
-                    BottomBarScreen.Profile.route -> {
-                        BottomBarScreen.Profile.title
-                    }
-
                     Screen.AddMoney.route -> {
                         Screen.AddMoney.title
+                    }
+
+                    Screen.Profile.route -> {
+                        Screen.Profile.title
                     }
 
                     Screen.ShopEntry.route -> {
@@ -99,6 +96,23 @@ fun MainScreen(viewModel: MainViewModel) {
                         null
                     }
                 },
+                    canGoProfileScreen = when (currentRoute(navController)) {
+                        BottomBarScreen.Home.route -> {
+                            true
+
+                        }
+
+                        else -> {
+                            false
+                        }
+
+                    },
+                    profilePicture = viewModel.userInfo.value.profilePhoto,
+                    userName = viewModel.userInfo.value.userName,
+                    userType = viewModel.userInfo.value.userType,
+                    gotoProfileScreen = {
+                        navController.navigate(Screen.Profile.route)
+                    },
                     showAction = when (currentRoute(navController)) {
                         BottomBarScreen.Shopping.route -> {
                             true
@@ -122,7 +136,7 @@ fun MainScreen(viewModel: MainViewModel) {
                         }
                     },
                     canNavigateBack = when (currentRoute(navController)) {
-                        Screen.AddMoney.route, Screen.ShopEntry.route, Screen.Balance.route, Screen.ShoppingHistory.route, Screen.ShoppingList.route -> {
+                        Screen.AddMoney.route, Screen.ShopEntry.route, Screen.Balance.route, Screen.ShoppingHistory.route, Screen.ShoppingList.route, Screen.Profile.route -> {
                             true
                         }
 
@@ -143,7 +157,7 @@ fun MainScreen(viewModel: MainViewModel) {
         }
     }, bottomBar = {
         when (currentRoute(navController)) {
-            BottomBarScreen.Home.route, BottomBarScreen.MealInfo.route, BottomBarScreen.Shopping.route, BottomBarScreen.Profile.route -> {
+            BottomBarScreen.Home.route, BottomBarScreen.MealInfo.route, BottomBarScreen.Shopping.route -> {
                 BottomBar(navController = navController)
             }
         }
@@ -183,7 +197,6 @@ fun BottomBar(navController: NavHostController) {
         BottomBarScreen.Home,
         BottomBarScreen.MealInfo,
         BottomBarScreen.Shopping,
-        BottomBarScreen.Profile
     )
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
