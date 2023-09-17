@@ -135,10 +135,6 @@ fun AddMoney(
         if (showDialog) {
             Dialog(onDismissRequest = { showDialog = false }) {
                 Card(
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.background,
-                        contentColor = MaterialTheme.colorScheme.secondary
-                    ),
                     elevation = CardDefaults.elevatedCardElevation(),
                     shape = RoundedCornerShape(4.dp)
                 ) {
@@ -215,10 +211,6 @@ fun AddMoney(
                                     }
                                 },
                                 shape = RoundedCornerShape(4.dp),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = MaterialTheme.colorScheme.primary,
-                                    contentColor = MaterialTheme.colorScheme.secondary
-                                ),
                             ) {
                                 Text(
                                     text = "Continue",
@@ -277,10 +269,6 @@ fun AddMoneyHeader(
     }
 
     Card(
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.background,
-            contentColor = MaterialTheme.colorScheme.secondary
-        ),
         elevation = CardDefaults.elevatedCardElevation(),
         shape = RoundedCornerShape(4.dp)
     ) {
@@ -357,10 +345,6 @@ fun AddMoneyHeader(
 
                     },
                     shape = RoundedCornerShape(4.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary,
-                        contentColor = MaterialTheme.colorScheme.secondary
-                    ),
                 ) {
                     Text(
                         text = "Add Money",

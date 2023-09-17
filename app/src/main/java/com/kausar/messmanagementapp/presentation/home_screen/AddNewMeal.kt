@@ -160,10 +160,7 @@ fun AddNewMeal(
                     ElevatedButton(
                         onClick = {
                             addMeal(breakFast, lunch, dinner)
-                        }, shape = RoundedCornerShape(4.dp), colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.primary,
-                            contentColor = MaterialTheme.colorScheme.secondary
-                        ),
+                        }, shape = RoundedCornerShape(4.dp),
                         modifier = Modifier.fillMaxWidth(1f)
                     ) {
                         Text(
@@ -177,10 +174,7 @@ fun AddNewMeal(
                     ElevatedButton(
                         onClick = {
                             updateMeal(breakFast, lunch, dinner)
-                        }, shape = RoundedCornerShape(4.dp), colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.primary,
-                            contentColor = MaterialTheme.colorScheme.secondary
-                        ),
+                        }, shape = RoundedCornerShape(4.dp),
                         modifier = Modifier.fillMaxWidth(1f)
                     ) {
                         Text(

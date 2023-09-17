@@ -73,10 +73,6 @@ fun ShoppingHistory(
                 modifier = Modifier
                     .weight(3f)
                     .fillMaxWidth(1f),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.background,
-                    contentColor = MaterialTheme.colorScheme.secondary
-                ),
                 elevation = CardDefaults.elevatedCardElevation(),
                 shape = RoundedCornerShape(4.dp)
             ) {
@@ -125,7 +121,6 @@ fun SingleShoppingInformation(modifier: Modifier = Modifier, shopping: Shopping)
     Column(
         modifier = modifier
             .fillMaxHeight()
-            .background(MaterialTheme.colorScheme.primary)
             .padding(16.dp)
     ) {
         DialogInformation(title = "Date", data = shopping.date)
@@ -151,10 +146,8 @@ fun SingleShoppingInformation(modifier: Modifier = Modifier, shopping: Shopping)
 @Composable
 fun ShoppingItemInfo(modifier: Modifier = Modifier, info: ShoppingItem) {
     Card(
-        modifier.padding(vertical = 4.dp), colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.background,
-            contentColor = MaterialTheme.colorScheme.onBackground
-        ), elevation = CardDefaults.elevatedCardElevation(), shape = RoundedCornerShape(4.dp)
+        modifier.padding(vertical = 4.dp),
+        elevation = CardDefaults.elevatedCardElevation(), shape = RoundedCornerShape(4.dp)
     ) {
         Column(
             Modifier.padding(horizontal = 8.dp, vertical = 4.dp),

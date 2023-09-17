@@ -296,7 +296,6 @@ fun SharedHomeScreen(
                         Spacer(modifier = Modifier.width(16.dp))
                         Icon(imageVector = Icons.Default.AddCircle,
                             contentDescription = "add meal",
-                            tint = MaterialTheme.colorScheme.secondary,
                             modifier = Modifier.clickable { newMeal = true })
 
                     }
@@ -358,9 +357,8 @@ fun PopUpOption(onDismiss: () -> Unit, onSelect: (String, String) -> Unit) {
     }) {
 
         repeat(dates.size) {
-            DropdownMenuItem(colors = MenuDefaults.itemColors(
-                textColor = MaterialTheme.colorScheme.background
-            ), text = {
+            DropdownMenuItem(
+                text = {
                 Text(text = dates[it])
             }, onClick = {
                 expanded = false

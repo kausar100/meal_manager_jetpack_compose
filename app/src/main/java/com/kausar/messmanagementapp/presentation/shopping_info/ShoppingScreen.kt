@@ -75,10 +75,6 @@ fun ShoppingScreen(
                 modifier = Modifier
                     .padding(8.dp)
                     .fillMaxWidth(1f),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.secondary
-                ),
                 elevation = CardDefaults.elevatedCardElevation(),
                 shape = RoundedCornerShape(4.dp)
             ) {
@@ -181,10 +177,6 @@ fun MenuItem(item: ShoppingScreenListInfo, gridView: Boolean = false, onItemClic
                 onItemClick()
             },
         elevation = CardDefaults.elevatedCardElevation(),
-        colors = CardDefaults.elevatedCardColors(
-            containerColor = MaterialTheme.colorScheme.primary,
-            contentColor = MaterialTheme.colorScheme.secondary
-        ),
         shape = RoundedCornerShape(4.dp)
     ) {
         if (gridView) {

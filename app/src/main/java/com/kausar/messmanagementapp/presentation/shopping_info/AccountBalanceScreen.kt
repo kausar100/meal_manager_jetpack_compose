@@ -68,10 +68,6 @@ fun AccountBalance(
     ) {
         Card(
             modifier = Modifier.fillMaxWidth(1f),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.secondary
-            ),
             elevation = CardDefaults.elevatedCardElevation(),
             shape = RoundedCornerShape(4.dp)
         ) {

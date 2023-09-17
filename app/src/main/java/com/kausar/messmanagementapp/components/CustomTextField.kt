@@ -107,10 +107,6 @@ fun CustomTextField(
             onNext = {
                 onComplete()
             }
-        ),
-        colors = TextFieldDefaults.textFieldColors(
-            containerColor = MaterialTheme.colorScheme.primary,
-            textColor = MaterialTheme.colorScheme.secondary
         )
     )
 }

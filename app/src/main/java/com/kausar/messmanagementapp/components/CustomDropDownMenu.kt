@@ -90,8 +90,6 @@ fun CustomDropDownMenu(
             keyboardOptions = KeyboardOptions(
                 imeAction = ImeAction.Next
             ),
-            colors = TextFieldDefaults.outlinedTextFieldColors(
-            ),
             keyboardActions = KeyboardActions(onNext = { onImeAction(mSelectedText) })
         )
 
@@ -100,7 +98,6 @@ fun CustomDropDownMenu(
             onDismissRequest = { mExpanded = false },
             modifier = Modifier
                 .width(with(LocalDensity.current) { mTextFieldSize.width.toDp() })
-                .background(MaterialTheme.colorScheme.background)
         ) {
             items.forEach { label ->
 

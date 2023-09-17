@@ -298,8 +298,6 @@ fun RegistrationScreenContent(
 
                 },
                 shape = RoundedCornerShape(4.dp),
-                colors = ButtonDefaults.buttonColors(
-                ),
                 modifier = Modifier.fillMaxWidth(),
                 contentPadding = PaddingValues(vertical = 16.dp)
             ) {

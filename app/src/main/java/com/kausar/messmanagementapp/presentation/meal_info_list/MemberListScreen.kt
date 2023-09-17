@@ -248,10 +248,6 @@ fun MealInfoScreen(
                     },
                     confirmButton = {
                         Button(
-                            colors = ButtonDefaults.buttonColors(
-                                contentColor = MaterialTheme.colorScheme.background,
-                                containerColor = MaterialTheme.colorScheme.secondary
-                            ),
                             onClick = {
                                 showMealInfoScreen = false
                             },
@@ -401,17 +397,12 @@ fun ShowUser(
                 onClickUser()
             },
         elevation = CardDefaults.elevatedCardElevation(),
-        colors = CardDefaults.elevatedCardColors(
-            containerColor = MaterialTheme.colorScheme.primary,
-            contentColor = MaterialTheme.colorScheme.secondary
-        ),
         shape = RoundedCornerShape(4.dp)
     ) {
         ListItem(headlineText = {
             Text(text = userInfo.userName)
-        }, colors = ListItemDefaults.colors(
-            containerColor = MaterialTheme.colorScheme.primary
-        ), leadingContent = {
+        },
+            leadingContent = {
             if (userInfo.profilePhoto.isNotEmpty()) {
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current).data(userInfo.profilePhoto)
@@ -428,7 +419,6 @@ fun ShowUser(
                 Icon(
                     imageVector = Icons.Default.Person,
                     contentDescription = "profile",
-                    tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier
                         .size(50.dp)
                         .border(

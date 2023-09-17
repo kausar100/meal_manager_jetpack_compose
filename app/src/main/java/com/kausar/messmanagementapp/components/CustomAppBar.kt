@@ -132,12 +132,7 @@ fun CustomTopAppBar(
             }
 
         }
-    }, colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-        containerColor = MaterialTheme.colorScheme.primary.copy(alpha = .9f),
-        actionIconContentColor = MaterialTheme.colorScheme.surface,
-        titleContentColor = MaterialTheme.colorScheme.surface,
-        navigationIconContentColor = MaterialTheme.colorScheme.surface
-    )
+    }
     )
 }
 

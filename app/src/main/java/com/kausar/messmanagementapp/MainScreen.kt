@@ -7,10 +7,8 @@ import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.Text
@@ -203,7 +201,7 @@ fun BottomBar(navController: NavHostController) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
-    NavigationBar(containerColor = MaterialTheme.colorScheme.primary.copy(alpha = .9f)) {
+    NavigationBar{
         screens.forEach { screen ->
             AddDestination(
                 screen = screen,
@@ -243,14 +241,6 @@ fun RowScope.AddDestination(
             Icon(
                 painter = painterResource(id = screen.icon), contentDescription = "Navigation Icon"
             )
-        },
-        colors = NavigationBarItemDefaults.colors(
-            selectedTextColor = MaterialTheme.colorScheme.surface,
-            selectedIconColor = MaterialTheme.colorScheme.surface,
-            indicatorColor = MaterialTheme.colorScheme.primary,
-            unselectedTextColor = MaterialTheme.colorScheme.surface.copy(alpha = .3f),
-            unselectedIconColor = MaterialTheme.colorScheme.surface.copy(alpha = .3f),
-        ),
-
+        }
         )
 }

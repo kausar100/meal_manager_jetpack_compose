@@ -166,7 +166,6 @@ fun ProfileScreen(
                         Icon(
                             imageVector = Icons.Default.Person,
                             contentDescription = "profile photo",
-                            tint = MaterialTheme.colorScheme.surfaceVariant,
                             modifier = Modifier
                                 .size(100.dp)
                                 .border(
@@ -187,9 +186,7 @@ fun ProfileScreen(
                     verticalAlignment = Alignment.Bottom
                 ) {
                     IconButton(
-                        onClick = { imagePicker.launch("image/*") }, modifier = Modifier
-                            .background(MaterialTheme.colorScheme.primary, CircleShape)
-                            .size(32.dp)
+                        onClick = { imagePicker.launch("image/*") }, modifier = Modifier.size(32.dp)
 
                     ) {
                         Icon(

@@ -318,8 +318,8 @@ fun VerifyPinContent(
         ElevatedButton(
             onClick = {
                 onCodeEnter(otp)
-            }, shape = RoundedCornerShape(4.dp), colors = ButtonDefaults.buttonColors(
-            ), modifier = Modifier.fillMaxWidth(), contentPadding = PaddingValues(vertical = 16.dp)
+            }, shape = RoundedCornerShape(4.dp),
+            modifier = Modifier.fillMaxWidth(), contentPadding = PaddingValues(vertical = 16.dp)
         ) {
             Text(text = "Verify OTP", fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
         }

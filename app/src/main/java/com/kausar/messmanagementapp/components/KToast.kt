@@ -140,13 +140,11 @@ fun KToast(
         Icon(
             imageVector = icon,
             contentDescription = contentDescription,
-            tint = MaterialTheme.colorScheme.surfaceTint,
             modifier = Modifier.size(32.dp)
         )
         Spacer(modifier = Modifier.width(8.dp))
         Text(
             text = message,
-            color = MaterialTheme.colorScheme.surfaceTint,
             style =  MaterialTheme.typography.titleSmall,
         )
 

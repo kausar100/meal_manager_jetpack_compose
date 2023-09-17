@@ -20,10 +20,8 @@ import com.kausar.messmanagementapp.data.model.AddMoney
 @Composable
 fun MoneyRow(info: AddMoney) {
     Card(
-        Modifier.padding(vertical = 4.dp), colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primary,
-            contentColor = MaterialTheme.colorScheme.secondary
-        ), elevation = CardDefaults.elevatedCardElevation(), shape = RoundedCornerShape(4.dp)
+        Modifier.padding(vertical = 4.dp),
+        elevation = CardDefaults.elevatedCardElevation(), shape = RoundedCornerShape(4.dp)
     ) {
         Row(
             Modifier
@@ -45,10 +43,8 @@ fun MoneyRow(info: AddMoney) {
 @Composable
 fun MoneyInfo(modifier: Modifier = Modifier, info: AddMoney) {
     Card(
-        modifier.padding(vertical = 8.dp), colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primary,
-            contentColor = MaterialTheme.colorScheme.secondary
-        ), elevation = CardDefaults.elevatedCardElevation(), shape = RoundedCornerShape(4.dp)
+        modifier.padding(vertical = 8.dp),
+        elevation = CardDefaults.elevatedCardElevation(), shape = RoundedCornerShape(4.dp)
     ) {
         Row(
             Modifier

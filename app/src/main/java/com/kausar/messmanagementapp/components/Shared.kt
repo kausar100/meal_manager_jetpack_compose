@@ -24,7 +24,6 @@ fun CustomProgressBar(msg: String) {
     Card(
         elevation = CardDefaults.cardElevation(40.dp),
         shape = RoundedCornerShape(4.dp),
-        colors = CardDefaults.elevatedCardColors(),
         modifier = Modifier
             .fillMaxWidth(.95f)
             .padding(16.dp)
@@ -41,7 +40,6 @@ fun CustomProgressBar(msg: String) {
             Text(msg, textAlign = TextAlign.Center)
             Spacer(modifier = Modifier.width(16.dp))
             CircularProgressIndicator(
-                color = MaterialTheme.colorScheme.primary,
                 strokeWidth = 3.dp
             )
         }

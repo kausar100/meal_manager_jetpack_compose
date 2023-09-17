@@ -1,6 +1,5 @@
 package com.kausar.messmanagementapp.presentation.shopping_info
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -16,7 +15,6 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -44,10 +42,8 @@ fun ShoppingListInformation(info: String) {
 
     Box(Modifier.fillMaxSize().padding(horizontal = 16.dp).padding(top = 16.dp, bottom = 4.dp)) {
         Card(
-            modifier = Modifier.fillMaxSize(), colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.background,
-                contentColor = MaterialTheme.colorScheme.secondary
-            ), elevation = CardDefaults.elevatedCardElevation(), shape = RoundedCornerShape(4.dp)
+            modifier = Modifier.fillMaxSize(),
+            elevation = CardDefaults.elevatedCardElevation(), shape = RoundedCornerShape(4.dp)
         ) {
             HorizontalPager(
                 count = shoppingInformation.info.size, state = pagerState
@@ -62,7 +58,6 @@ fun ShoppingListInformation(info: String) {
             Modifier
                 .align(Alignment.BottomEnd)
                 .padding(end = 16.dp, bottom = 16.dp)
-                .background(MaterialTheme.colorScheme.background, CircleShape)
                 .clip(CircleShape)
         ) {
             Row(

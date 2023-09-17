@@ -130,10 +130,6 @@ fun NewShopEntry(
             Modifier.fillMaxSize()
         ) {
             Card(
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.background,
-                    contentColor = MaterialTheme.colorScheme.secondary
-                ),
                 elevation = CardDefaults.elevatedCardElevation(),
                 shape = RoundedCornerShape(4.dp)
             ) {
@@ -198,10 +194,6 @@ fun NewShopEntry(
                                 showDialog = true
                             },
                             shape = RoundedCornerShape(4.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.primary,
-                                contentColor = MaterialTheme.colorScheme.secondary
-                            ),
                         ) {
                             Text(
                                 text = "Add Shop Entry",
@@ -220,10 +212,6 @@ fun NewShopEntry(
             Dialog(onDismissRequest = { showDialog = false }) {
                 Card(
                     modifier = Modifier.fillMaxHeight(.8f),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.background,
-                        contentColor = MaterialTheme.colorScheme.secondary
-                    ),
                     elevation = CardDefaults.elevatedCardElevation(),
                     shape = RoundedCornerShape(4.dp)
                 ) {
@@ -352,10 +340,6 @@ fun NewShopEntry(
 
                                 },
                                 shape = RoundedCornerShape(4.dp),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = MaterialTheme.colorScheme.primary,
-                                    contentColor = MaterialTheme.colorScheme.secondary
-                                ),
                             ) {
                                 Text(
                                     text = "Continue",

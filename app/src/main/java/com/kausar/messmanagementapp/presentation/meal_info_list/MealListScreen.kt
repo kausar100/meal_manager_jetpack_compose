@@ -171,7 +171,7 @@ fun MealListScreen(
                                     },
                                 contentAlignment = Alignment.Center
                             ) {
-                                Text(text = item, color = MaterialTheme.colorScheme.secondary)
+                                Text(text = item)
                             }
                         }
                     }
@@ -324,13 +324,11 @@ fun MealIcon(status: Boolean, desc: String) {
         Icon(
             imageVector = Icons.Default.Done,
             contentDescription = desc,
-            tint = MaterialTheme.colorScheme.primary
         )
     else
         Icon(
             imageVector = Icons.Default.Clear,
             contentDescription = desc,
-            tint = MaterialTheme.colorScheme.error
         )
 }
 
