@@ -45,6 +45,8 @@ fun Tabs(tabs: List<TabItem>, pagerState: PagerState) {
     TabRow(
         // Our selected tab is our current page
         selectedTabIndex = pagerState.currentPage,
+        contentColor = MaterialTheme.colors.onBackground,
+        backgroundColor = MaterialTheme.colors.background.copy(alpha = .1f),
         indicator = { tabPositions ->
             TabRowDefaults.Indicator(
                 Modifier.pagerTabIndicatorOffset(pagerState, tabPositions)
