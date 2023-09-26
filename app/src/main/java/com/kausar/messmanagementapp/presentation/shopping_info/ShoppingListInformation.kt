@@ -11,10 +11,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.KeyboardArrowRight
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -41,9 +40,8 @@ fun ShoppingListInformation(info: String) {
 
 
     Box(Modifier.fillMaxSize().padding(horizontal = 16.dp).padding(top = 16.dp, bottom = 4.dp)) {
-        Card(
-            modifier = Modifier.fillMaxSize(),
-            elevation = CardDefaults.elevatedCardElevation(), shape = RoundedCornerShape(4.dp)
+        Surface(
+            modifier = Modifier.fillMaxSize(), shape = RoundedCornerShape(4.dp)
         ) {
             HorizontalPager(
                 count = shoppingInformation.info.size, state = pagerState

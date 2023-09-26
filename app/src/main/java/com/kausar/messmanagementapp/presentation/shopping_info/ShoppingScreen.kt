@@ -20,25 +20,24 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
-import com.kausar.messmanagementapp.data.model.ShoppingScreenListInfo
 import com.kausar.messmanagementapp.data.model.ShoppingListItem
+import com.kausar.messmanagementapp.data.model.ShoppingScreenListInfo
 import com.kausar.messmanagementapp.navigation.Screen
 import com.kausar.messmanagementapp.presentation.shopping_info.shared.DialogInformation
 import com.kausar.messmanagementapp.presentation.viewmodels.FirebaseFirestoreDbViewModel
 import com.kausar.messmanagementapp.presentation.viewmodels.MainViewModel
 import com.kausar.messmanagementapp.utils.fetchCurrentMonthName
-import java.lang.Exception
 import java.math.RoundingMode
 import java.text.DecimalFormat
 
@@ -169,9 +168,12 @@ fun getCostPerMeal(totalMeal: String, totalShoppingCost: String): String {
 
 @Composable
 fun MenuItem(item: ShoppingScreenListInfo, gridView: Boolean = false, onItemClick: () -> Unit) {
+    val configuration = LocalConfiguration.current
+    val heightInDp = configuration.screenHeightDp.dp
     Card(
         modifier = Modifier
-            .fillMaxSize()
+            .fillMaxWidth(1f)
+            .height(if(gridView) heightInDp/5 else heightInDp/8)
             .padding(8.dp)
             .clickable {
                 onItemClick()
