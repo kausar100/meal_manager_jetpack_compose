@@ -10,14 +10,13 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.kausar.messmanagementapp.data.model.MemberType
-import com.kausar.messmanagementapp.presentation.SplashScreen
 import com.kausar.messmanagementapp.presentation.auth_screen.LoginScreen
 import com.kausar.messmanagementapp.presentation.auth_screen.OtpVerifyScreen
 import com.kausar.messmanagementapp.presentation.auth_screen.RegistrationScreen
 import com.kausar.messmanagementapp.presentation.home_screen.SharedHomeScreen
 import com.kausar.messmanagementapp.presentation.home_screen.TabScreen
-import com.kausar.messmanagementapp.presentation.meal_info_list.MealListScreen
 import com.kausar.messmanagementapp.presentation.meal_info_list.MealInfoScreen
+import com.kausar.messmanagementapp.presentation.meal_info_list.MealListScreen
 import com.kausar.messmanagementapp.presentation.profile_screen.ProfileScreen
 import com.kausar.messmanagementapp.presentation.shopping_info.AccountBalance
 import com.kausar.messmanagementapp.presentation.shopping_info.AddMoney
@@ -44,7 +43,6 @@ fun logoutAndNavigateToLoginPage(navController: NavController) {
 fun BottomNavGraph(
     navController: NavHostController,
     mainViewModel: MainViewModel,
-    isLoggedIn: Boolean,
     startDestination: String
 ) {
     var shoppingData = ""
@@ -127,15 +125,5 @@ fun BottomNavGraph(
                 }
             }
         }
-        composable(route = Screen.Splash.route) {
-            SplashScreen {
-                navController.popBackStack()
-                if (isLoggedIn) {
-                    navController.navigate(BottomBarScreen.Home.route)
-                } else navController.navigate(Screen.Login.route)
-            }
-
-        }
-
     }
 }

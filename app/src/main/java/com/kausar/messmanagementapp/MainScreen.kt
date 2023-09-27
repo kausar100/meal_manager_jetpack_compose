@@ -175,8 +175,9 @@ fun MainScreen(viewModel: MainViewModel) {
             BottomNavGraph(
                 navController = navController,
                 mainViewModel = viewModel,
-                isLoggedIn = isLogin,
-                startDestination = Screen.Splash.route
+                startDestination =  if (isLogin) {
+                    BottomBarScreen.Home.route
+                } else Screen.Login.route
             )
         }
 
