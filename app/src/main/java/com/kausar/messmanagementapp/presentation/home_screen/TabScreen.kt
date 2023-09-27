@@ -1,18 +1,20 @@
 package com.kausar.messmanagementapp.presentation.home_screen
 
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.google.accompanist.pager.*
 import com.kausar.messmanagementapp.navigation.TabItem
 import com.kausar.messmanagementapp.presentation.viewmodels.MainViewModel
+import com.kausar.messmanagementapp.ui.theme.gk_theme_dark_primary
+import com.kausar.messmanagementapp.ui.theme.gk_theme_light_primary
 import kotlinx.coroutines.launch
 
 
@@ -49,7 +51,8 @@ fun Tabs(tabs: List<TabItem>, pagerState: PagerState) {
         backgroundColor = MaterialTheme.colors.background.copy(alpha = .1f),
         indicator = { tabPositions ->
             TabRowDefaults.Indicator(
-                Modifier.pagerTabIndicatorOffset(pagerState, tabPositions)
+                Modifier.pagerTabIndicatorOffset(pagerState, tabPositions),
+                color = if (isSystemInDarkTheme()) gk_theme_dark_primary else gk_theme_light_primary
             )
         }) {
         // Add tabs for all of our pages

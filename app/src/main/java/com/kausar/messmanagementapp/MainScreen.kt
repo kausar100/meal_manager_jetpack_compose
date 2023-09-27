@@ -46,7 +46,6 @@ fun MainScreen(viewModel: MainViewModel) {
     val navController = rememberNavController()
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
-    val isLogin = viewModel.isLoggedIn.value
     viewModel.getUserInfo()
     viewModel.getAllMealCount()
     viewModel.getBalanceInformation()
@@ -174,10 +173,7 @@ fun MainScreen(viewModel: MainViewModel) {
         ) {
             BottomNavGraph(
                 navController = navController,
-                mainViewModel = viewModel,
-                startDestination =  if (isLogin) {
-                    BottomBarScreen.Home.route
-                } else Screen.Login.route
+                mainViewModel = viewModel
             )
         }
 
@@ -202,7 +198,7 @@ fun BottomBar(navController: NavHostController) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
-    NavigationBar{
+    NavigationBar {
         screens.forEach { screen ->
             AddDestination(
                 screen = screen,
@@ -243,5 +239,5 @@ fun RowScope.AddDestination(
                 painter = painterResource(id = screen.icon), contentDescription = "Navigation Icon"
             )
         }
-        )
+    )
 }

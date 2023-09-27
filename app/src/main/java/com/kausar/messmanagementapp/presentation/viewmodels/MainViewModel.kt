@@ -79,9 +79,13 @@ class MainViewModel @Inject constructor(
 
 
     init {
+        getLoginStatus()
         getContactNumber()
         getAppUser()
         getMessNames()
+    }
+
+    private fun getLoginStatus(){
         viewModelScope.launch {
             loginPref.getLoginStatus().collectLatest {
                 _loginStatus.value = it
