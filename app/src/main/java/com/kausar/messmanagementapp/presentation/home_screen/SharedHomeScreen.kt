@@ -157,7 +157,6 @@ fun SharedHomeScreen(
                         Icon(imageVector = Icons.Default.Edit, contentDescription = "choose date")
 
                     }
-
                     if (showPopup) {
                         Box(contentAlignment = Alignment.CenterEnd) {
                             PopUpOption(onDismiss = {
@@ -169,35 +168,36 @@ fun SharedHomeScreen(
                             })
                         }
                     }
-                } else {
-                    if (userInfo.userType.isNotEmpty()) {
-                        Text(
-                            text = "Number of meal until today",
-                            fontSize = MaterialTheme.typography.titleMedium.fontSize,
-                            textAlign = TextAlign.Center,
-                            textDecoration = TextDecoration.Underline,
-                            fontWeight = FontWeight.Bold
-                        )
-                        mealCnt.cnt?.let {
-                            MealSummary(
-                                modifier = Modifier
-                                    .fillMaxWidth(1f)
-                                    .height(screenHeight / 3f),
-                                totalMeal = it.total.toString(),
-                                numberOfBreakfast = it.breakfast.toString(),
-                                numberOfLunch = it.lunch.toString(),
-                                numberOfDinner = it.dinner.toString()
-                            )
-                        } ?: if (mealCnt.error.isNotEmpty()) {
-                            Text(
-                                text = mealCnt.error, modifier = Modifier.padding(top = 16.dp)
-                            )
-                        } else {
-                            CircularProgressIndicator(Modifier.padding(top = 8.dp))
-                        }
-
-                    }
                 }
+//                else {
+//                    if (userInfo.userType.isNotEmpty()) {
+//                        Text(
+//                            text = "Number of meal until today",
+//                            fontSize = MaterialTheme.typography.titleMedium.fontSize,
+//                            textAlign = TextAlign.Center,
+//                            textDecoration = TextDecoration.Underline,
+//                            fontWeight = FontWeight.Bold
+//                        )
+//                        mealCnt.cnt?.let {
+//                            MealSummary(
+//                                modifier = Modifier
+//                                    .fillMaxWidth(1f)
+//                                    .height(screenHeight / 3f),
+//                                totalMeal = it.total.toString(),
+//                                numberOfBreakfast = it.breakfast.toString(),
+//                                numberOfLunch = it.lunch.toString(),
+//                                numberOfDinner = it.dinner.toString()
+//                            )
+//                        } ?: if (mealCnt.error.isNotEmpty()) {
+//                            Text(
+//                                text = mealCnt.error, modifier = Modifier.padding(top = 16.dp)
+//                            )
+//                        } else {
+//                            CircularProgressIndicator(Modifier.padding(top = 8.dp))
+//                        }
+//
+//                    }
+//                }
                 if (newMeal) {
                     Spacer(modifier = Modifier.height(16.dp))
                     AddNewMeal(onCancel = {
@@ -207,7 +207,7 @@ fun SharedHomeScreen(
                     },
                         selectedDate = selectedDate,
                         viewModel = viewModel,
-                        updateMeal = { breakfast, lunch, dinner ->
+                        updateMeal = { breakfast, lunch, dinner, cntb, cntl, cntd ->
                             val tempSelectedDate = selectedDate
                             val tempPresentingDate = presentingDate
                             selectedDate = getDate(temp)
@@ -223,7 +223,8 @@ fun SharedHomeScreen(
                                         getDayName(tempPresentingDate),
                                         breakfast,
                                         lunch,
-                                        dinner
+                                        dinner,
+                                        cntb,cntl,cntd
                                     )
                                 ).collectLatest { result ->
                                     when (result) {
@@ -247,14 +248,14 @@ fun SharedHomeScreen(
                                     }
                                 }
                             }
-                        }) { breakfast, lunch, dinner ->
+                        }) { breakfast, lunch, dinner, cntb, cntl, cntd ->
                         newMeal = false
                         progMsg = "Inserting new meal..."
                         showToast = true
                         scope.launch {
                             viewModel.insert(
                                 MealInfo(
-                                    selectedDate, getDayName(presentingDate), breakfast, lunch, dinner
+                                    selectedDate, getDayName(presentingDate), breakfast, lunch, dinner, cntb, cntl, cntd
                                 )
                             ).collectLatest { result ->
                                 when (result) {

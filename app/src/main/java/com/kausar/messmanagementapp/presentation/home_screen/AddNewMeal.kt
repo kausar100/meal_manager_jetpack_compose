@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.MaterialTheme
@@ -31,6 +30,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kausar.messmanagementapp.components.CustomProgressBar
@@ -41,8 +41,8 @@ fun AddNewMeal(
     onCancel: () -> Unit,
     selectedDate: String,
     viewModel: FirebaseFirestoreDbViewModel,
-    updateMeal: (Boolean, Boolean, Boolean) -> Unit,
-    addMeal: (Boolean, Boolean, Boolean) -> Unit
+    updateMeal: (Boolean, Boolean, Boolean, Int, Int, Int) -> Unit,
+    addMeal: (Boolean, Boolean, Boolean, Int, Int, Int) -> Unit
 ) {
     var edit by rememberSaveable { mutableStateOf(false) }
     var toUpdate by rememberSaveable { mutableStateOf(false) }
@@ -58,6 +58,10 @@ fun AddNewMeal(
     var breakFast by rememberSaveable { mutableStateOf(false) }
     var lunch by rememberSaveable { mutableStateOf(false) }
     var dinner by rememberSaveable { mutableStateOf(false) }
+
+    var cntbreakFast by rememberSaveable { mutableStateOf(0) }
+    var cntlunch by rememberSaveable { mutableStateOf(0) }
+    var cntdinner by rememberSaveable { mutableStateOf(0) }
 
     val configuration = LocalConfiguration.current
     val screenHeight = configuration.screenHeightDp.dp
@@ -76,11 +80,17 @@ fun AddNewMeal(
                     breakFast = mealInfoState.meal.breakfast!!
                     lunch = mealInfoState.meal.lunch!!
                     dinner = mealInfoState.meal.dinner!!
+                    cntbreakFast = mealInfoState.meal.cntBreakFast
+                    cntlunch = mealInfoState.meal.cntLunch
+                    cntdinner = mealInfoState.meal.cntDinner
                 } else {
                     edit = true
                     breakFast = false
                     lunch = false
                     dinner = false
+                    cntbreakFast = 0
+                    cntlunch = 0
+                    cntdinner = 0
                 }
             }
             Column(
@@ -90,35 +100,44 @@ fun AddNewMeal(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Top
             ) {
-                Column(Modifier.height(screenHeight / 3f)) {
+                Column(Modifier.height(screenHeight / 3f).fillMaxWidth(1f)) {
                     Row(
                         modifier = Modifier
-                            .fillMaxWidth()
+                            .fillMaxWidth(1f)
                             .padding(horizontal = 8.dp, vertical = 4.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
+                        verticalAlignment = Alignment.CenterVertically) {
                         Text(
                             text = "Meal time",
                             style = MaterialTheme.typography.titleMedium.copy(
                                 fontWeight = FontWeight.Bold,
                                 letterSpacing = 1.sp
-                            )
+                            ),
+                            modifier = Modifier.weight(1f)
                         )
                         Text(
                             text = "Meal status",
                             style = MaterialTheme.typography.titleMedium.copy(
                                 fontWeight = FontWeight.Bold,
                                 letterSpacing = 1.sp
-                            )
+                            ),
+                            modifier = Modifier.weight(1f)
+                        )
+                        Text(
+                            text = "Quantity",
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontWeight = FontWeight.Bold,
+                                letterSpacing = 1.sp
+                            ),
+                            modifier = Modifier.weight(1.5f),
+                            textAlign = TextAlign.Center
                         )
 
                     }
                     Divider(Modifier.padding(horizontal = 8.dp))
                     Column(
                         Modifier
-                            .fillMaxWidth()
-                            .fillMaxHeight()
+                            .fillMaxWidth(1f)
+                            .fillMaxHeight(1f)
                             .border(
                                 width = 1.dp,
                                 color = MaterialTheme.colorScheme.background,
@@ -134,20 +153,59 @@ fun AddNewMeal(
                                 1 -> lunch
                                 else -> dinner
                             }
+                            val quantity = when (it) {
+                                0 -> cntbreakFast
+                                1 -> cntlunch
+                                else -> cntdinner
+                            }
                             SingleRowForMealInfo(
                                 isEnabled = edit or toUpdate,
-                                title = title[it], value = value, onChange = { newValue ->
+                                title = title[it],
+                                unit = quantity,
+                                value = value,
+                                onAmountChanged = { newCnt ->
+                                    when (it) {
+                                        0 -> {
+                                            cntbreakFast = newCnt
+                                        }
+
+                                        1 -> {
+                                            cntlunch = newCnt
+                                        }
+
+                                        else -> {
+                                            cntdinner = newCnt
+                                        }
+                                    }
+
+                                },
+                                onChange = { newValue ->
                                     when (it) {
                                         0 -> {
                                             breakFast = newValue
+                                            cntbreakFast = if(newValue){
+                                                1
+                                            }else{
+                                                0
+                                            }
                                         }
 
                                         1 -> {
                                             lunch = newValue
+                                            cntlunch = if(newValue){
+                                                1
+                                            }else{
+                                                0
+                                            }
                                         }
 
                                         else -> {
                                             dinner = newValue
+                                            cntdinner = if(newValue){
+                                                1
+                                            }else{
+                                                0
+                                            }
                                         }
                                     }
                                 })
@@ -159,7 +217,7 @@ fun AddNewMeal(
                 AnimatedVisibility(visible = !toUpdate) {
                     ElevatedButton(
                         onClick = {
-                            addMeal(breakFast, lunch, dinner)
+                            addMeal(breakFast, lunch, dinner, cntbreakFast, cntlunch, cntdinner)
                         }, shape = RoundedCornerShape(4.dp),
                         modifier = Modifier.fillMaxWidth(1f)
                     ) {
@@ -173,7 +231,7 @@ fun AddNewMeal(
                 AnimatedVisibility(visible = toUpdate) {
                     ElevatedButton(
                         onClick = {
-                            updateMeal(breakFast, lunch, dinner)
+                            updateMeal(breakFast, lunch, dinner, cntbreakFast, cntlunch, cntdinner)
                         }, shape = RoundedCornerShape(4.dp),
                         modifier = Modifier.fillMaxWidth(1f)
                     ) {

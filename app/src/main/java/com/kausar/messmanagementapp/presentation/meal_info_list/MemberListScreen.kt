@@ -358,22 +358,22 @@ fun ShowInfo(modifier: Modifier, item: MealInfo) {
             textAlign = TextAlign.Center,
             modifier = Modifier.weight(2f)
         )
-        Checkbox(
-            enabled = false,
-            checked = item.breakfast!!,
-            onCheckedChange = {},
+        Text(
+            text = item.cntBreakFast.toString(),
+            fontSize = MaterialTheme.typography.titleSmall.fontSize,
+            textAlign = TextAlign.Center,
             modifier = Modifier.weight(1f)
         )
-        Checkbox(
-            enabled = false,
-            checked = item.lunch!!,
-            onCheckedChange = {},
+        Text(
+            text = item.cntLunch.toString(),
+            fontSize = MaterialTheme.typography.titleSmall.fontSize,
+            textAlign = TextAlign.Center,
             modifier = Modifier.weight(1f)
         )
-        Checkbox(
-            enabled = false,
-            checked = item.dinner!!,
-            onCheckedChange = {},
+        Text(
+            text = item.cntDinner.toString(),
+            fontSize = MaterialTheme.typography.titleSmall.fontSize,
+            textAlign = TextAlign.Center,
             modifier = Modifier.weight(1f)
         )
     }
