@@ -15,6 +15,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -63,50 +64,57 @@ fun ShoppingHistory(
     Box(
         Modifier
             .fillMaxSize()
-            .padding(16.dp)
+            .padding(16.dp),
+        contentAlignment = Alignment.Center
     ) {
-        Column(
-            Modifier.fillMaxSize()
-        ) {
-            Surface(
-                modifier = Modifier
-                    .weight(3f)
-                    .fillMaxWidth(1f),
-                shape = RoundedCornerShape(4.dp)
+        if(firestore.shoppingList.isEmpty()){
+            Text(text = "No shopping information found!",
+                style = MaterialTheme.typography.titleLarge)
+        }else{
+            Column(
+                Modifier.fillMaxSize()
             ) {
-                HorizontalPager(
-                    count = firestore.shoppingList.size, state = pagerState
+                Surface(
+                    modifier = Modifier
+                        .weight(3f)
+                        .fillMaxWidth(1f),
+                    shape = RoundedCornerShape(4.dp)
                 ) {
-                    SingleShoppingInformation(
-                        modifier = Modifier.width(widthInDp - 32.dp), firestore.shoppingList[it]
-                    )
+                    HorizontalPager(
+                        count = firestore.shoppingList.size, state = pagerState
+                    ) {
+                        SingleShoppingInformation(
+                            modifier = Modifier.width(widthInDp - 32.dp), firestore.shoppingList[it]
+                        )
+                    }
                 }
-            }
 
-            LazyColumn(Modifier.weight(2f)) {
-                items(memberInfo.listOfMember) { member ->
-                    ShowUser(userInfo = member,
-                        showInfo = false,
-                        expand = false,
-                        expandable = false,
-                        onClickUser = {
-                            val shoppingList =
-                                if (shoppingInfoPerMember.containsKey(member.userId)) shoppingInfoPerMember[member.userId]!!.info else emptyList()
+                LazyColumn(Modifier.weight(2f)) {
+                    items(memberInfo.listOfMember) { member ->
+                        ShowUser(userInfo = member,
+                            showInfo = false,
+                            expand = false,
+                            expandable = false,
+                            onClickUser = {
+                                val shoppingList =
+                                    if (shoppingInfoPerMember.containsKey(member.userId)) shoppingInfoPerMember[member.userId]!!.info else emptyList()
 
-                            val cost =
-                                if (shoppingList.isNotEmpty()) shoppingInfoPerMember[member.userId]!!.totalCost else "0.0"
+                                val cost =
+                                    if (shoppingList.isNotEmpty()) shoppingInfoPerMember[member.userId]!!.totalCost else "0.0"
 
-                            val data = Gson().toJson(
-                                MemberShoppingList(
-                                    info = shoppingList, totalCost = cost
+                                val data = Gson().toJson(
+                                    MemberShoppingList(
+                                        info = shoppingList, totalCost = cost
+                                    )
                                 )
-                            )
-                            onSubmit(data)
-                        })
+                                onSubmit(data)
+                            })
+                    }
                 }
-            }
 
+            }
         }
+
     }
 }
 

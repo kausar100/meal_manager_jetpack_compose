@@ -13,7 +13,9 @@ import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -39,61 +41,67 @@ fun ShoppingListInformation(info: String) {
     val scope = rememberCoroutineScope()
 
 
-    Box(Modifier.fillMaxSize().padding(horizontal = 16.dp).padding(top = 16.dp, bottom = 4.dp)) {
-        Surface(
-            modifier = Modifier.fillMaxSize(), shape = RoundedCornerShape(4.dp)
-        ) {
-            HorizontalPager(
-                count = shoppingInformation.info.size, state = pagerState
+    Box(Modifier.fillMaxSize().padding(horizontal = 16.dp).padding(top = 16.dp, bottom = 4.dp), contentAlignment = Alignment.Center) {
+        if(shoppingInformation.info.isEmpty()){
+            Text(text = "No shopping information found!",
+                style = MaterialTheme.typography.titleLarge)
+        }else{
+            Surface(
+                modifier = Modifier.fillMaxSize(), shape = RoundedCornerShape(4.dp)
             ) {
-                SingleShoppingInformation(
-                    modifier = Modifier.width(widthInDp), shoppingInformation.info[it]
-                )
-
-            }
-        }
-        Box(
-            Modifier
-                .align(Alignment.BottomEnd)
-                .padding(end = 16.dp, bottom = 16.dp)
-                .clip(CircleShape)
-        ) {
-            Row(
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                IconButton(
-                    onClick = {
-                        scope.launch {
-                            if(pagerState.currentPage != 0){
-                                pagerState.animateScrollToPage(pagerState.currentPage - 1)
-                            }
-                        }
-                    }, modifier = Modifier
-                        .padding(4.dp)
-                        .clip(CircleShape)
+                HorizontalPager(
+                    count = shoppingInformation.info.size, state = pagerState
                 ) {
-                    Icon(imageVector = Icons.Default.KeyboardArrowLeft, contentDescription = "Prev")
-                }
-                IconButton(
-                    onClick = {
-                        scope.launch {
-                            if(pagerState.currentPage != shoppingInformation.info.size-1){
-                                pagerState.animateScrollToPage(pagerState.currentPage + 1)
-                            }
-                        }
-                    }, modifier = Modifier
-                        .padding(4.dp)
-                        .clip(CircleShape)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.KeyboardArrowRight, contentDescription = "Next"
+                    SingleShoppingInformation(
+                        modifier = Modifier.width(widthInDp), shoppingInformation.info[it]
                     )
+
                 }
             }
+            Box(
+                Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(end = 16.dp, bottom = 16.dp)
+                    .clip(CircleShape)
+            ) {
+                Row(
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    IconButton(
+                        onClick = {
+                            scope.launch {
+                                if(pagerState.currentPage != 0){
+                                    pagerState.animateScrollToPage(pagerState.currentPage - 1)
+                                }
+                            }
+                        }, modifier = Modifier
+                            .padding(4.dp)
+                            .clip(CircleShape)
+                    ) {
+                        Icon(imageVector = Icons.Default.KeyboardArrowLeft, contentDescription = "Prev")
+                    }
+                    IconButton(
+                        onClick = {
+                            scope.launch {
+                                if(pagerState.currentPage != shoppingInformation.info.size-1){
+                                    pagerState.animateScrollToPage(pagerState.currentPage + 1)
+                                }
+                            }
+                        }, modifier = Modifier
+                            .padding(4.dp)
+                            .clip(CircleShape)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.KeyboardArrowRight, contentDescription = "Next"
+                        )
+                    }
+                }
 
 
+            }
         }
+
     }
 
 
