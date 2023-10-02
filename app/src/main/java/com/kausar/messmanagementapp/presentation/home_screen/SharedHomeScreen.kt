@@ -10,21 +10,18 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -41,9 +38,9 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.kausar.messmanagementapp.components.CustomProgressBar
 import com.kausar.messmanagementapp.data.model.MealInfo
@@ -136,11 +133,13 @@ fun SharedHomeScreen(
             ) {
                 CustomProgressBar(msg = progMsg)
             }
-        }else{
+        } else {
             Column(
                 Modifier
                     .fillMaxSize()
-                    .verticalScroll(rememberScrollState()), horizontalAlignment = Alignment.CenterHorizontally
+                    .verticalScroll(rememberScrollState()),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 if (newMeal) {
                     Spacer(modifier = Modifier.width(16.dp))
@@ -151,9 +150,7 @@ fun SharedHomeScreen(
                         Text(
                             text = presentingDate, textAlign = TextAlign.Center
                         )
-
                         Spacer(modifier = Modifier.width(16.dp))
-
                         Icon(imageVector = Icons.Default.Edit, contentDescription = "choose date")
 
                     }
@@ -168,38 +165,6 @@ fun SharedHomeScreen(
                             })
                         }
                     }
-                }
-//                else {
-//                    if (userInfo.userType.isNotEmpty()) {
-//                        Text(
-//                            text = "Number of meal until today",
-//                            fontSize = MaterialTheme.typography.titleMedium.fontSize,
-//                            textAlign = TextAlign.Center,
-//                            textDecoration = TextDecoration.Underline,
-//                            fontWeight = FontWeight.Bold
-//                        )
-//                        mealCnt.cnt?.let {
-//                            MealSummary(
-//                                modifier = Modifier
-//                                    .fillMaxWidth(1f)
-//                                    .height(screenHeight / 3f),
-//                                totalMeal = it.total.toString(),
-//                                numberOfBreakfast = it.breakfast.toString(),
-//                                numberOfLunch = it.lunch.toString(),
-//                                numberOfDinner = it.dinner.toString()
-//                            )
-//                        } ?: if (mealCnt.error.isNotEmpty()) {
-//                            Text(
-//                                text = mealCnt.error, modifier = Modifier.padding(top = 16.dp)
-//                            )
-//                        } else {
-//                            CircularProgressIndicator(Modifier.padding(top = 8.dp))
-//                        }
-//
-//                    }
-//                }
-                if (newMeal) {
-                    Spacer(modifier = Modifier.height(16.dp))
                     AddNewMeal(onCancel = {
                         newMeal = false
                         selectedDate = getDate(temp)
@@ -224,7 +189,7 @@ fun SharedHomeScreen(
                                         breakfast,
                                         lunch,
                                         dinner,
-                                        cntb,cntl,cntd
+                                        cntb, cntl, cntd
                                     )
                                 ).collectLatest { result ->
                                     when (result) {
@@ -255,7 +220,14 @@ fun SharedHomeScreen(
                         scope.launch {
                             viewModel.insert(
                                 MealInfo(
-                                    selectedDate, getDayName(presentingDate), breakfast, lunch, dinner, cntb, cntl, cntd
+                                    selectedDate,
+                                    getDayName(presentingDate),
+                                    breakfast,
+                                    lunch,
+                                    dinner,
+                                    cntb,
+                                    cntl,
+                                    cntd
                                 )
                             ).collectLatest { result ->
                                 when (result) {
@@ -281,28 +253,27 @@ fun SharedHomeScreen(
                         }
                     }
                 } else {
-                    Row(
-                        Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 8.dp),
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(text = today,
-                            textAlign = TextAlign.Center,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.clickable {
-                                newMeal = true
-                            })
-                        Spacer(modifier = Modifier.width(16.dp))
-                        Icon(imageVector = Icons.Default.AddCircle,
-                            contentDescription = "add meal",
-                            modifier = Modifier.clickable { newMeal = true })
-
-                    }
                     if (mealInfoState.success.isNotEmpty()) {
+                        Text(
+                            text = today,
+                            style = MaterialTheme.typography.bodyLarge
+                        )
                         MealInformation(
                             mealInfo = mealInfoState.meal,
+                        )
+                    }
+                    ElevatedButton(
+                        onClick = {
+                            newMeal = true
+                        }, shape = RoundedCornerShape(4.dp),
+                        modifier = Modifier
+                            .fillMaxWidth(1f)
+                            .padding(horizontal = 16.dp, vertical = 8.dp)
+                    ) {
+                        Text(
+                            text = "Add / Edit Meal",
+                            letterSpacing = 2.sp,
+                            fontWeight = FontWeight.Bold
                         )
                     }
                     ShowMessage(mealInfoState)
@@ -360,11 +331,11 @@ fun PopUpOption(onDismiss: () -> Unit, onSelect: (String, String) -> Unit) {
         repeat(dates.size) {
             DropdownMenuItem(
                 text = {
-                Text(text = dates[it])
-            }, onClick = {
-                expanded = false
-                onSelect(dates[it], firestoreDates[it])
-            })
+                    Text(text = dates[it])
+                }, onClick = {
+                    expanded = false
+                    onSelect(dates[it], firestoreDates[it])
+                })
         }
     }
 

@@ -95,7 +95,7 @@ fun AddNewMeal(
             }
             Column(
                 modifier = Modifier
-                    .height(screenHeight / 1.8f)
+                    .height(screenHeight / 1.3f)
                     .verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Top
@@ -128,7 +128,7 @@ fun AddNewMeal(
                                 fontWeight = FontWeight.Bold,
                                 letterSpacing = 1.sp
                             ),
-                            modifier = Modifier.weight(1.5f),
+                            modifier = Modifier.weight(1f),
                             textAlign = TextAlign.Center
                         )
 

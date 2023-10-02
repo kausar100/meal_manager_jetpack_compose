@@ -48,6 +48,7 @@ class MainViewModel @Inject constructor(
 
     private val _currentUserMealCnt: MutableState<SingleMealCountState> =
         mutableStateOf(SingleMealCountState())
+
     val currentUserMealCount: State<SingleMealCountState> = _currentUserMealCnt
 
     private val _membersMealCnt: MutableState<AllMealCountState> =

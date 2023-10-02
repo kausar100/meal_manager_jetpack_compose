@@ -50,12 +50,11 @@ fun BottomNavGraph(
         navController = navController, startDestination = Screen.Splash.route
     ) {
         composable(route = BottomBarScreen.Home.route) {
-            SharedHomeScreen(mainViewModel)
-//            if (mainViewModel.userInfo.value.userType == MemberType.Member.name) {
-//                SharedHomeScreen(mainViewModel)
-//            } else {
-//                TabScreen(navController = navController, mainViewModel = mainViewModel)
-//            }
+            if (mainViewModel.userInfo.value.userType == MemberType.Member.name) {
+                SharedHomeScreen(mainViewModel)
+            } else {
+                TabScreen(navController = navController, mainViewModel = mainViewModel)
+            }
         }
         composable(route = BottomBarScreen.Shopping.route) {
             ShoppingScreen(mainViewModel, navController)

@@ -309,9 +309,18 @@ fun MealItem(meal: MealInfo) {
             Column(Modifier.padding(4.dp)) {
                 Text(text = meal.date.toString())
                 Text(text = meal.dayName.toString())
-                MealIcon(status = meal.breakfast!!, desc = "breakfast")
-                MealIcon(status = meal.lunch!!, desc = "breakfast")
-                MealIcon(status = meal.dinner!!, desc = "breakfast")
+                Row{
+                    MealIcon(status = meal.breakfast!!, desc = "breakfast")
+                    Text(text = "(${meal.cntBreakFast})")
+                }
+                Row{
+                    MealIcon(status = meal.lunch!!, desc = "breakfast")
+                    Text(text = "(${meal.cntLunch})")
+                }
+                Row{
+                    MealIcon(status = meal.dinner!!, desc = "breakfast")
+                    Text(text = "(${meal.cntDinner})")
+                }
             }
 
         }
