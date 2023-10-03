@@ -41,8 +41,8 @@ fun AddNewMeal(
     onCancel: () -> Unit,
     selectedDate: String,
     viewModel: FirebaseFirestoreDbViewModel,
-    updateMeal: (Boolean, Boolean, Boolean, Int, Int, Int) -> Unit,
-    addMeal: (Boolean, Boolean, Boolean, Int, Int, Int) -> Unit
+    updateMeal: (Boolean, Boolean, Boolean, Double, Double, Double) -> Unit,
+    addMeal: (Boolean, Boolean, Boolean, Double, Double, Double) -> Unit
 ) {
     var edit by rememberSaveable { mutableStateOf(false) }
     var toUpdate by rememberSaveable { mutableStateOf(false) }
@@ -59,9 +59,9 @@ fun AddNewMeal(
     var lunch by rememberSaveable { mutableStateOf(false) }
     var dinner by rememberSaveable { mutableStateOf(false) }
 
-    var cntbreakFast by rememberSaveable { mutableStateOf(0) }
-    var cntlunch by rememberSaveable { mutableStateOf(0) }
-    var cntdinner by rememberSaveable { mutableStateOf(0) }
+    var cntbreakFast by rememberSaveable { mutableStateOf(0.0) }
+    var cntlunch by rememberSaveable { mutableStateOf(0.0) }
+    var cntdinner by rememberSaveable { mutableStateOf(0.0) }
 
     val configuration = LocalConfiguration.current
     val screenHeight = configuration.screenHeightDp.dp
@@ -88,9 +88,9 @@ fun AddNewMeal(
                     breakFast = false
                     lunch = false
                     dinner = false
-                    cntbreakFast = 0
-                    cntlunch = 0
-                    cntdinner = 0
+                    cntbreakFast = 0.0
+                    cntlunch = 0.0
+                    cntdinner = 0.0
                 }
             }
             Column(
@@ -184,27 +184,27 @@ fun AddNewMeal(
                                         0 -> {
                                             breakFast = newValue
                                             cntbreakFast = if(newValue){
-                                                1
+                                                1.0
                                             }else{
-                                                0
+                                                0.0
                                             }
                                         }
 
                                         1 -> {
                                             lunch = newValue
                                             cntlunch = if(newValue){
-                                                1
+                                                1.0
                                             }else{
-                                                0
+                                                0.0
                                             }
                                         }
 
                                         else -> {
                                             dinner = newValue
                                             cntdinner = if(newValue){
-                                                1
+                                                1.0
                                             }else{
-                                                0
+                                                0.0
                                             }
                                         }
                                     }

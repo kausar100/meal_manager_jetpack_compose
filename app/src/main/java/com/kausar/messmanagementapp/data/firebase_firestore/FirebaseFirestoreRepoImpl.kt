@@ -388,7 +388,10 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
                                                 data.totalReceivingAmount.ifEmpty { "0.0" }
                                                     .toDouble() - cost.toDouble()
                                             ref.update(
-                                                "totalShoppingCost", cost, "remainingAmount", available.toString()
+                                                "totalShoppingCost",
+                                                cost,
+                                                "remainingAmount",
+                                                available.toString()
                                             ).addOnSuccessListener {
                                                 Log.d(
                                                     "addcost", "success: "
@@ -459,19 +462,23 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
                                                 )
                                                 trySend(ResultState.Failure(exp))
                                             }
-                                        }?: ref.set(Balance(totalMeal = unit).toMap()).addOnSuccessListener {
-                                            Log.d( "addTotalMeal: ","success")
-                                        }.addOnFailureListener {
+                                        } ?: ref.set(Balance(totalMeal = unit).toMap())
+                                            .addOnSuccessListener {
+                                                Log.d("addTotalMeal: ", "success")
+                                            }.addOnFailureListener {
                                             Log.d(
-                                                "addTotalMeal: ","failed"
-                                            ) }
+                                                "addTotalMeal: ", "failed"
+                                            )
+                                        }
 
-                                    } ?: ref.set(Balance(totalMeal = unit).toMap()).addOnSuccessListener {
-                                        Log.d( "addTotalMeal: ","success")
-                                    }.addOnFailureListener {
+                                    } ?: ref.set(Balance(totalMeal = unit).toMap())
+                                        .addOnSuccessListener {
+                                            Log.d("addTotalMeal: ", "success")
+                                        }.addOnFailureListener {
                                         Log.d(
-                                            "addTotalMeal: ","failed"
-                                        ) }
+                                            "addTotalMeal: ", "failed"
+                                        )
+                                    }
                                 }.addOnFailureListener { e -> trySend(ResultState.Failure(e)) }
                             }
                         }
@@ -698,13 +705,10 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
     @RequiresApi(Build.VERSION_CODES.O)
     override fun updateMealCount(
         member: User, monthYear: String
-    ): Flow<ResultState<String>> = callbackFlow {
+    ): Flow<ResultState<Pair<String,MealCount>>> = callbackFlow {
         var cntBreakfast = 0.0
         var cntLunch = 0.0
         var cntDinner = 0.0
-
-
-        Log.d("updateMealCount: ", member.userName)
 
         getUserMealByMonth(member.userId).collectLatest { response ->
             when (response) {
@@ -713,13 +717,13 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
                         for (meal in response.data) {
                             if (needToCount(meal.date!!)) {
                                 if (meal.breakfast!!) {
-                                    cntBreakfast += 1.0
+                                    cntBreakfast += meal.cntBreakFast
                                 }
                                 if (meal.lunch!!) {
-                                    cntLunch += 1.0
+                                    cntLunch += meal.cntLunch
                                 }
                                 if (meal.dinner!!) {
-                                    cntDinner += 1.0
+                                    cntDinner += meal.cntDinner
                                 }
                             }
                         }
@@ -737,9 +741,7 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
                             .document(member.userId).set(cnt.toMap()).addOnSuccessListener {
                                 Log.d("updateMealCount: ", "success")
                                 trySend(
-                                    ResultState.Success(
-                                        "Data inserted successfully!"
-                                    )
+                                    ResultState.Success(Pair(member.userId,cnt))
                                 )
 
                             }.addOnFailureListener { e ->
@@ -766,7 +768,7 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun countMeal(
-    ): Flow<ResultState<String>> = callbackFlow {
+    ): Flow<ResultState<Pair<String, MealCount>>> = callbackFlow {
         trySend(ResultState.Loading)
 
         val monthYear = getMonthYear(today)
@@ -775,12 +777,15 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
         if (Network.isNetworkAvailable(context)) {
             currentUser?.let {
                 if (messMembers.isNotEmpty()) {
+                    Log.d( "countMeal: ",messMembers.size.toString())
                     for (member in messMembers) {
                         CoroutineScope(Dispatchers.IO).launch {
                             updateMealCount(member, monthYear).collectLatest {
-                                if (currentUser == member.userId) {
-                                    trySend(it)
+                                Log.d("sendfor",member.userName)
+                                if(it is ResultState.Success){
+                                    Log.d("sendfor",it.data.second.toString())
                                 }
+                                trySend(it)
                             }
                         }
                     }
@@ -795,19 +800,19 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
 
     }
 
-    override fun getMealCount(): Flow<ResultState<List<MealCount>>> = callbackFlow {
+    override fun getMealCount(): Flow<ResultState<List<Pair<String, MealCount>>>> = callbackFlow {
         trySend(ResultState.Loading)
 
         if (Network.isNetworkAvailable(context)) {
             if (messMembers.isNotEmpty()) {
-                val membersMealCount = mutableListOf<MealCount>()
+                val membersMealCount = mutableListOf<Pair<String, MealCount>>()
                 for (member in messMembers) {
                     CoroutineScope(Dispatchers.IO).launch {
                         getSingleMealCount(member.userId).collectLatest { result ->
                             when (result) {
                                 is ResultState.Success -> {
                                     Log.d("members: ", member.userName)
-                                    membersMealCount.add(result.data)
+                                    membersMealCount.add(Pair(member.userId, result.data))
                                     if (member == messMembers.last()) {
                                         trySend(ResultState.Success(membersMealCount))
                                     }
@@ -867,13 +872,13 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
                                                 for (meal in response.data) {
                                                     if (needToCount(meal.date!!)) {
                                                         if (meal.breakfast!!) {
-                                                            cntBreakfast += 1.0
+                                                            cntBreakfast += meal.cntBreakFast
                                                         }
                                                         if (meal.lunch!!) {
-                                                            cntLunch += 1.0
+                                                            cntLunch += meal.cntLunch
                                                         }
                                                         if (meal.dinner!!) {
-                                                            cntDinner += 1.0
+                                                            cntDinner += meal.cntDinner
                                                         }
                                                     }
                                                 }
@@ -1099,13 +1104,13 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
         }
     }
 
-    override fun getMembersMealCountForToday(today: String): Flow<ResultState<List<MealInfo>>> =
+    override fun getMembersMealCountForToday(today: String): Flow<ResultState<List<Pair<String, MealInfo>>>> =
         callbackFlow {
             trySend(ResultState.Loading)
 
             if (Network.isNetworkAvailable(context)) {
                 if (messMembers.isNotEmpty()) {
-                    val membersMealToday = mutableListOf<MealInfo>()
+                    val membersMealToday = mutableListOf<Pair<String, MealInfo>>()
                     for (member in messMembers) {
                         CoroutineScope(Dispatchers.IO).launch {
                             getUserMealByDay(today, member.userId).collectLatest { result ->
@@ -1113,7 +1118,7 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
                                     is ResultState.Success -> {
                                         Log.d("members: ", member.userName)
                                         result.data?.let {
-                                            membersMealToday.add(result.data)
+                                            membersMealToday.add(Pair(member.userId, result.data))
                                             if (member == messMembers.last()) {
                                                 trySend(ResultState.Success(membersMealToday))
                                             }

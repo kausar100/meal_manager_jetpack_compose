@@ -47,8 +47,6 @@ fun MainScreen(viewModel: MainViewModel) {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
     viewModel.getUserInfo()
-    viewModel.getAllMealCount()
-    viewModel.getBalanceInformation()
 
     val connection by connectivityState()
     val isConnected = (connection === ConnectionState.Available)

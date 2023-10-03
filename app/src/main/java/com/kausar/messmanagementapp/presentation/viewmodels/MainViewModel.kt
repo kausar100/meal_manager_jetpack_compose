@@ -13,11 +13,11 @@ import com.kausar.messmanagementapp.data.model.MealInfo
 import com.kausar.messmanagementapp.data.model.Mess
 import com.kausar.messmanagementapp.data.model.User
 import com.kausar.messmanagementapp.data.shared_pref.LoginDataStore
-import com.kausar.messmanagementapp.presentation.home_screen.Keys
 import com.kausar.messmanagementapp.presentation.shopping_info.ListType
 import com.kausar.messmanagementapp.utils.ResultState
 import com.kausar.messmanagementapp.utils.getDate
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.util.Calendar
@@ -45,25 +45,11 @@ class MainViewModel @Inject constructor(
     private val _memberList: MutableState<MemberState> = mutableStateOf(MemberState())
     val memberInfo: State<MemberState> = _memberList
 
+    private val _totalMealCntPerMember = mutableStateOf(hashMapOf<String, MealCount>())
+    val totalMealCntPerMember = _totalMealCntPerMember
 
-    private val _currentUserMealCnt: MutableState<SingleMealCountState> =
-        mutableStateOf(SingleMealCountState())
-
-    val currentUserMealCount: State<SingleMealCountState> = _currentUserMealCnt
-
-    private val _membersMealCnt: MutableState<AllMealCountState> =
-        mutableStateOf(AllMealCountState())
-    private val membersMealCount: State<AllMealCountState> = _membersMealCnt
-
-    private val _totalMealCnt = mutableStateOf(hashMapOf<String, Double>())
-    val totalMealCount = _totalMealCnt
-
-    private val _membersTodayMealCnt: MutableState<AllMemberTodayCountState> =
-        mutableStateOf(AllMemberTodayCountState())
-    private val membersTodayMealCount: State<AllMemberTodayCountState> = _membersTodayMealCnt
-
-    private val _todayMealCnt = mutableStateOf(hashMapOf<String, Double>())
-    val todayMealCount = _todayMealCnt
+    private val _todayTotalMealCnt: MutableState<MealCount> = mutableStateOf(MealCount())
+    val todayTotalMealCnt: State<MealCount> = _todayTotalMealCnt
 
     private val _messPic = mutableStateOf("")
     val messPicture: State<String> = _messPic
@@ -84,9 +70,10 @@ class MainViewModel @Inject constructor(
         getContactNumber()
         getAppUser()
         getMessNames()
+        getBalanceInformation()
     }
 
-    private fun getLoginStatus(){
+    private fun getLoginStatus() {
         viewModelScope.launch {
             loginPref.getLoginStatus().collectLatest {
                 _loginStatus.value = it
@@ -110,7 +97,6 @@ class MainViewModel @Inject constructor(
                             listOfMember = result.data ?: emptyList()
                         )
                         addMembersMealCount()
-                        getMembersTodayMealCount()
                     }
 
                     is ResultState.Failure -> {
@@ -133,66 +119,56 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch {
             firestoreRepo.countMeal().collectLatest {
                 if (it is ResultState.Success) {
-                    getSingleMealCount()
+                    setSingleMemberMealCount(it.data.first, it.data.second)
                 }
             }
         }
     }
 
-    private fun getSingleMealCount() = viewModelScope.launch {
-        firestoreRepo.getSingleMealCount(null).collectLatest { result ->
-            when (result) {
-                is ResultState.Success -> {
-                    _currentUserMealCnt.value = SingleMealCountState(
-                        cnt = result.data, success = "Meal count fetched successfully!"
-                    )
-                }
-
-                is ResultState.Failure -> {
-                    _currentUserMealCnt.value = SingleMealCountState(
-                        error = result.message.localizedMessage ?: "some error occurred"
-                    )
-                }
-
-                is ResultState.Loading -> {
-                    _currentUserMealCnt.value = SingleMealCountState(
-                        isLoading = true
-                    )
-
-                }
+    private fun setTodayTotalMealCount(data: List<Pair<String, MealInfo>>) {
+        var breakfast = 0.0
+        var lunch = 0.0
+        var dinner = 0.0
+        var total = 0.0
+        if (data.isNotEmpty()) {
+            for (cnt in data) {
+                breakfast += cnt.second.cntBreakFast
+                lunch += cnt.second.cntLunch
+                dinner += cnt.second.cntDinner
             }
-
+            total = (breakfast*0.5)+lunch+dinner
         }
+        _todayTotalMealCnt.value = MealCount(breakfast, lunch, dinner, total)
     }
 
-    private fun getMembersTodayMealCount() = viewModelScope.launch {
+    fun setSingleMemberMealCount(userId: String, entry: MealCount = MealCount()) {
+        _totalMealCntPerMember.value[userId] = entry
+    }
+
+    fun getTotalMealCount(): Double {
+        var totalMealCount = 0.0
+        if (totalMealCntPerMember.value.isNotEmpty()) {
+            for (cnt in totalMealCntPerMember.value.values) {
+                totalMealCount += cnt.total
+            }
+        }
+        addTotalMealCount(totalMealCount.toString())
+        return totalMealCount
+    }
+
+    fun getMembersTodayMealCount() = viewModelScope.launch {
         firestoreRepo.getMembersMealCountForToday(today).collectLatest { result ->
             when (result) {
                 is ResultState.Success -> {
-                    Log.d("membersTodayMealCount: ", result.data.size.toString())
-                    _membersTodayMealCnt.value = AllMemberTodayCountState(
-                        info = result.data
-                    )
-                    _todayMealCnt.value = getTodayMealCount()
+                    setTodayTotalMealCount(result.data)
                 }
 
                 is ResultState.Failure -> {
-                    _membersTodayMealCnt.value = AllMemberTodayCountState(
-                        error = result.message.localizedMessage ?: "some error occurred"
-                    )
-                    _todayMealCnt.value = hashMapOf(
-                        Keys.Total.name to 0.0,
-                        Keys.Breakfast.name to 0.0,
-                        Keys.Lunch.name to 0.0,
-                        Keys.Dinner.name to 0.0
-                    )
 
                 }
 
                 is ResultState.Loading -> {
-                    _membersTodayMealCnt.value = AllMemberTodayCountState(
-                        isLoading = true
-                    )
+
                 }
             }
 
@@ -219,83 +195,8 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    private fun getTodayMealCount(): HashMap<String, Double> {
-        membersTodayMealCount.value.info.isNotEmpty().let {
-            var breakfast = 0.0
-            var lunch = 0.0
-            var dinner = 0.0
-
-            for (meal in membersTodayMealCount.value.info) {
-                meal.breakfast?.let {
-                    if (meal.breakfast) breakfast += 1.0
-                }
-                meal.lunch?.let {
-                    if (meal.lunch) lunch += 1.0
-                }
-                meal.dinner?.let {
-                    if (meal.dinner) dinner += 1.0
-                }
-            }
-
-            return hashMapOf(
-                Keys.Breakfast.name to breakfast,
-                Keys.Lunch.name to lunch,
-                Keys.Dinner.name to dinner
-            )
-        }
-    }
-
-    fun getAllMealCount() = viewModelScope.launch {
-        firestoreRepo.getMealCount().collectLatest { result ->
-            when (result) {
-                is ResultState.Success -> {
-                    Log.d("getAllMealCount: ", result.data.size.toString())
-                    _membersMealCnt.value = AllMealCountState(
-                        cnt = result.data
-                    )
-                    _totalMealCnt.value = getTotalCount()
-                    //add meal count to firebase
-                    firestoreRepo.addTotalMeal(_totalMealCnt.value[Keys.Total.name].toString())
-                        .collectLatest {}
-                }
-
-                is ResultState.Failure -> {
-                    _membersMealCnt.value = AllMealCountState(
-                        error = result.message.localizedMessage ?: "some error occurred"
-                    )
-                }
-
-                is ResultState.Loading -> {
-                    _membersMealCnt.value = AllMealCountState(
-                        isLoading = true
-                    )
-                }
-            }
-
-        }
-    }
-
-    private fun getTotalCount(): HashMap<String, Double> {
-
-        membersMealCount.value.cnt.isNotEmpty().let {
-            var breakfast = 0.0
-            var lunch = 0.0
-            var dinner = 0.0
-            var total = 0.0
-            for (meal in membersMealCount.value.cnt) {
-                breakfast += meal.breakfast
-                lunch += meal.lunch
-                dinner += meal.dinner
-                total += meal.total
-            }
-
-            return hashMapOf(
-                Keys.Total.name to total,
-                Keys.Breakfast.name to breakfast,
-                Keys.Lunch.name to lunch,
-                Keys.Dinner.name to dinner
-            )
-        }
+    fun addTotalMealCount(total: String) = viewModelScope.launch(Dispatchers.IO){
+        firestoreRepo.addTotalMeal(total).collectLatest {  }
     }
 
     fun getMessNames() = viewModelScope.launch {
@@ -411,25 +312,6 @@ class MainViewModel @Inject constructor(
 
     data class MemberState(
         val listOfMember: List<User> = emptyList(),
-        val error: String = "",
-        val isLoading: Boolean = false
-    )
-
-    data class SingleMealCountState(
-        val cnt: MealCount? = null,
-        val success: String = "",
-        val error: String = "",
-        val isLoading: Boolean = false
-    )
-
-    data class AllMealCountState(
-        val cnt: List<MealCount> = emptyList(),
-        val error: String = "",
-        val isLoading: Boolean = false
-    )
-
-    data class AllMemberTodayCountState(
-        val info: List<MealInfo> = emptyList(),
         val error: String = "",
         val isLoading: Boolean = false
     )

@@ -10,6 +10,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -29,7 +30,6 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -58,8 +58,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.kausar.messmanagementapp.R
-import com.kausar.messmanagementapp.components.CustomTextField
 import com.kausar.messmanagementapp.components.CustomProgressBar
+import com.kausar.messmanagementapp.components.CustomTextField
 import com.kausar.messmanagementapp.presentation.viewmodels.FirebaseStorageViewModel
 import com.kausar.messmanagementapp.presentation.viewmodels.MainViewModel
 import com.kausar.messmanagementapp.utils.showToast
@@ -185,16 +185,21 @@ fun ProfileScreen(
                     horizontalArrangement = Arrangement.End,
                     verticalAlignment = Alignment.Bottom
                 ) {
-                    IconButton(
-                        onClick = { imagePicker.launch("image/*") }, modifier = Modifier.size(32.dp)
-
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Edit,
-                            contentDescription = "update profile",
-                            modifier = Modifier.size(24.dp)
-                        )
-                    }
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = "update profile",
+                        tint = MaterialTheme.colorScheme.background,
+                        modifier = Modifier
+                            .size(24.dp)
+                            .background(
+                                MaterialTheme.colorScheme.onBackground.copy(alpha = .5f),
+                                CircleShape
+                            )
+                            .padding(4.dp)
+                            .clickable {
+                                imagePicker.launch("image/*")
+                            }
+                    )
                 }
             }
             Text(

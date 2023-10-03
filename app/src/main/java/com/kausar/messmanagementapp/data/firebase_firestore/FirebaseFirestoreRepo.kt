@@ -36,11 +36,11 @@ interface FirebaseFirestoreRepo {
 
     fun getSingleMealCount(currentUID: String?) : Flow<ResultState<MealCount>>
 
-    fun countMeal(): Flow<ResultState<String>>
+    fun countMeal(): Flow<ResultState<Pair<String, MealCount>>>
 
-    fun getMealCount(): Flow<ResultState<List<MealCount>>>
+    fun getMealCount(): Flow<ResultState<List<Pair<String, MealCount>>>>
 
-    fun updateMealCount( member: User, monthYear: String): Flow<ResultState<String>>
+    fun updateMealCount( member: User, monthYear: String): Flow<ResultState<Pair<String,MealCount>>>
 
     fun insertCurrentUserMeal(meal: MealInfo): Flow<ResultState<String>>
 
@@ -48,7 +48,7 @@ interface FirebaseFirestoreRepo {
 
     fun getAppUser(): Flow<ResultState<List<User>?>>
 
-    fun getMembersMealCountForToday(today: String) : Flow<ResultState<List<MealInfo>>>
+    fun getMembersMealCountForToday(today: String): Flow<ResultState<List<Pair<String, MealInfo>>>>
 
     fun getUserMealByDay(date: String, uid: String?): Flow<ResultState<MealInfo?>>
 

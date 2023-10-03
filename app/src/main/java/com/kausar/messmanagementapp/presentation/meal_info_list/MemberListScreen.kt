@@ -1,5 +1,6 @@
 package com.kausar.messmanagementapp.presentation.meal_info_list
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -26,16 +27,12 @@ import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
-import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -85,16 +82,11 @@ fun MealInfoScreen(
     val memberState = mainViewModel.memberInfo.value
     val userInfo = mainViewModel.userInfo.value
 
-    val mealCnt = viewModel.selectedMemberMealCnt.value
+    Log.d("TAG", "MealInfoScreen: ${mainViewModel.totalMealCntPerMember.value.values}")
 
-    LaunchedEffect(key1 = true) {
-        if (userInfo.userType.isNotEmpty()) {
-            if (memberState.listOfMember.isEmpty()) {
-                mainViewModel.getMessMembers()
-            }
-        } else {
-            mainViewModel.getUserInfo()
-        }
+
+    var selectedMemberTotalMealCount by remember {
+        mutableStateOf(mainViewModel.totalMealCntPerMember.value[userInfo.userId])
     }
 
     val listTitle = fetchCurrentMonthName()
@@ -102,27 +94,21 @@ fun MealInfoScreen(
     val connection by connectivityState()
     val isConnected = (connection === ConnectionState.Available)
 
-    //when internet available and previously not fetch any data
-    if (userInfo.userType.isEmpty()) {
-        LaunchedEffect(key1 = isConnected) {
-            if (isConnected) {
-                mainViewModel.getUserInfo()
-            }
-        }
-    }
     LaunchedEffect(key1 = isConnected) {
-        if ((memberState.error.isNotEmpty() || memberState.listOfMember.isEmpty()) && isConnected) {
+        if(userInfo.userType.isEmpty()){
+            mainViewModel.getUserInfo()
+        }
+        if (memberState.listOfMember.isEmpty()) {
             mainViewModel.getMessMembers()
         }
     }
-
 
     var showList by remember {
         mutableStateOf(false)
     }
 
-    var memberInfo by remember {
-        mutableStateOf(User())
+    var selectedMember by remember {
+        mutableStateOf(userInfo)
     }
 
     var showMealInfoScreen by remember {
@@ -145,7 +131,7 @@ fun MealInfoScreen(
             verticalArrangement = Arrangement.Top
         ) {
             if (showList) {
-                ShowUser(userInfo = memberInfo, expand = true, onClickUser = {
+                ShowUser(userInfo = selectedMember, expand = true, onClickUser = {
                     showList = false
                 })
                 Spacer(modifier = Modifier.height(16.dp))
@@ -168,16 +154,19 @@ fun MealInfoScreen(
                                 scope.launch {
                                     viewModel.getMealByUserId(user.userId)
                                     delay(500)
-                                    memberInfo = user
+                                    selectedMember = user
                                     showList = true
                                 }
                             }, onClickInfo = {
-                                scope.launch {
-                                    viewModel.getMemberMealCount(user.userId)
-                                    delay(1000)
-                                    memberInfo = user
-                                    showMealInfoScreen = true
+                                if (!mainViewModel.totalMealCntPerMember.value.containsKey(
+                                        user.userId
+                                    )
+                                ) {
+                                    mainViewModel.setSingleMemberMealCount(user.userId)
                                 }
+                                selectedMemberTotalMealCount =
+                                    mainViewModel.totalMealCntPerMember.value[user.userId]
+                                showMealInfoScreen = true
                             })
                         }
                     })
@@ -220,30 +209,16 @@ fun MealInfoScreen(
                     },
                     shape = RoundedCornerShape(8.dp),
                     text = {
-                        if (mealCnt.cnt == null) {
-                            Box(
-                                Modifier
-                                    .fillMaxWidth(1f)
-                                    .height(screenHeight / 2.5f),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                if (mealCnt.error.isNotEmpty()) {
-                                    Text(text = mealCnt.error, textAlign = TextAlign.Center)
-                                } else {
-                                    CircularProgressIndicator()
-                                }
-                            }
-                        } else {
-                            MealSummary(
-                                modifier = Modifier
-                                    .fillMaxWidth(1f)
-                                    .height(screenHeight / 2.5f),
-                                totalMeal = mealCnt.cnt.total.toString(),
-                                numberOfBreakfast = mealCnt.cnt.breakfast.toString(),
-                                numberOfLunch = mealCnt.cnt.lunch.toString(),
-                                numberOfDinner = mealCnt.cnt.dinner.toString()
-                            )
-                        }
+                        MealSummary(
+                            modifier = Modifier
+                                .fillMaxWidth(1f)
+                                .height(screenHeight / 2.5f),
+                            totalMeal = selectedMemberTotalMealCount?.total.toString(),
+                            numberOfBreakfast = selectedMemberTotalMealCount?.breakfast.toString(),
+                            numberOfLunch = selectedMemberTotalMealCount?.lunch.toString(),
+                            numberOfDinner = selectedMemberTotalMealCount?.dinner.toString()
+                        )
+
 
                     },
                     confirmButton = {
@@ -395,14 +370,11 @@ fun ShowUser(
             .padding(vertical = 8.dp)
             .clickable {
                 onClickUser()
-            },
-        elevation = CardDefaults.elevatedCardElevation(),
-        shape = RoundedCornerShape(4.dp)
+            }, elevation = CardDefaults.elevatedCardElevation(), shape = RoundedCornerShape(4.dp)
     ) {
         ListItem(headlineText = {
             Text(text = userInfo.userName)
-        },
-            leadingContent = {
+        }, leadingContent = {
             if (userInfo.profilePhoto.isNotEmpty()) {
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current).data(userInfo.profilePhoto)

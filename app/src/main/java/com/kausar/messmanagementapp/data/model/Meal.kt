@@ -8,10 +8,15 @@ data class MealInfo(
     val breakfast: Boolean? = false,
     val lunch: Boolean? = false,
     val dinner: Boolean? = false,
-    val cntBreakFast: Int = 0,
-    val cntLunch: Int = 0,
-    val cntDinner: Int = 0,
+    val cntBreakFast: Double = 0.0,
+    val cntLunch:  Double = 0.0,
+    val cntDinner:  Double = 0.0,
 )
+
+fun MealInfo.toMealCount() : MealCount{
+    val total = (this.cntBreakFast * 0.5) + this.cntLunch + this.cntDinner
+    return MealCount(breakfast = this.cntBreakFast, lunch = this.cntLunch, dinner = this.cntDinner, total = total)
+}
 
 fun MealInfo.toMap(): Map<String, Any?> = MealInfo::class.memberProperties.associate {
     it.name to it.get(this)

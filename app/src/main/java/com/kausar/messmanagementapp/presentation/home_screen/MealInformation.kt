@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -24,6 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.kausar.messmanagementapp.R
 import com.kausar.messmanagementapp.data.model.MealInfo
@@ -33,11 +33,11 @@ fun MealInformation(
     modifier: Modifier = Modifier,
     mealInfo: MealInfo?
 ) {
-    Row(
+    Column(
         modifier = modifier
             .fillMaxWidth(1f),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+        verticalArrangement = Arrangement.Top,
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         val title = listOf("Breakfast", "Lunch", "Dinner")
         repeat(title.size) {
@@ -57,17 +57,16 @@ fun MealInformation(
                 elevation = CardDefaults.elevatedCardElevation(),
                 shape = RoundedCornerShape(4.dp)
             ) {
-                Column(
-                    modifier = Modifier
+                Row(
+                    modifier = Modifier.fillMaxWidth(1f)
                         .padding(horizontal = 16.dp, vertical = 8.dp),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
+                   verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        text = "${title[it]} ($quantity)",
-                        style = MaterialTheme.typography.titleSmall
+                        text = "${title[it].uppercase()} [ $quantity ]",
+                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
                     )
-                    Spacer(modifier = Modifier.height(4.dp))
                     Switch(checked = value, onCheckedChange = {})
                 }
             }
@@ -80,9 +79,9 @@ fun MealInformation(
 fun SingleRowForMealInfo(
     isEnabled: Boolean = false,
     title: String,
-    unit: Int = 0,
+    unit: Double = 0.0,
     value: Boolean,
-    onAmountChanged: (Int) -> Unit = {},
+    onAmountChanged: (Double) -> Unit = {},
     onChange: (Boolean) -> Unit = {},
 ) {
     Row(
@@ -118,7 +117,7 @@ fun QuantityBuilder(
     modifier: Modifier = Modifier,
     isEnabled: Boolean = true,
     checked: Boolean,
-    amount: Int,
+    amount: Double,
     onDecrease: () -> Unit,
     onIncrease: () -> Unit
 ) {
