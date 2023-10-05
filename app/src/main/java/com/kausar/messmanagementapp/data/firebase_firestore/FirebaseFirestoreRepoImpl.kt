@@ -208,8 +208,8 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
                 firestore.collection(CollectionRef.moneyDb).document(user.messName)
                     .collection(user.messId).document(user.userId).collection(getMonthYear).get()
                     .addOnSuccessListener {
+                        val lisOfInfo = mutableListOf<AddMoney>()
                         it?.let { result ->
-                            val lisOfInfo = mutableListOf<AddMoney>()
                             for (document in result.documents) {
                                 val info = document.toObject(AddMoney::class.java)
                                 info?.let {
@@ -217,7 +217,7 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
                                 }
                             }
                             trySend(ResultState.Success(lisOfInfo))
-                        }
+                        } ?: trySend(ResultState.Success(lisOfInfo))
                     }.addOnFailureListener { e ->
                         trySend(ResultState.Failure(e))
                     }
@@ -309,7 +309,7 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
 
     }
 
-    override fun addAccountBalance(amount: String): Flow<ResultState<String>> = callbackFlow {
+    override fun addAccountBalance(amount: String): Flow<ResultState<Balance>> = callbackFlow {
         trySend(ResultState.Loading)
 
         val currentUser = firebaseAuth.currentUser?.uid
@@ -329,22 +329,38 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
                                 ref.get().addOnSuccessListener { b ->
                                     b?.let { obj ->
                                         val data = obj.toObject(Balance::class.java)
+                                        Log.d("TAG", "addBalanceBeforeUpdate: ${data.toString()}")
                                         data?.let {
-                                            ref.update("totalReceivingAmount", amount)
+                                            var newData = data.copy(totalReceivingAmount = amount)
+                                            val shoppingCost = data.totalShoppingCost.toDouble()
+                                            val remainingAmount = if(shoppingCost!=0.0){amount.toDouble() - shoppingCost}else{amount}
+                                            newData = newData.copy(remainingAmount = remainingAmount.toString())
+                                            ref.update(newData.toMap())
                                                 .addOnSuccessListener {
                                                     Log.d(
-                                                        "addbalance", "success: "
+                                                        "updatebalance", "success"
                                                     )
-                                                    trySend(ResultState.Success("Balance added successfully!"))
+                                                    trySend(ResultState.Success(newData))
                                                 }.addOnFailureListener { exp ->
                                                     Log.d(
-                                                        "addbalance", "failure: "
+                                                        "updatebalance", "failure"
                                                     )
                                                     trySend(ResultState.Failure(exp))
                                                 }
+                                        } ?: ref.set(Balance(totalReceivingAmount = amount, remainingAmount = amount).toMap()) //no data exist yet
+                                            .addOnSuccessListener {
+                                                Log.d(
+                                                    "addbalance", "success"
+                                                )
+                                                trySend(ResultState.Success(Balance(totalReceivingAmount = amount, remainingAmount = amount)))
+                                            }.addOnFailureListener { exp ->
+                                            Log.d(
+                                                "addbalance", "failure"
+                                            )
+                                            trySend(ResultState.Failure(exp))
                                         }
 
-                                    } ?: ref.set(Balance(totalReceivingAmount = amount).toMap())
+                                    }
                                 }.addOnFailureListener { e -> trySend(ResultState.Failure(e)) }
                             }
                         }
@@ -363,7 +379,7 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
 
     }
 
-    override fun addShoppingCost(cost: String): Flow<ResultState<String>> = callbackFlow {
+    override fun addShoppingCost(cost: String): Flow<ResultState<Balance>> = callbackFlow {
         trySend(ResultState.Loading)
 
         val currentUser = firebaseAuth.currentUser?.uid
@@ -383,6 +399,7 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
                                 ref.get().addOnSuccessListener { b ->
                                     b?.let { obj ->
                                         val data = obj.toObject(Balance::class.java)
+                                        Log.d("TAG", "addShoppingCostBeforeUpdate: ${data.toString()}")
                                         data?.let {
                                             val available =
                                                 data.totalReceivingAmount.ifEmpty { "0.0" }
@@ -394,22 +411,34 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
                                                 available.toString()
                                             ).addOnSuccessListener {
                                                 Log.d(
-                                                    "addcost", "success: "
+                                                    "updateshoppingcost", "success: "
                                                 )
-                                                trySend(ResultState.Success("Shopping cost added successfully!"))
+                                                trySend(ResultState.Success(data.copy(totalShoppingCost = cost, remainingAmount = available.toString())))
                                             }.addOnFailureListener { exp ->
                                                 Log.d(
-                                                    "addcost", "failure: "
+                                                    "updateshoppingcost", "failure: "
                                                 )
                                                 trySend(ResultState.Failure(exp))
                                             }
+                                        } ?: ref.set( //no data exist yet
+                                            Balance(
+                                                totalShoppingCost = cost
+                                            ).toMap()
+                                        ).addOnSuccessListener {
+                                            Log.d(
+                                                "addshoppingcost", "success: "
+                                            )
+                                            trySend(ResultState.Success(Balance(
+                                                totalShoppingCost = cost
+                                            )))
+                                        }.addOnFailureListener { exp ->
+                                            Log.d(
+                                                "addshoppingcost", "failure: "
+                                            )
+                                            trySend(ResultState.Failure(exp))
                                         }
 
-                                    } ?: ref.set(
-                                        Balance(
-                                            totalReceivingAmount = "0.0", totalShoppingCost = cost
-                                        ).toMap()
-                                    )
+                                    }
                                 }.addOnFailureListener { e -> trySend(ResultState.Failure(e)) }
                             }
                         }
@@ -453,33 +482,29 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
                                                 "totalMeal", unit
                                             ).addOnSuccessListener {
                                                 Log.d(
-                                                    "addmealcnt", "success: "
+                                                    "updateTotalMeal", "success: "
                                                 )
-                                                trySend(ResultState.Success("Meal cnt added successfully!"))
+                                                trySend(ResultState.Success("Meal cnt updated successfully!"))
                                             }.addOnFailureListener { exp ->
                                                 Log.d(
-                                                    "addmealcnt", "failure: "
+                                                    "updateTotalMeal", "failure: "
                                                 )
                                                 trySend(ResultState.Failure(exp))
                                             }
-                                        } ?: ref.set(Balance(totalMeal = unit).toMap())
-                                            .addOnSuccessListener {
-                                                Log.d("addTotalMeal: ", "success")
-                                            }.addOnFailureListener {
-                                            Log.d(
-                                                "addTotalMeal: ", "failed"
-                                            )
                                         }
+                                            ?: ref.set(Balance(totalMeal = unit).toMap()) //no data exist yet
+                                                .addOnSuccessListener {
+                                                    Log.d("addTotalMeal: ", "success")
+                                                }.addOnFailureListener {
+                                                    Log.d(
+                                                        "addTotalMeal: ", "failed"
+                                                    )
+                                                }
 
-                                    } ?: ref.set(Balance(totalMeal = unit).toMap())
-                                        .addOnSuccessListener {
-                                            Log.d("addTotalMeal: ", "success")
-                                        }.addOnFailureListener {
-                                        Log.d(
-                                            "addTotalMeal: ", "failed"
-                                        )
                                     }
-                                }.addOnFailureListener { e -> trySend(ResultState.Failure(e)) }
+                                }.addOnFailureListener { exp ->
+                                    trySend(ResultState.Failure(exp))
+                                }
                             }
                         }
                     }.addOnFailureListener { exp ->
@@ -517,17 +542,17 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
                                         val data = obj.toObject(Balance::class.java)
                                         data?.let {
                                             trySend(ResultState.Success(data))
-                                        }
-                                    } ?: trySend(
-                                        ResultState.Success(
-                                            Balance(
-                                                totalMeal = "0.0",
-                                                totalReceivingAmount = "0.0",
-                                                totalShoppingCost = "0.0",
-                                                remainingAmount = "0.0"
+                                        } ?: trySend(
+                                            ResultState.Success(
+                                                Balance(
+                                                    totalMeal = "0.0",
+                                                    totalReceivingAmount = "0.0",
+                                                    totalShoppingCost = "0.0",
+                                                    remainingAmount = "0.0"
+                                                )
                                             )
                                         )
-                                    )
+                                    }
                                 }.addOnFailureListener { e -> trySend(ResultState.Failure(e)) }
                             }
                         }
@@ -705,7 +730,7 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
     @RequiresApi(Build.VERSION_CODES.O)
     override fun updateMealCount(
         member: User, monthYear: String
-    ): Flow<ResultState<Pair<String,MealCount>>> = callbackFlow {
+    ): Flow<ResultState<Pair<String, MealCount>>> = callbackFlow {
         var cntBreakfast = 0.0
         var cntLunch = 0.0
         var cntDinner = 0.0
@@ -741,7 +766,7 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
                             .document(member.userId).set(cnt.toMap()).addOnSuccessListener {
                                 Log.d("updateMealCount: ", "success")
                                 trySend(
-                                    ResultState.Success(Pair(member.userId,cnt))
+                                    ResultState.Success(Pair(member.userId, cnt))
                                 )
 
                             }.addOnFailureListener { e ->
@@ -777,13 +802,13 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
         if (Network.isNetworkAvailable(context)) {
             currentUser?.let {
                 if (messMembers.isNotEmpty()) {
-                    Log.d( "countMeal: ",messMembers.size.toString())
+                    Log.d("countMeal: ", messMembers.size.toString())
                     for (member in messMembers) {
                         CoroutineScope(Dispatchers.IO).launch {
                             updateMealCount(member, monthYear).collectLatest {
-                                Log.d("sendfor",member.userName)
-                                if(it is ResultState.Success){
-                                    Log.d("sendfor",it.data.second.toString())
+                                Log.d("sendfor", member.userName)
+                                if (it is ResultState.Success) {
+                                    Log.d("sendfor", it.data.second.toString())
                                 }
                                 trySend(it)
                             }

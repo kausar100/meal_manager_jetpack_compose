@@ -20,8 +20,8 @@ interface FirebaseFirestoreRepo {
     fun newShoppingEntry(user: User,entry: Shopping): Flow<ResultState<String>>
     fun getUserShoppingInfo(user: User): Flow<ResultState<List<Shopping>>>
 
-    fun addAccountBalance(amount: String) : Flow<ResultState<String>>
-    fun addShoppingCost(cost: String) : Flow<ResultState<String>>
+    fun addAccountBalance(amount: String): Flow<ResultState<Balance>>
+    fun addShoppingCost(cost: String) : Flow<ResultState<Balance>>
     fun addTotalMeal(unit: String) : Flow<ResultState<String>>
 
     fun getBalanceInformation() : Flow<ResultState<Balance>>

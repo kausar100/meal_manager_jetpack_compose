@@ -1,5 +1,6 @@
 package com.kausar.messmanagementapp.presentation.shopping_info
 
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -56,11 +57,17 @@ fun ShoppingScreen(
     val balance = mainViewModel.balanceInfo.value
 
     LaunchedEffect(key1 = Unit) {
-        for (member in memberInfo.listOfMember) {
-            firestore.getMoneyInfo(member)
+        if (memberInfo.listOfMember.isNotEmpty() && firestore.totalMoneyPerMember.value.size != memberInfo.listOfMember.size){
+            Log.d("TAG", "ShoppingScreen: hit")
+            for (member in memberInfo.listOfMember) {
+                firestore.getMoneyInfo(member)
+            }
+            firestore.setAccountBalance()
         }
         mainViewModel.getBalanceInformation()
     }
+
+    Log.d("TAG", "ShoppingScreen: $balance")
 
     Box(
         Modifier
@@ -156,7 +163,7 @@ fun getCostPerMeal(totalMeal: String, totalShoppingCost: String): String {
     var cost: String
     try {
         val df = DecimalFormat("#.##")
-        df.roundingMode = RoundingMode.DOWN
+        df.roundingMode = RoundingMode.UP
         cost =
             df.format(totalShoppingCost.ifEmpty { "0.0" }.toDouble() / totalMeal.ifEmpty { "0.0" }
                 .toDouble())
@@ -173,7 +180,7 @@ fun MenuItem(item: ShoppingScreenListInfo, gridView: Boolean = false, onItemClic
     Card(
         modifier = Modifier
             .fillMaxWidth(1f)
-            .height(if(gridView) heightInDp/5 else heightInDp/8)
+            .height(if (gridView) heightInDp / 5 else heightInDp / 8)
             .padding(8.dp)
             .clickable {
                 onItemClick()

@@ -50,7 +50,7 @@ fun AccountBalance(
 
     val moneyInfo = firestore.addMoneyInfo.value
 
-    val totalMoneyPerMember = firestore.moneyPerMember.value
+    val totalMoneyPerMember = firestore.totalMoneyPerMember.value
 
     val moneyListInfoPerMember = firestore.addMoneyListPerMember.value
 
@@ -79,10 +79,9 @@ fun AccountBalance(
                 val members = memberInfo.listOfMember
                 repeat(members.size) {
                     val amount =
-                        if (totalMoneyPerMember.containsKey(members[it].userId)) totalMoneyPerMember[members[it].userId]!!.total else "0.0"
+                        if (totalMoneyPerMember.containsKey(members[it].userId)) totalMoneyPerMember[members[it].userId] else "0.0"
                     DialogInformation(title = members[it].userName, data = "$amount Tk")
                 }
-                DialogInformation(title = "Total", data = "${firestore.moneySum.value} Tk")
             }
         }
 
@@ -91,12 +90,7 @@ fun AccountBalance(
                 val addMoneyInfo =
                     if (moneyListInfoPerMember.containsKey(member.userId)) moneyListInfoPerMember[member.userId]!! else emptyList()
 
-                ShowUserInformation(user = member, addMoneyInfo, isLoading = moneyInfo.isLoading) {
-                    if (!moneyListInfoPerMember.containsKey(member.userId)) {
-                        firestore.clearMoneyInfo()
-                        firestore.getMoneyInfo(member)
-                    }
-                }
+                ShowUserInformation(user = member, addMoneyInfo, isLoading = moneyInfo.isLoading)
             }
         }
     }
@@ -107,8 +101,7 @@ fun AccountBalance(
 fun ShowUserInformation(
     user: User,
     moneyInfo: List<AddMoney>,
-    isLoading: Boolean = false,
-    onClick: () -> Unit
+    isLoading: Boolean = false
 ) {
     val configuration = LocalConfiguration.current
     val widthInDp = configuration.screenWidthDp.dp
@@ -120,7 +113,6 @@ fun ShowUserInformation(
             showInfo = false,
             expand = expand,
             onClickUser = {
-                onClick()
                 expand = !expand
             })
         if (expand) {
@@ -142,7 +134,7 @@ fun ShowUserInformation(
                 Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                     if (isLoading) {
                         CircularProgressIndicator()
-                    }else{
+                    } else {
                         Text(text = "No information found!")
                     }
                 }

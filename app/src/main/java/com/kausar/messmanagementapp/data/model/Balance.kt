@@ -3,10 +3,10 @@ package com.kausar.messmanagementapp.data.model
 import kotlin.reflect.full.memberProperties
 
 data class Balance(
-    val totalMeal: String = "",
-    val totalReceivingAmount: String = "",
-    val totalShoppingCost: String = "",
-    val remainingAmount: String = "",
+    val totalMeal: String = "0.0",
+    val totalReceivingAmount: String = "0.0",
+    val totalShoppingCost: String = "0.0",
+    val remainingAmount: String = "0.0",
 )
 
 fun Balance.toMap(): Map<String, Any?> = Balance::class.memberProperties.associate {

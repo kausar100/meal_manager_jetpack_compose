@@ -30,6 +30,7 @@ fun HomeScreen(
     val today by rememberSaveable {
         mutableStateOf(fetchDateAsString(calendar))
     }
+
     val data = mainViewModel.todayTotalMealCnt.value
 
     LaunchedEffect(key1 = true) {
@@ -37,9 +38,6 @@ fun HomeScreen(
             mainViewModel.getMessMembers()
         }else{
             mainViewModel.getMembersTodayMealCount()
-        }
-        if(mainViewModel.totalMealCntPerMember.value.isNotEmpty()){
-            mainViewModel.getTotalMealCount()
         }
     }
 

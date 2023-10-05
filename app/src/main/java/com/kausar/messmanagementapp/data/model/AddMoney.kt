@@ -13,11 +13,6 @@ data class AddMoneyWithUser(
     val info : AddMoney = AddMoney()
 )
 
-data class TotalMoneyPerMember(
-    val userId: String = "",
-    val total: String = ""
-)
-
 fun AddMoney.toMap(): Map<String, Any?> = AddMoney::class.memberProperties.associate {
     it.name to it.get(this)
 }

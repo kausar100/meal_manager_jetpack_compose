@@ -109,9 +109,6 @@ fun SharedHomeScreen(
         if (memberState.listOfMember.isEmpty()) {
             mainViewModel.getMessMembers()
         }
-        if(mainViewModel.totalMealCntPerMember.value.isNotEmpty()){
-            mainViewModel.getTotalMealCount()
-        }
     }
 
     val scope = rememberCoroutineScope()

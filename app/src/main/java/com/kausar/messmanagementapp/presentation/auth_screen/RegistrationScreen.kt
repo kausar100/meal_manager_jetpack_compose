@@ -14,7 +14,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -291,6 +290,10 @@ fun RegistrationScreenContent(
                         successMsg = null
                         showToast = true
 
+                    } else if (contactNo.isNotEmpty() && contactNo.length != 11) {
+                        errMsg = "Please enter valid contact number"
+                        successMsg = null
+                        showToast = true
                     } else {
                         onSubmit(contactNo, user, messName, memberType)
                     }

@@ -1,6 +1,5 @@
 package com.kausar.messmanagementapp.presentation.shopping_info
 
-import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,6 +14,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -46,6 +46,7 @@ fun ShoppingHistory(
     onSubmit: (String) -> Unit
 ) {
     val memberInfo = mainViewModel.memberInfo.value
+    val shoppingCost = mainViewModel.balanceInfo.value.totalShoppingCost.toDouble()
 
     val configuration = LocalConfiguration.current
     val widthInDp = configuration.screenWidthDp.dp
@@ -53,9 +54,11 @@ fun ShoppingHistory(
     val pagerState = rememberPagerState()
 
     val shoppingInfoPerMember = firestore.shoppingPerMember.value
-    Log.d("shopping cost", firestore.shoppingCostSum.value)
+
+    val shoppingItems = firestore.shoppingList.toList()
 
     LaunchedEffect(key1 = Unit) {
+        firestore.clearShoppingList()
         for (member in memberInfo.listOfMember) {
             firestore.getShoppingInfo(member)
         }
@@ -67,10 +70,14 @@ fun ShoppingHistory(
             .padding(16.dp),
         contentAlignment = Alignment.Center
     ) {
-        if(firestore.shoppingList.isEmpty()){
-            Text(text = "No shopping information found!",
-                style = MaterialTheme.typography.titleLarge)
-        }else{
+        if (shoppingCost != 0.0 && shoppingItems.isEmpty()) {
+            CircularProgressIndicator()
+        } else if (shoppingCost == 0.0 && shoppingItems.isEmpty()) {
+            Text(
+                text = "No shopping information found!",
+                style = MaterialTheme.typography.titleLarge
+            )
+        } else {
             Column(
                 Modifier.fillMaxSize()
             ) {
@@ -81,10 +88,10 @@ fun ShoppingHistory(
                     shape = RoundedCornerShape(4.dp)
                 ) {
                     HorizontalPager(
-                        count = firestore.shoppingList.size, state = pagerState
+                        count = shoppingItems.size, state = pagerState
                     ) {
                         SingleShoppingInformation(
-                            modifier = Modifier.width(widthInDp - 32.dp), firestore.shoppingList[it]
+                            modifier = Modifier.width(widthInDp - 32.dp), shoppingItems[it]
                         )
                     }
                 }

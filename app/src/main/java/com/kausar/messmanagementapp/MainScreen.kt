@@ -33,6 +33,7 @@ import com.kausar.messmanagementapp.navigation.Screen
 import com.kausar.messmanagementapp.navigation.logoutAndNavigateToLoginPage
 import com.kausar.messmanagementapp.presentation.auth_screen.AuthViewModel
 import com.kausar.messmanagementapp.presentation.shopping_info.ListType
+import com.kausar.messmanagementapp.presentation.viewmodels.FirebaseFirestoreDbViewModel
 import com.kausar.messmanagementapp.presentation.viewmodels.MainViewModel
 import com.kausar.messmanagementapp.utils.network_connection.ConnectionState
 import com.kausar.messmanagementapp.utils.network_connection.connectivityState
@@ -45,6 +46,7 @@ fun MainScreen(viewModel: MainViewModel) {
     val authViewModel: AuthViewModel = hiltViewModel()
     val navController = rememberNavController()
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    val firestoreVM : FirebaseFirestoreDbViewModel = hiltViewModel()
 
     viewModel.getUserInfo()
 
@@ -171,7 +173,8 @@ fun MainScreen(viewModel: MainViewModel) {
         ) {
             BottomNavGraph(
                 navController = navController,
-                mainViewModel = viewModel
+                mainViewModel = viewModel,
+                firestoreViewModel = firestoreVM
             )
         }
 

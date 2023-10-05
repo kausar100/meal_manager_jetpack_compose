@@ -17,7 +17,6 @@ import com.kausar.messmanagementapp.presentation.shopping_info.ListType
 import com.kausar.messmanagementapp.utils.ResultState
 import com.kausar.messmanagementapp.utils.getDate
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.util.Calendar
@@ -136,16 +135,19 @@ class MainViewModel @Inject constructor(
                 lunch += cnt.second.cntLunch
                 dinner += cnt.second.cntDinner
             }
-            total = (breakfast*0.5)+lunch+dinner
+            total = (breakfast * 0.5) + lunch + dinner
         }
         _todayTotalMealCnt.value = MealCount(breakfast, lunch, dinner, total)
     }
 
     fun setSingleMemberMealCount(userId: String, entry: MealCount = MealCount()) {
         _totalMealCntPerMember.value[userId] = entry
+        if (memberInfo.value.listOfMember.isNotEmpty() && totalMealCntPerMember.value.size == memberInfo.value.listOfMember.size){
+            setTotalMealCount()
+        }
     }
 
-    fun getTotalMealCount(): Double {
+    private fun setTotalMealCount() {
         var totalMealCount = 0.0
         if (totalMealCntPerMember.value.isNotEmpty()) {
             for (cnt in totalMealCntPerMember.value.values) {
@@ -153,7 +155,6 @@ class MainViewModel @Inject constructor(
             }
         }
         addTotalMealCount(totalMealCount.toString())
-        return totalMealCount
     }
 
     fun getMembersTodayMealCount() = viewModelScope.launch {
@@ -195,8 +196,70 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    fun addTotalMealCount(total: String) = viewModelScope.launch(Dispatchers.IO){
-        firestoreRepo.addTotalMeal(total).collectLatest {  }
+    fun addAccountBalance(money: Double) {
+        val amount = money + balanceInfo.value.totalReceivingAmount.ifEmpty { "0.0" }.toDouble()
+        viewModelScope.launch {
+            firestoreRepo.addAccountBalance(amount.toString()).collectLatest {
+                when (it) {
+                    is ResultState.Success -> {
+                        Log.d("TAG", "adBalanceAfterUpdate: ${it.data}")
+                        _balance.value = it.data
+                        Log.d("TAG", "addAccountBalance: success")
+                    }
+
+                    is ResultState.Failure -> {
+                        Log.d("TAG", "addAccountBalance: failure")
+                    }
+
+                    is ResultState.Loading -> {
+
+                    }
+                }
+
+            }
+        }
+    }
+
+    fun addShoppingCostToBalance(money: Double) {
+        val amount = money + balanceInfo.value.totalShoppingCost.ifEmpty { "0.0" }.toDouble()
+        viewModelScope.launch {
+            firestoreRepo.addShoppingCost(amount.toString()).collectLatest {
+                when (it) {
+                    is ResultState.Success -> {
+                        _balance.value = it.data
+                        Log.d("TAG", "addShoppingCostAfterUpdate: ${it.data}")
+                        Log.d("TAG", "addShoppingCost: success")
+                    }
+
+                    is ResultState.Failure -> {
+                        Log.d("TAG", "addShoppingCost: failure")
+                    }
+
+                    is ResultState.Loading -> {
+
+                    }
+                }
+
+            }
+        }
+    }
+
+
+    private fun addTotalMealCount(totalMeal: String) = viewModelScope.launch {
+        Log.d("TAG", "addTotalMealCount: $totalMeal")
+        firestoreRepo.addTotalMeal(totalMeal).collectLatest {
+            when (it) {
+                is ResultState.Success -> {
+                    Log.d("TAG", "addTotalMealCount: success")
+                }
+
+                is ResultState.Failure -> {
+                    Log.d("TAG", "addTotalMealCount: failure")
+                }
+                else ->{}
+
+            }
+        }
     }
 
     fun getMessNames() = viewModelScope.launch {

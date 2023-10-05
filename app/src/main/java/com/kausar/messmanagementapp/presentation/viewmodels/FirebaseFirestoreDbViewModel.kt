@@ -1,9 +1,12 @@
 package com.kausar.messmanagementapp.presentation.viewmodels
 
 
+import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kausar.messmanagementapp.data.firebase_firestore.FirebaseFirestoreRepo
@@ -12,7 +15,6 @@ import com.kausar.messmanagementapp.data.model.AddMoneyWithUser
 import com.kausar.messmanagementapp.data.model.MealInfo
 import com.kausar.messmanagementapp.data.model.MemberShoppingList
 import com.kausar.messmanagementapp.data.model.Shopping
-import com.kausar.messmanagementapp.data.model.TotalMoneyPerMember
 import com.kausar.messmanagementapp.data.model.User
 import com.kausar.messmanagementapp.utils.ResultState
 import com.kausar.messmanagementapp.utils.getDate
@@ -44,15 +46,15 @@ class FirebaseFirestoreDbViewModel @Inject constructor(
     private val _addMoney = mutableStateOf(AddMoneyStatus())
     val addMoneyInfo: State<AddMoneyStatus> = _addMoney
 
-    val moneyPerMember = mutableStateOf(HashMap<String, TotalMoneyPerMember>()) //userid,total money
+    val totalMoneyPerMember = mutableStateOf(HashMap<String, Double>()) //userid,total money
     val addMoneyListPerMember =
         mutableStateOf(HashMap<String, List<AddMoney>>()) //userId,list<info>
-    val moneySum = mutableStateOf("") //members total money
 
     val shoppingPerMember =
         mutableStateOf(HashMap<String, MemberShoppingList>()) //userid, (shopping list, cost)
-    val shoppingCostSum = mutableStateOf("") //members shopping total cost
-    val shoppingList = mutableListOf<Shopping>()
+
+    private var _shoppingList = mutableStateListOf<Shopping>()
+    val shoppingList: SnapshotStateList<Shopping> = _shoppingList
 
     private val _newShopping = mutableStateOf(NewShoppingStatus())
     val newShoppingInfo: State<NewShoppingStatus> = _newShopping
@@ -106,46 +108,41 @@ class FirebaseFirestoreDbViewModel @Inject constructor(
             }
         }
     }
-
-    init {
-        getMealForToday()
-    }
-
     fun addMemberMoney(data: AddMoneyWithUser) =
         repo.addMoneyInfo(user = data.user, newEntry = data.info)
 
     fun addNewShopping(user: User, data: Shopping) = repo.newShoppingEntry(user, data)
 
-    fun clearMoneyInfo() {
-        _addMoney.value = AddMoneyStatus()
+    fun setAccountBalance() {
+        var sum = 0.0
+        if (totalMoneyPerMember.value.isNotEmpty()) {
+            for (money in totalMoneyPerMember.value.values) {
+                sum += money
+            }
+        }
+        addAccountBalance(sum.toString())
     }
 
-    private fun getTotalMoneySum() {
-        var sum = 0.0
-        if (moneyPerMember.value.isNotEmpty()) {
-            for (money in moneyPerMember.value) {
-                if (money.value.total.isNotEmpty()) {
-                    sum += money.value.total.toDouble()
+    private fun addAccountBalance(money: String) {
+        viewModelScope.launch {
+            repo.addAccountBalance(money).collectLatest {
+                when (it) {
+                    is ResultState.Success -> {
+                        Log.d("TAG", "addAccountBalance: success")
+                    }
+
+                    is ResultState.Failure -> {
+                        Log.d("TAG", "addAccountBalance: failure")
+                    }
+
+                    is ResultState.Loading -> {
+
+                    }
                 }
 
             }
         }
-        moneySum.value = sum.toString()
     }
-
-    private fun getTotalShoppingCostSum() {
-        var sum = 0.0
-        if (shoppingPerMember.value.isNotEmpty()) {
-            for (money in shoppingPerMember.value) {
-                if (money.value.totalCost.isNotEmpty()) {
-                    sum += money.value.totalCost.toDouble()
-                }
-
-            }
-        }
-        shoppingCostSum.value = sum.toString()
-    }
-
     private fun getMoneySumPerMember(data: List<AddMoney>): String {
         var total = 0.0
         if (data.isNotEmpty()) {
@@ -172,29 +169,37 @@ class FirebaseFirestoreDbViewModel @Inject constructor(
         return total.toString()
     }
 
+    private fun saveShoppingInfo(
+        userId: String,
+        data: List<Shopping>,
+    ) {
+        _newShopping.value = NewShoppingStatus(
+            info = data
+        )
+        val sum = getShoppingCostPerMember(data)
+        shoppingPerMember.value[userId] =
+            MemberShoppingList(info = data, totalCost = sum)
+    }
+
+    fun clearShoppingList(){
+        _shoppingList.clear()
+        Log.d("TAG", "getShoppingInfoClear: ${shoppingList.toList()}")
+    }
+
     fun getShoppingInfo(member: User) {
         viewModelScope.launch {
             repo.getUserShoppingInfo(member).collectLatest {
                 when (it) {
                     is ResultState.Success -> {
-                        it.data?.let { data ->
-                            _newShopping.value = NewShoppingStatus(
-                                info = data
-                            )
-                            val sum = getShoppingCostPerMember(data)
-                            shoppingPerMember.value[member.userId] =
-                                MemberShoppingList(info = data, totalCost = sum)
-
-                            shoppingList.addAll(data)
-                            getTotalShoppingCostSum()
-                            repo.addShoppingCost(shoppingCostSum.value).collectLatest { }
-                        }
-
+                        _shoppingList.addAll(it.data)
+                        Log.d("TAG", "getShoppingInfoAfterAdd: ${shoppingList.toList()}")
+                        saveShoppingInfo(member.userId,it.data)
                     }
 
                     is ResultState.Failure -> {
                         _newShopping.value = NewShoppingStatus(
-                            error = it.message.localizedMessage!!.toString()
+                            error = it.message.localizedMessage?.toString()
+                                ?: "Unknown error occur!"
                         )
                     }
 
@@ -210,28 +215,33 @@ class FirebaseFirestoreDbViewModel @Inject constructor(
         }
     }
 
+    private fun saveBalanceInfo(
+        userId: String,
+        info: List<AddMoney>,
+    ) {
+        _addMoney.value = AddMoneyStatus(
+            info = info
+        )
+        addMoneyListPerMember.value[userId] = info
+        var sum = "0.0"
+        if (info.isNotEmpty()) {
+            sum = getMoneySumPerMember(info)
+        }
+        totalMoneyPerMember.value[userId] = sum.toDouble()
+    }
+
     fun getMoneyInfo(member: User) {
         viewModelScope.launch {
             repo.getUserMoneyInfo(member).collectLatest {
                 when (it) {
                     is ResultState.Success -> {
-                        it.data?.let { data ->
-                            _addMoney.value = AddMoneyStatus(
-                                info = data
-                            )
-                            addMoneyListPerMember.value[member.userId] = data
-                            val sum = getMoneySumPerMember(data)
-                            moneyPerMember.value[member.userId] =
-                                TotalMoneyPerMember(userId = member.userId, total = sum)
-                            getTotalMoneySum()
-                            repo.addAccountBalance(moneySum.value).collectLatest { }
-                        }
-
+                        saveBalanceInfo(member.userId, it.data)
                     }
 
                     is ResultState.Failure -> {
                         _addMoney.value = AddMoneyStatus(
-                            error = it.message.localizedMessage!!.toString()
+                            error = it.message.localizedMessage?.toString()
+                                ?: "Unknown error occur!"
                         )
                     }
 

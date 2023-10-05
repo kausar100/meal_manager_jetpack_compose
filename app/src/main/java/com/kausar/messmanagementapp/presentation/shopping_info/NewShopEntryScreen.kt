@@ -1,6 +1,5 @@
 package com.kausar.messmanagementapp.presentation.shopping_info
 
-import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.EaseInOut
@@ -27,7 +26,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedButton
@@ -321,6 +319,8 @@ fun NewShopEntry(
                                                 is ResultState.Success -> {
                                                     showProgress = false
                                                     context.showToast(it.data)
+                                                    //need to update shopping cost
+                                                    mainViewModel.addShoppingCostToBalance(amount.toDouble())
                                                 }
 
                                                 is ResultState.Failure -> {
@@ -432,7 +432,6 @@ fun ShoppingItemInfo(info: (MutableList<ShoppingItem>) -> Unit) {
                         if (rows[index].name.isNotEmpty()) {
                             info(rows)
                         }
-                        Log.d("save_entry: ", rows.toString())
                     }
                 }
 

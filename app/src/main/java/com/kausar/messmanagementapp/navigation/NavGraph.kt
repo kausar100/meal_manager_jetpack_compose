@@ -25,6 +25,7 @@ import com.kausar.messmanagementapp.presentation.shopping_info.NewShopEntry
 import com.kausar.messmanagementapp.presentation.shopping_info.ShoppingHistory
 import com.kausar.messmanagementapp.presentation.shopping_info.ShoppingListInformation
 import com.kausar.messmanagementapp.presentation.shopping_info.ShoppingScreen
+import com.kausar.messmanagementapp.presentation.viewmodels.FirebaseFirestoreDbViewModel
 import com.kausar.messmanagementapp.presentation.viewmodels.MainViewModel
 
 fun logoutAndNavigateToLoginPage(navController: NavController) {
@@ -44,6 +45,7 @@ fun logoutAndNavigateToLoginPage(navController: NavController) {
 fun BottomNavGraph(
     navController: NavHostController,
     mainViewModel: MainViewModel,
+    firestoreViewModel: FirebaseFirestoreDbViewModel,
 ) {
     var shoppingData = ""
     NavHost(
@@ -57,10 +59,10 @@ fun BottomNavGraph(
             }
         }
         composable(route = BottomBarScreen.Shopping.route) {
-            ShoppingScreen(mainViewModel, navController)
+            ShoppingScreen(mainViewModel, navController,firestoreViewModel)
         }
         composable(route = Screen.AddMoney.route) {
-            AddMoney(mainViewModel, navController)
+            AddMoney(mainViewModel, navController,firestoreViewModel)
         }
         composable(route = Screen.Splash.route) {
             SplashScreen {
@@ -74,13 +76,13 @@ fun BottomNavGraph(
             ShoppingListInformation(shoppingData)
         }
         composable(route = Screen.ShopEntry.route) {
-            NewShopEntry(mainViewModel, navController)
+            NewShopEntry(mainViewModel, navController,firestoreViewModel)
         }
         composable(route = Screen.Balance.route) {
-            AccountBalance(mainViewModel)
+            AccountBalance(mainViewModel,firestoreViewModel)
         }
         composable(route = Screen.ShoppingHistory.route) {
-            ShoppingHistory(mainViewModel) {
+            ShoppingHistory(mainViewModel,firestoreViewModel) {
                 shoppingData = it
                 navController.navigate(Screen.ShoppingList.route)
             }

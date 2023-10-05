@@ -188,7 +188,12 @@ fun LoginScreenContent(
                         successMsg = null
                         showToast = true
 
-                    } else {
+                    } else if(contactNo.isNotEmpty() && contactNo.length!=11){
+                        errMsg = "Please enter valid contact number"
+                        successMsg = null
+                        showToast = true
+                    }
+                    else {
                         val result = viewModel.isAppUser(contactNo)
                         if (result){
                             onLogin(contactNo)
