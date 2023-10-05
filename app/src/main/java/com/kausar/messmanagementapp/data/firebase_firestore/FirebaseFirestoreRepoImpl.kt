@@ -16,6 +16,7 @@ import com.kausar.messmanagementapp.data.model.Mess
 import com.kausar.messmanagementapp.data.model.Shopping
 import com.kausar.messmanagementapp.data.model.User
 import com.kausar.messmanagementapp.data.model.toMap
+import com.kausar.messmanagementapp.presentation.shopping_info.shared.SharedShoppingInfo
 import com.kausar.messmanagementapp.utils.ResultState
 import com.kausar.messmanagementapp.utils.getDate
 import com.kausar.messmanagementapp.utils.network_connection.Network
@@ -404,16 +405,14 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
                                             val available =
                                                 data.totalReceivingAmount.ifEmpty { "0.0" }
                                                     .toDouble() - cost.toDouble()
+                                            val newMealRate = SharedShoppingInfo.getCostPerMeal(data.totalMeal,cost)
                                             ref.update(
-                                                "totalShoppingCost",
-                                                cost,
-                                                "remainingAmount",
-                                                available.toString()
+                                                data.copy(totalShoppingCost = cost, mealRate = newMealRate, remainingAmount = available.toString()).toMap()
                                             ).addOnSuccessListener {
                                                 Log.d(
                                                     "updateshoppingcost", "success: "
                                                 )
-                                                trySend(ResultState.Success(data.copy(totalShoppingCost = cost, remainingAmount = available.toString())))
+                                                trySend(ResultState.Success(data.copy(totalShoppingCost = cost, mealRate=newMealRate, remainingAmount = available.toString())))
                                             }.addOnFailureListener { exp ->
                                                 Log.d(
                                                     "updateshoppingcost", "failure: "
@@ -478,8 +477,9 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
                                     b?.let { obj ->
                                         val data = obj.toObject(Balance::class.java)
                                         data?.let {
+                                            val newMealRate = SharedShoppingInfo.getCostPerMeal(unit,data.totalShoppingCost)
                                             ref.update(
-                                                "totalMeal", unit
+                                                data.copy(totalMeal = unit, mealRate = newMealRate).toMap()
                                             ).addOnSuccessListener {
                                                 Log.d(
                                                     "updateTotalMeal", "success: "

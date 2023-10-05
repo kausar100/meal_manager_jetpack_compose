@@ -7,6 +7,7 @@ data class Balance(
     val totalReceivingAmount: String = "0.0",
     val totalShoppingCost: String = "0.0",
     val remainingAmount: String = "0.0",
+    val mealRate: String = "0.0"
 )
 
 fun Balance.toMap(): Map<String, Any?> = Balance::class.memberProperties.associate {

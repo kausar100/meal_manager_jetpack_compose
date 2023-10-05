@@ -1,6 +1,8 @@
 package com.kausar.messmanagementapp.presentation.shopping_info.shared
 
 import com.kausar.messmanagementapp.data.model.User
+import java.math.RoundingMode
+import java.text.DecimalFormat
 
 object SharedShoppingInfo{
     fun getNames(members: List<User>): List<String> {
@@ -23,5 +25,18 @@ object SharedShoppingInfo{
             }
         }
         return selectedMember
+    }
+    fun getCostPerMeal(totalMeal: String = "0.0", totalShoppingCost: String = "0.0"): String {
+        var cost: String
+        try {
+            val df = DecimalFormat("#.##")
+            df.roundingMode = RoundingMode.UP
+            cost =
+                df.format(totalShoppingCost.ifEmpty { "0.0" }.toDouble() / totalMeal.ifEmpty { "0.0" }
+                    .toDouble())
+        } catch (e: Exception) {
+            cost = "0.0"
+        }
+        return cost
     }
 }

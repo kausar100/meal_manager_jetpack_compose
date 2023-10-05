@@ -39,8 +39,6 @@ import com.kausar.messmanagementapp.presentation.shopping_info.shared.DialogInfo
 import com.kausar.messmanagementapp.presentation.viewmodels.FirebaseFirestoreDbViewModel
 import com.kausar.messmanagementapp.presentation.viewmodels.MainViewModel
 import com.kausar.messmanagementapp.utils.fetchCurrentMonthName
-import java.math.RoundingMode
-import java.text.DecimalFormat
 
 enum class ListType {
     List, Grid
@@ -52,18 +50,9 @@ fun ShoppingScreen(
     navController: NavHostController,
     firestore: FirebaseFirestoreDbViewModel = hiltViewModel()
 ) {
-
-    val memberInfo = mainViewModel.memberInfo.value
     val balance = mainViewModel.balanceInfo.value
 
     LaunchedEffect(key1 = Unit) {
-        if (memberInfo.listOfMember.isNotEmpty() && firestore.totalMoneyPerMember.value.size != memberInfo.listOfMember.size){
-            Log.d("TAG", "ShoppingScreen: hit")
-            for (member in memberInfo.listOfMember) {
-                firestore.getMoneyInfo(member)
-            }
-            firestore.setAccountBalance()
-        }
         mainViewModel.getBalanceInformation()
     }
 
@@ -100,7 +89,7 @@ fun ShoppingScreen(
                     )
                     DialogInformation(
                         title = "Cost per meal",
-                        data = getCostPerMeal(balance.totalMeal, balance.totalShoppingCost)
+                        data = balance.mealRate
                     )
                     DialogInformation(title = "Remaining Money", data = balance.remainingAmount)
                 }
@@ -157,20 +146,6 @@ fun ShoppingScreen(
             }
         }
     }
-}
-
-fun getCostPerMeal(totalMeal: String, totalShoppingCost: String): String {
-    var cost: String
-    try {
-        val df = DecimalFormat("#.##")
-        df.roundingMode = RoundingMode.UP
-        cost =
-            df.format(totalShoppingCost.ifEmpty { "0.0" }.toDouble() / totalMeal.ifEmpty { "0.0" }
-                .toDouble())
-    } catch (e: Exception) {
-        cost = "0.0"
-    }
-    return cost
 }
 
 @Composable

@@ -112,37 +112,7 @@ class FirebaseFirestoreDbViewModel @Inject constructor(
         repo.addMoneyInfo(user = data.user, newEntry = data.info)
 
     fun addNewShopping(user: User, data: Shopping) = repo.newShoppingEntry(user, data)
-
-    fun setAccountBalance() {
-        var sum = 0.0
-        if (totalMoneyPerMember.value.isNotEmpty()) {
-            for (money in totalMoneyPerMember.value.values) {
-                sum += money
-            }
-        }
-        addAccountBalance(sum.toString())
-    }
-
-    private fun addAccountBalance(money: String) {
-        viewModelScope.launch {
-            repo.addAccountBalance(money).collectLatest {
-                when (it) {
-                    is ResultState.Success -> {
-                        Log.d("TAG", "addAccountBalance: success")
-                    }
-
-                    is ResultState.Failure -> {
-                        Log.d("TAG", "addAccountBalance: failure")
-                    }
-
-                    is ResultState.Loading -> {
-
-                    }
-                }
-
-            }
-        }
-    }
+    
     private fun getMoneySumPerMember(data: List<AddMoney>): String {
         var total = 0.0
         if (data.isNotEmpty()) {
@@ -235,6 +205,7 @@ class FirebaseFirestoreDbViewModel @Inject constructor(
             repo.getUserMoneyInfo(member).collectLatest {
                 when (it) {
                     is ResultState.Success -> {
+                        _addMoney.value = AddMoneyStatus(info = it.data)
                         saveBalanceInfo(member.userId, it.data)
                     }
 
