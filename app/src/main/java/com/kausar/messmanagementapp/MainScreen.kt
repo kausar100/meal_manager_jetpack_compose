@@ -46,7 +46,7 @@ fun MainScreen(viewModel: MainViewModel) {
     val authViewModel: AuthViewModel = hiltViewModel()
     val navController = rememberNavController()
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
-    val firestoreVM : FirebaseFirestoreDbViewModel = hiltViewModel()
+    val firestoreVM: FirebaseFirestoreDbViewModel = hiltViewModel()
 
     viewModel.getUserInfo()
 
@@ -57,14 +57,6 @@ fun MainScreen(viewModel: MainViewModel) {
         when (currentRoute(navController)) {
             BottomBarScreen.Home.route, BottomBarScreen.MealInfo.route, BottomBarScreen.Shopping.route, Screen.AddMoney.route, Screen.ShopEntry.route, Screen.Balance.route, Screen.Profile.route, Screen.ShoppingHistory.route, Screen.ShoppingList.route -> {
                 CustomTopAppBar(title = when (currentRoute(navController)) {
-
-                    BottomBarScreen.MealInfo.route -> {
-                        BottomBarScreen.MealInfo.title
-                    }
-
-                    BottomBarScreen.Shopping.route -> {
-                        BottomBarScreen.Shopping.title
-                    }
 
                     Screen.AddMoney.route -> {
                         Screen.AddMoney.title
@@ -97,7 +89,14 @@ fun MainScreen(viewModel: MainViewModel) {
                     canGoProfileScreen = when (currentRoute(navController)) {
                         BottomBarScreen.Home.route -> {
                             true
+                        }
 
+                        BottomBarScreen.MealInfo.route -> {
+                            true
+                        }
+
+                        BottomBarScreen.Shopping.route -> {
+                            true
                         }
 
                         else -> {
@@ -105,9 +104,6 @@ fun MainScreen(viewModel: MainViewModel) {
                         }
 
                     },
-                    profilePicture = viewModel.userInfo.value.profilePhoto,
-                    userName = viewModel.userInfo.value.userName,
-                    userType = viewModel.userInfo.value.userType,
                     gotoProfileScreen = {
                         navController.navigate(Screen.Profile.route)
                     },
@@ -125,7 +121,7 @@ fun MainScreen(viewModel: MainViewModel) {
                         viewModel.toggleList()
                     },
                     canLogout = when (currentRoute(navController)) {
-                        BottomBarScreen.Home.route -> {
+                        Screen.Profile.route -> {
                             true
                         }
 
@@ -215,30 +211,25 @@ fun BottomBar(navController: NavHostController) {
 fun RowScope.AddDestination(
     screen: BottomBarScreen, currentDestination: NavDestination?, navController: NavHostController
 ) {
-    NavigationBarItem(
-        selected = currentDestination?.hierarchy?.any {
-            it.route == screen.route
-        } == true,
-        onClick = {
-            currentDestination?.let {
-                if (currentDestination.route != screen.route) {
-                    navController.navigate(screen.route) {
-                        popUpTo(BottomBarScreen.Home.route)
-                        launchSingleTop = true
-                    }
+    NavigationBarItem(selected = currentDestination?.hierarchy?.any {
+        it.route == screen.route
+    } == true, onClick = {
+        currentDestination?.let {
+            if (currentDestination.route != screen.route) {
+                navController.navigate(screen.route) {
+                    popUpTo(BottomBarScreen.Home.route)
+                    launchSingleTop = true
                 }
-            } ?: navController.navigate(screen.route) {
-                popUpTo(BottomBarScreen.Home.route)
-                launchSingleTop = true
             }
-        },
-        label = {
-            Text(text = screen.title)
-        },
-        icon = {
-            Icon(
-                painter = painterResource(id = screen.icon), contentDescription = "Navigation Icon"
-            )
+        } ?: navController.navigate(screen.route) {
+            popUpTo(BottomBarScreen.Home.route)
+            launchSingleTop = true
         }
-    )
+    }, label = {
+        Text(text = screen.title)
+    }, icon = {
+        Icon(
+            painter = painterResource(id = screen.icon), contentDescription = "Navigation Icon"
+        )
+    })
 }

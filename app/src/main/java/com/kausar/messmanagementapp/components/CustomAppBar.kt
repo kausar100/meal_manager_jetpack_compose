@@ -1,8 +1,9 @@
 package com.kausar.messmanagementapp.components
 
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
@@ -18,23 +19,15 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.AsyncImage
-import coil.request.ImageRequest
 import com.kausar.messmanagementapp.R
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -43,9 +36,6 @@ fun CustomTopAppBar(
     title: String? = null,
     canNavigateBack: Boolean = true,
     canGoProfileScreen: Boolean = false,
-    profilePicture: String = "",
-    userName: String = "",
-    userType: String = "",
     gotoProfileScreen: () -> Unit = { },
     showAction: Boolean = false,
     actionIcon: Int? = null,
@@ -76,32 +66,18 @@ fun CustomTopAppBar(
         }
         if (canGoProfileScreen) {
             Row(
-                Modifier
-                    .padding(start = 16.dp)
-                    .clickable {
-                        gotoProfileScreen()
-                    }, verticalAlignment = Alignment.CenterVertically) {
-                AsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current).data(profilePicture)
-                        .crossfade(true).build(),
-                    placeholder = painterResource(id = R.drawable.ic_person),
-                    contentDescription = stringResource(id = R.string.mess_picture),
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(CircleShape)
+                Modifier.padding(start = 16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Start
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.ic_logo),
+                    contentDescription = "app_logo",
+                    modifier = Modifier.size(32.dp)
                 )
                 Spacer(modifier = Modifier.width(16.dp))
-                Column(
-                    horizontalAlignment = Alignment.Start,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    Text(text = userType, fontSize = 12.sp)
-                    Text(text = userName, fontWeight = FontWeight.Bold)
-                }
-
+                Text(text = "Meal Manager", style = MaterialTheme.typography.titleLarge)
             }
-
 
         }
     }, actions = {
@@ -113,11 +89,26 @@ fun CustomTopAppBar(
                     }
                 }, Modifier.padding(end = 16.dp)) {
                     Icon(
-                        painter = painterResource(id = actionIcon),
-                        contentDescription = "action"
+                        painter = painterResource(id = actionIcon), contentDescription = "action"
                     )
                 }
             }
+
+        }
+        else if (canGoProfileScreen) {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_person),
+                contentDescription = "profile",
+                modifier = Modifier
+                    .padding(end = 16.dp)
+                    .border(
+                        1.dp, MaterialTheme.colorScheme.onBackground.copy(alpha = .3f),
+                        CircleShape
+                    ).padding(8.dp)
+                    .clickable {
+                        gotoProfileScreen()
+                    }
+            )
 
         }
         if (canLogout) {
@@ -125,15 +116,13 @@ fun CustomTopAppBar(
                 if (logoutAction != null) {
                     logoutAction()
                 }
-            }, Modifier.padding(end = 16.dp)) {
+            }, modifier = Modifier.padding(end = 16.dp)) {
                 Icon(
                     imageVector = Icons.Default.ExitToApp, contentDescription = "logout"
                 )
             }
-
         }
-    }
-    )
+    })
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
