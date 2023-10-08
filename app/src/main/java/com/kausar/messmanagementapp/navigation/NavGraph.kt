@@ -59,7 +59,7 @@ fun BottomNavGraph(
             }
         }
         composable(route = BottomBarScreen.Shopping.route) {
-            ShoppingScreen(mainViewModel, navController,firestoreViewModel)
+            ShoppingScreen(mainViewModel, navController)
         }
         composable(route = Screen.AddMoney.route) {
             AddMoney(mainViewModel, navController,firestoreViewModel)

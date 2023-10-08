@@ -104,7 +104,7 @@ fun CustomTopAppBar(
                     .border(
                         1.dp, MaterialTheme.colorScheme.onBackground.copy(alpha = .3f),
                         CircleShape
-                    ).padding(8.dp)
+                    ).padding(4.dp)
                     .clickable {
                         gotoProfileScreen()
                     }

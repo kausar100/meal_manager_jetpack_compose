@@ -39,4 +39,16 @@ object SharedShoppingInfo{
         }
         return cost
     }
+
+    fun getMealCost(numberOfMeal: String = "0.0", mealRate: String = "0.0", otherCost: String = "0.0"): String {
+        var cost: String
+        try {
+            val df = DecimalFormat("#.##")
+            df.roundingMode = RoundingMode.UP
+            cost = df.format((numberOfMeal.toDouble()*mealRate.toDouble())+otherCost.toDouble())
+        } catch (e: Exception) {
+            cost = "0.0"
+        }
+        return cost
+    }
 }

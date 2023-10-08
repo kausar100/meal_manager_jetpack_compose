@@ -82,11 +82,11 @@ fun MealInfoScreen(
     val memberState = mainViewModel.memberInfo.value
     val userInfo = mainViewModel.userInfo.value
 
-    Log.d("TAG", "MealInfoScreen: ${mainViewModel.totalMealCntPerMember.value.values}")
+    Log.d("TAG", "MealInfoScreen: ${mainViewModel.totalMealCntPerMember.values}")
 
 
     var selectedMemberTotalMealCount by remember {
-        mutableStateOf(mainViewModel.totalMealCntPerMember.value[userInfo.userId])
+        mutableStateOf(mainViewModel.totalMealCntPerMember[userInfo.userId])
     }
 
     val listTitle = fetchCurrentMonthName()
@@ -158,14 +158,14 @@ fun MealInfoScreen(
                                     showList = true
                                 }
                             }, onClickInfo = {
-                                if (!mainViewModel.totalMealCntPerMember.value.containsKey(
+                                if (!mainViewModel.totalMealCntPerMember.containsKey(
                                         user.userId
                                     )
                                 ) {
                                     mainViewModel.setSingleMemberMealCount(user.userId)
                                 }
                                 selectedMemberTotalMealCount =
-                                    mainViewModel.totalMealCntPerMember.value[user.userId]
+                                    mainViewModel.totalMealCntPerMember[user.userId]
                                 showMealInfoScreen = true
                             })
                         }

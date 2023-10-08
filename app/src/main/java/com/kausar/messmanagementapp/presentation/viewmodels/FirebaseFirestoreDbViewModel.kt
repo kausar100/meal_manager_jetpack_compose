@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.ViewModel
@@ -46,12 +47,10 @@ class FirebaseFirestoreDbViewModel @Inject constructor(
     private val _addMoney = mutableStateOf(AddMoneyStatus())
     val addMoneyInfo: State<AddMoneyStatus> = _addMoney
 
-    val totalMoneyPerMember = mutableStateOf(HashMap<String, Double>()) //userid,total money
-    val addMoneyListPerMember =
-        mutableStateOf(HashMap<String, List<AddMoney>>()) //userId,list<info>
+    val totalMoneyPerMember = mutableStateMapOf<String, Double>() //userid,total money
+    val addMoneyListPerMember = mutableStateMapOf<String, List<AddMoney>>()//userId,list<info>
 
-    val shoppingPerMember =
-        mutableStateOf(HashMap<String, MemberShoppingList>()) //userid, (shopping list, cost)
+    val shoppingPerMember = mutableStateMapOf<String, MemberShoppingList>() //userid, (shopping list, cost)
 
     private var _shoppingList = mutableStateListOf<Shopping>()
     val shoppingList: SnapshotStateList<Shopping> = _shoppingList
@@ -147,7 +146,7 @@ class FirebaseFirestoreDbViewModel @Inject constructor(
             info = data
         )
         val sum = getShoppingCostPerMember(data)
-        shoppingPerMember.value[userId] =
+        shoppingPerMember[userId] =
             MemberShoppingList(info = data, totalCost = sum)
     }
 
@@ -192,12 +191,12 @@ class FirebaseFirestoreDbViewModel @Inject constructor(
         _addMoney.value = AddMoneyStatus(
             info = info
         )
-        addMoneyListPerMember.value[userId] = info
+        addMoneyListPerMember[userId] = info
         var sum = "0.0"
         if (info.isNotEmpty()) {
             sum = getMoneySumPerMember(info)
         }
-        totalMoneyPerMember.value[userId] = sum.toDouble()
+        totalMoneyPerMember[userId] = sum.toDouble()
     }
 
     fun getMoneyInfo(member: User) {

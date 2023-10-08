@@ -1,6 +1,5 @@
 package com.kausar.messmanagementapp.presentation.shopping_info
 
-import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -30,13 +29,11 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.kausar.messmanagementapp.data.model.ShoppingListItem
 import com.kausar.messmanagementapp.data.model.ShoppingScreenListInfo
 import com.kausar.messmanagementapp.navigation.Screen
 import com.kausar.messmanagementapp.presentation.shopping_info.shared.DialogInformation
-import com.kausar.messmanagementapp.presentation.viewmodels.FirebaseFirestoreDbViewModel
 import com.kausar.messmanagementapp.presentation.viewmodels.MainViewModel
 import com.kausar.messmanagementapp.utils.fetchCurrentMonthName
 
@@ -47,16 +44,13 @@ enum class ListType {
 @Composable
 fun ShoppingScreen(
     mainViewModel: MainViewModel,
-    navController: NavHostController,
-    firestore: FirebaseFirestoreDbViewModel = hiltViewModel()
+    navController: NavHostController
 ) {
     val balance = mainViewModel.balanceInfo.value
 
     LaunchedEffect(key1 = Unit) {
         mainViewModel.getBalanceInformation()
     }
-
-    Log.d("TAG", "ShoppingScreen: $balance")
 
     Box(
         Modifier

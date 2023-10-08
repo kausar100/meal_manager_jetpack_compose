@@ -1,5 +1,9 @@
 package com.kausar.messmanagementapp.presentation.home_screen
 
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.EaseInOut
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -10,13 +14,17 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ElevatedButton
@@ -34,6 +42,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -42,7 +51,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.kausar.messmanagementapp.components.CustomProgressBar
+import com.kausar.messmanagementapp.data.model.AddMoney
 import com.kausar.messmanagementapp.data.model.MealInfo
+import com.kausar.messmanagementapp.data.model.User
+import com.kausar.messmanagementapp.presentation.meal_info_list.ShowUser
+import com.kausar.messmanagementapp.presentation.shopping_info.shared.MoneyInfo
+import com.kausar.messmanagementapp.presentation.shopping_info.shared.SharedShoppingInfo
 import com.kausar.messmanagementapp.presentation.viewmodels.FirebaseFirestoreDbViewModel
 import com.kausar.messmanagementapp.presentation.viewmodels.MainViewModel
 import com.kausar.messmanagementapp.utils.ResultState
@@ -95,6 +109,11 @@ fun SharedHomeScreen(
     val userInfo = mainViewModel.userInfo.value
     val mealInfoState = viewModel.mealInfo.value
     val memberState = mainViewModel.memberInfo.value
+    val moneyInfo = viewModel.addMoneyInfo.value
+    val balance = mainViewModel.balanceInfo.value
+    val totalMoneyPerMember = viewModel.totalMoneyPerMember
+    val totalMealCntPerMember = mainViewModel.totalMealCntPerMember
+
 
     val connection by connectivityState()
     val isConnected = (connection === ConnectionState.Available)
@@ -109,6 +128,14 @@ fun SharedHomeScreen(
         if (memberState.listOfMember.isEmpty()) {
             mainViewModel.getMessMembers()
         }
+
+
+    }
+    LaunchedEffect(key1 = userInfo) {
+        if (userInfo.userType.isNotEmpty()) {
+            viewModel.getMoneyInfo(userInfo)
+        }
+        mainViewModel.getBalanceInformation()
     }
 
     val scope = rememberCoroutineScope()
@@ -137,10 +164,11 @@ fun SharedHomeScreen(
             ) {
                 if (newMeal) {
                     Spacer(modifier = Modifier.width(16.dp))
-                    Row(Modifier
-                        .clickable { showPopup = true }
-                        .border(1.dp, Color.Transparent, RoundedCornerShape(4.dp))
-                        .padding(8.dp)) {
+                    Row(
+                        Modifier
+                            .clickable { showPopup = true }
+                            .border(1.dp, Color.Transparent, RoundedCornerShape(4.dp))
+                            .padding(8.dp)) {
                         Text(
                             text = presentingDate, textAlign = TextAlign.Center
                         )
@@ -183,7 +211,9 @@ fun SharedHomeScreen(
                                         breakfast,
                                         lunch,
                                         dinner,
-                                        cntb, cntl, cntd
+                                        cntb,
+                                        cntl,
+                                        cntd
                                     )
                                 ).collectLatest { result ->
                                     when (result) {
@@ -247,10 +277,26 @@ fun SharedHomeScreen(
                         }
                     }
                 } else {
+                    ReviewInformation(
+                        user = userInfo,
+                        moneyInfo = moneyInfo.info,
+                        isLoading = moneyInfo.isLoading || !totalMoneyPerMember.containsKey(
+                            userInfo.userId
+                        ) || !totalMealCntPerMember.containsKey(
+                            userInfo.userId
+                        ),
+                        mealCnt = totalMealCntPerMember[userInfo.userId]?.total.toString(),
+                        mealRate = balance.mealRate,
+                        mealCost = SharedShoppingInfo.getMealCost(
+                            totalMealCntPerMember[userInfo.userId]?.total.toString(),
+                            balance.mealRate
+                        ),
+                        depositAmount = totalMoneyPerMember[userInfo.userId].toString()
+                    )
+
                     if (mealInfoState.success.isNotEmpty()) {
                         Text(
-                            text = today,
-                            style = MaterialTheme.typography.bodyLarge
+                            text = today, style = MaterialTheme.typography.bodyLarge
                         )
                         MealInformation(
                             mealInfo = mealInfoState.meal,
@@ -259,7 +305,8 @@ fun SharedHomeScreen(
                     ElevatedButton(
                         onClick = {
                             newMeal = true
-                        }, shape = RoundedCornerShape(4.dp),
+                        },
+                        shape = RoundedCornerShape(4.dp),
                         modifier = Modifier
                             .fillMaxWidth(1f)
                             .padding(horizontal = 16.dp, vertical = 8.dp)
@@ -276,6 +323,78 @@ fun SharedHomeScreen(
             }
         }
 
+    }
+}
+
+@Composable
+fun ReviewInformation(
+    user: User,
+    moneyInfo: List<AddMoney>,
+    isLoading: Boolean = false,
+    mealCnt: String = "0.0",
+    mealRate: String = "0.0",
+    mealCost: String = "0.0",
+    depositAmount: String = "0.0"
+) {
+    val configuration = LocalConfiguration.current
+    val widthInDp = configuration.screenWidthDp.dp
+
+    var expand by remember { mutableStateOf(false) }
+    Column(Modifier.animateContentSize(tween(500, easing = EaseInOut))) {
+        ShowUser(userInfo = user, showInfo = false, expand = expand, onClickUser = {
+            expand = !expand
+        })
+        if (expand) {
+            Spacer(modifier = Modifier.height(4.dp))
+            Column(
+                Modifier
+                    .padding(horizontal = 16.dp)
+                    .background(
+                        MaterialTheme.colorScheme.background.copy(
+                            alpha = .3f,
+                        ), RoundedCornerShape(4.dp)
+                    )
+            ) {
+                SingleRow(title = "Number of meal", data = mealCnt)
+                SingleRow(title = "Meal rate", data = mealRate)
+                SingleRow(title = "Meal cost", data = mealCost)
+                SingleRow(title = "Total deposit amount", data = depositAmount)
+                Spacer(modifier = Modifier.height(8.dp))
+                if (moneyInfo.isNotEmpty()) {
+                    LazyRow {
+                        itemsIndexed(moneyInfo) { index, info ->
+                            MoneyInfo(
+                                modifier = Modifier
+                                    .width(widthInDp / 2.15f)
+                                    .padding(
+                                        start = if (index == 0) 0.dp else 4.dp,
+                                        end = if (index == moneyInfo.lastIndex) 0.dp else 4.dp
+                                    ), info = info
+                            )
+                        }
+                    }
+                } else {
+                    Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                        if (isLoading) {
+                            CircularProgressIndicator()
+                        } else {
+                            Text(text = "No Balance found!")
+                        }
+                    }
+                }
+
+            }
+
+        }
+    }
+
+}
+
+@Composable
+fun SingleRow(title: String, data: String) {
+    Row(modifier = Modifier.fillMaxWidth(1f), horizontalArrangement = Arrangement.SpaceBetween) {
+        Text(text = title, style = MaterialTheme.typography.titleMedium)
+        Text(text = data, style = MaterialTheme.typography.titleMedium)
     }
 }
 
@@ -323,13 +442,12 @@ fun PopUpOption(onDismiss: () -> Unit, onSelect: (String, String) -> Unit) {
     }) {
 
         repeat(dates.size) {
-            DropdownMenuItem(
-                text = {
-                    Text(text = dates[it])
-                }, onClick = {
-                    expanded = false
-                    onSelect(dates[it], firestoreDates[it])
-                })
+            DropdownMenuItem(text = {
+                Text(text = dates[it])
+            }, onClick = {
+                expanded = false
+                onSelect(dates[it], firestoreDates[it])
+            })
         }
     }
 

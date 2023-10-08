@@ -53,7 +53,7 @@ fun ShoppingHistory(
 
     val pagerState = rememberPagerState()
 
-    val shoppingInfoPerMember = firestore.shoppingPerMember.value
+    val shoppingInfoPerMember = firestore.shoppingPerMember
 
     val shoppingItems = firestore.shoppingList.toList()
 

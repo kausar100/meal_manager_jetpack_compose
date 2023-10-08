@@ -50,9 +50,9 @@ fun AccountBalance(
 
     val moneyInfo = firestore.addMoneyInfo.value
 
-    val totalMoneyPerMember = firestore.totalMoneyPerMember.value
+    val totalMoneyPerMember = firestore.totalMoneyPerMember
 
-    val moneyListInfoPerMember = firestore.addMoneyListPerMember.value
+    val moneyListInfoPerMember = firestore.addMoneyListPerMember
 
     LaunchedEffect(key1 = Unit) {
         for (member in memberInfo.listOfMember) {

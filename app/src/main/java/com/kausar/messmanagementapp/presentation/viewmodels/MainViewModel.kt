@@ -3,6 +3,7 @@ package com.kausar.messmanagementapp.presentation.viewmodels
 import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -44,7 +45,8 @@ class MainViewModel @Inject constructor(
     private val _memberList: MutableState<MemberState> = mutableStateOf(MemberState())
     val memberInfo: State<MemberState> = _memberList
 
-    private val _totalMealCntPerMember = mutableStateOf(hashMapOf<String, MealCount>())
+
+    private val _totalMealCntPerMember =mutableStateMapOf<String,MealCount>()
     val totalMealCntPerMember = _totalMealCntPerMember
 
     private val _todayTotalMealCnt: MutableState<MealCount> = mutableStateOf(MealCount())
@@ -115,6 +117,7 @@ class MainViewModel @Inject constructor(
     }
 
     private fun addMembersMealCount() {
+        Log.d("now", "addMembersMealCount: true")
         viewModelScope.launch {
             firestoreRepo.countMeal().collectLatest {
                 if (it is ResultState.Success) {
@@ -141,16 +144,16 @@ class MainViewModel @Inject constructor(
     }
 
     fun setSingleMemberMealCount(userId: String, entry: MealCount = MealCount()) {
-        _totalMealCntPerMember.value[userId] = entry
-        if (memberInfo.value.listOfMember.isNotEmpty() && totalMealCntPerMember.value.size == memberInfo.value.listOfMember.size){
+        _totalMealCntPerMember[userId] = entry
+        if (memberInfo.value.listOfMember.isNotEmpty() && totalMealCntPerMember.size == memberInfo.value.listOfMember.size){
             setTotalMealCount()
         }
     }
 
     private fun setTotalMealCount() {
         var totalMealCount = 0.0
-        if (totalMealCntPerMember.value.isNotEmpty()) {
-            for (cnt in totalMealCntPerMember.value.values) {
+        if (totalMealCntPerMember.isNotEmpty()) {
+            for (cnt in totalMealCntPerMember.values) {
                 totalMealCount += cnt.total
             }
         }
