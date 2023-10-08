@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -20,6 +21,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -30,6 +32,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import com.kausar.messmanagementapp.data.model.MemberType
 import com.kausar.messmanagementapp.data.model.ShoppingListItem
 import com.kausar.messmanagementapp.data.model.ShoppingScreenListInfo
 import com.kausar.messmanagementapp.navigation.Screen
@@ -89,54 +92,75 @@ fun ShoppingScreen(
                 }
 
             }
-            if (mainViewModel.listType.value == ListType.List) {
-                LazyColumn {
-                    items(ShoppingListItem.items) { item ->
-                        MenuItem(item) {
-                            when (item.title) {
-                                ShoppingListItem.itemTitles[0] -> {
-                                    navController.navigate(Screen.AddMoney.route)
-                                }
+            if (mainViewModel.userInfo.value.userType == MemberType.Manager.name) {
+                if (mainViewModel.listType.value == ListType.List) {
+                    LazyColumn {
+                        items(ShoppingListItem.items) { item ->
+                            MenuItem(item) {
+                                when (item.title) {
+                                    ShoppingListItem.itemTitles[0] -> {
+                                        navController.navigate(Screen.AddMoney.route)
+                                    }
 
-                                ShoppingListItem.itemTitles[1] -> {
-                                    navController.navigate(Screen.ShopEntry.route)
-                                }
+                                    ShoppingListItem.itemTitles[1] -> {
+                                        navController.navigate(Screen.ShopEntry.route)
+                                    }
 
-                                ShoppingListItem.itemTitles[2] -> {
-                                    navController.navigate(Screen.Balance.route)
-                                }
+                                    ShoppingListItem.itemTitles[2] -> {
+                                        navController.navigate(Screen.Balance.route)
+                                    }
 
-                                ShoppingListItem.itemTitles[3] -> {
-                                    navController.navigate(Screen.ShoppingHistory.route)
+                                    ShoppingListItem.itemTitles[3] -> {
+                                        navController.navigate(Screen.ShoppingHistory.route)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    LazyVerticalGrid(columns = GridCells.Fixed(2)) {
+                        items(ShoppingListItem.items) { item ->
+                            MenuItem(item, true) {
+                                when (item.title) {
+                                    ShoppingListItem.itemTitles[0] -> {
+                                        navController.navigate(Screen.AddMoney.route)
+                                    }
+
+                                    ShoppingListItem.itemTitles[1] -> {
+                                        navController.navigate(Screen.ShopEntry.route)
+                                    }
+
+                                    ShoppingListItem.itemTitles[2] -> {
+                                        navController.navigate(Screen.Balance.route)
+                                    }
+
+                                    ShoppingListItem.itemTitles[3] -> {
+                                        navController.navigate(Screen.ShoppingHistory.route)
+                                    }
                                 }
                             }
                         }
                     }
                 }
             } else {
-                LazyVerticalGrid(columns = GridCells.Fixed(2)) {
-                    items(ShoppingListItem.items) { item ->
-                        MenuItem(item, true) {
-                            when (item.title) {
-                                ShoppingListItem.itemTitles[0] -> {
-                                    navController.navigate(Screen.AddMoney.route)
-                                }
-
-                                ShoppingListItem.itemTitles[1] -> {
-                                    navController.navigate(Screen.ShopEntry.route)
-                                }
-
-                                ShoppingListItem.itemTitles[2] -> {
-                                    navController.navigate(Screen.Balance.route)
-                                }
-
-                                ShoppingListItem.itemTitles[3] -> {
-                                    navController.navigate(Screen.ShoppingHistory.route)
-                                }
-                            }
-                        }
+                Box(
+                    modifier = Modifier.padding(top = 8.dp)
+                ) {
+                    ShoppingHistory(mainViewModel = mainViewModel, onSubmit = {})
+                    Box(
+                        Modifier
+                            .fillMaxHeight(1f)
+                            .fillMaxWidth(1f)
+                            .padding(end = 8.dp),
+                        contentAlignment = Alignment.BottomEnd
+                    ) {
+                        Text(
+                            text = "Swipe left or right to see more!",
+                            style = MaterialTheme.typography.labelMedium.copy(color = MaterialTheme.colorScheme.primary)
+                        )
                     }
                 }
+
             }
         }
     }

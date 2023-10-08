@@ -27,6 +27,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.kausar.messmanagementapp.components.CustomTopAppBar
+import com.kausar.messmanagementapp.data.model.MemberType
 import com.kausar.messmanagementapp.navigation.BottomBarScreen
 import com.kausar.messmanagementapp.navigation.BottomNavGraph
 import com.kausar.messmanagementapp.navigation.Screen
@@ -109,7 +110,7 @@ fun MainScreen(viewModel: MainViewModel) {
                     },
                     showAction = when (currentRoute(navController)) {
                         BottomBarScreen.Shopping.route -> {
-                            true
+                            viewModel.userInfo.value.userType == MemberType.Manager.name
                         }
 
                         else -> {

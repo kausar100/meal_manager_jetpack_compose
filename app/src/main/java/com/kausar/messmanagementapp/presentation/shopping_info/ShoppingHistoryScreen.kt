@@ -1,5 +1,6 @@
 package com.kausar.messmanagementapp.presentation.shopping_info
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -30,6 +31,7 @@ import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
 import com.google.gson.Gson
 import com.kausar.messmanagementapp.data.model.MemberShoppingList
+import com.kausar.messmanagementapp.data.model.MemberType
 import com.kausar.messmanagementapp.data.model.Shopping
 import com.kausar.messmanagementapp.data.model.ShoppingItem
 import com.kausar.messmanagementapp.presentation.meal_info_list.ShowUser
@@ -57,6 +59,8 @@ fun ShoppingHistory(
 
     val shoppingItems = firestore.shoppingList.toList()
 
+    val isManager = mainViewModel.userInfo.value.userType == MemberType.Manager.name
+
     LaunchedEffect(key1 = Unit) {
         firestore.clearShoppingList()
         for (member in memberInfo.listOfMember) {
@@ -67,7 +71,7 @@ fun ShoppingHistory(
     Box(
         Modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .padding(if(isManager) 16.dp else 8.dp),
         contentAlignment = Alignment.Center
     ) {
         if (shoppingCost != 0.0 && shoppingItems.isEmpty()) {
@@ -88,37 +92,44 @@ fun ShoppingHistory(
                     shape = RoundedCornerShape(4.dp)
                 ) {
                     HorizontalPager(
-                        count = shoppingItems.size, state = pagerState
+                        count = shoppingItems.size,
+                        state = pagerState,
+                        modifier = Modifier.background(
+                            MaterialTheme.colorScheme.primary.copy(alpha = .1f),
+                            RoundedCornerShape(4.dp)
+                        )
                     ) {
                         SingleShoppingInformation(
-                            modifier = Modifier.width(widthInDp - 32.dp), shoppingItems[it]
+                            modifier = Modifier.width(if (isManager) widthInDp - 32.dp else widthInDp),
+                            shoppingItems[it]
                         )
                     }
                 }
 
-                LazyColumn(Modifier.weight(2f)) {
-                    items(memberInfo.listOfMember) { member ->
-                        ShowUser(userInfo = member,
-                            showInfo = false,
-                            expand = false,
-                            expandable = false,
-                            onClickUser = {
-                                val shoppingList =
-                                    if (shoppingInfoPerMember.containsKey(member.userId)) shoppingInfoPerMember[member.userId]!!.info else emptyList()
+                if (isManager) {
+                    LazyColumn(Modifier.weight(2f)) {
+                        items(memberInfo.listOfMember) { member ->
+                            ShowUser(userInfo = member,
+                                showInfo = false,
+                                expand = false,
+                                expandable = false,
+                                onClickUser = {
+                                    val shoppingList =
+                                        if (shoppingInfoPerMember.containsKey(member.userId)) shoppingInfoPerMember[member.userId]!!.info else emptyList()
 
-                                val cost =
-                                    if (shoppingList.isNotEmpty()) shoppingInfoPerMember[member.userId]!!.totalCost else "0.0"
+                                    val cost =
+                                        if (shoppingList.isNotEmpty()) shoppingInfoPerMember[member.userId]!!.totalCost else "0.0"
 
-                                val data = Gson().toJson(
-                                    MemberShoppingList(
-                                        info = shoppingList, totalCost = cost
+                                    val data = Gson().toJson(
+                                        MemberShoppingList(
+                                            info = shoppingList, totalCost = cost
+                                        )
                                     )
-                                )
-                                onSubmit(data)
-                            })
+                                    onSubmit(data)
+                                })
+                        }
                     }
                 }
-
             }
         }
 

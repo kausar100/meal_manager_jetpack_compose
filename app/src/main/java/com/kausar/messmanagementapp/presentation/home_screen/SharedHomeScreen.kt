@@ -340,20 +340,21 @@ fun ReviewInformation(
     val widthInDp = configuration.screenWidthDp.dp
 
     var expand by remember { mutableStateOf(false) }
-    Column(Modifier.animateContentSize(tween(500, easing = EaseInOut))) {
+    Column(
+        Modifier
+            .animateContentSize(tween(500, easing = EaseInOut))
+    ) {
         ShowUser(userInfo = user, showInfo = false, expand = expand, onClickUser = {
             expand = !expand
         })
         if (expand) {
-            Spacer(modifier = Modifier.height(4.dp))
             Column(
                 Modifier
-                    .padding(horizontal = 16.dp)
                     .background(
-                        MaterialTheme.colorScheme.background.copy(
-                            alpha = .3f,
-                        ), RoundedCornerShape(4.dp)
+                        MaterialTheme.colorScheme.primary.copy(alpha = .1f),
+                        RoundedCornerShape(4.dp)
                     )
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
             ) {
                 SingleRow(title = "Number of meal", data = mealCnt)
                 SingleRow(title = "Meal rate", data = mealRate)
@@ -365,7 +366,7 @@ fun ReviewInformation(
                         itemsIndexed(moneyInfo) { index, info ->
                             MoneyInfo(
                                 modifier = Modifier
-                                    .width(widthInDp / 2.15f)
+                                    .width(widthInDp / 2.4f)
                                     .padding(
                                         start = if (index == 0) 0.dp else 4.dp,
                                         end = if (index == moneyInfo.lastIndex) 0.dp else 4.dp
