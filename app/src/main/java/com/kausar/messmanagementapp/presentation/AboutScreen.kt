@@ -14,6 +14,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Email
@@ -38,24 +40,60 @@ fun AboutScreen(onClose: () -> Unit) {
         Column(
             Modifier
                 .fillMaxSize()
-                .padding(16.dp),
+                .padding(16.dp)
+                .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top
         ) {
             Spacer(modifier = Modifier.height(32.dp))
             Column(Modifier.padding(16.dp)) {
                 Text(
-                    text = "This app helps with meal management which is useful for any mess member. The feature of this app are listed below : ",
-                    fontSize = MaterialTheme.typography.titleMedium.fontSize,
-                    fontWeight = FontWeight.Bold,
+                    text = "This app helps with meal management which is useful for any mess member.",
+                    style = MaterialTheme.typography.labelLarge,
                     textAlign = TextAlign.Justify
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
-                    text = "1.Mess member can set their daily meal information.\n\n2.They can update their meal information and \n\n3.Finally they can see list of meal information for a month",
-                    fontSize = MaterialTheme.typography.titleSmall.fontSize,
+                    text = "This app has two types of user :",
+                    style = MaterialTheme.typography.labelLarge,
+                    textAlign = TextAlign.Justify
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "1. Manager\n" +
+                            "2. Member",
+                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Normal),
                     textAlign = TextAlign.Justify,
-                    fontWeight = FontWeight.Normal,
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = "Both types of members have access to following feature",
+                    style = MaterialTheme.typography.labelLarge,
+                    textAlign = TextAlign.Justify
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "1. Mess member can set their daily meal information.\n" +
+                            "2. They can update their meal information.\n" +
+                            "3. They can see list of meal and shopping information for a month.\n"+
+                            "4. They can see their meal info such as number of meal, meal rate, cost of meal and balance.",
+                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Normal),
+                    textAlign = TextAlign.Justify,
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = "Only Manager has access to these feature",
+                    style = MaterialTheme.typography.labelLarge,
+                    textAlign = TextAlign.Justify
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "1. Add member money to account.\n" +
+                            "2. Add new shopping entry.\n" +
+                            "3. Can see all other member info\n"+
+                            "4. Can assign other member as a manager",
+                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Normal),
+                    textAlign = TextAlign.Justify
                 )
 
             }
