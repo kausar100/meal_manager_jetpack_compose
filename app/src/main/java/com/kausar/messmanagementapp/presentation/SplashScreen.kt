@@ -1,5 +1,6 @@
 package com.kausar.messmanagementapp.presentation
 
+import android.os.Build
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
@@ -30,6 +31,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.kausar.messmanagementapp.R
+import com.kausar.messmanagementapp.components.CustomProgressBar
 import kotlinx.coroutines.delay
 
 private const val SplashWaitTime: Long = 2000
@@ -57,35 +59,75 @@ fun SplashScreen(onTimeout: () -> Unit) {
 
 @Composable
 fun Splash(alpha: Float) {
-    Box(
-        modifier = Modifier
-            .background(
-                MaterialTheme.colorScheme.background
-            )
-            .fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        //splash screen auto provided by os
+        //don't show splash screen
+        Box(
             modifier = Modifier
-                .fillMaxSize()
-                .alpha(alpha),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
+                .background(
+                    MaterialTheme.colorScheme.background
+                )
+                .fillMaxSize(),
+            contentAlignment = Alignment.Center
         ) {
-            Image(
-                painter = painterResource(id = R.drawable.ic_logo),
-                contentDescription = "logo",
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth(.7f)
-                    .height(150.dp)
-                    .width(150.dp),
-                contentScale = ContentScale.Fit
+                    .fillMaxSize()
+                    .alpha(alpha),
+                verticalArrangement = Arrangement.SpaceAround,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
 
-            )
-            Spacer(modifier = Modifier.height(32.dp))
-            Banner()
+                Column {
+                    Text(
+                        text = "Meal Manager",
+                        textAlign = TextAlign.Center,
+                        style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
+                    )
+                    Text(
+                        text = "A helper for mess manager and member.",
+                        textAlign = TextAlign.Center,
+                        style = MaterialTheme.typography.bodySmall
+                    )
+
+                }
+                CustomProgressBar(msg = "Fetching userinfo...")
+            }
+
+        }
+
+    } else {
+        Box(
+            modifier = Modifier
+                .background(
+                    MaterialTheme.colorScheme.background
+                )
+                .fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .alpha(alpha),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.ic_logo),
+                    contentDescription = "logo",
+                    modifier = Modifier
+                        .fillMaxWidth(.7f)
+                        .height(150.dp)
+                        .width(150.dp),
+                    contentScale = ContentScale.Fit
+
+                )
+                Spacer(modifier = Modifier.height(32.dp))
+                Banner()
+            }
         }
     }
+
 
 }
 

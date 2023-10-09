@@ -51,7 +51,8 @@ fun BottomNavGraph(
 ) {
     var shoppingData = ""
     NavHost(
-        navController = navController, startDestination = Screen.Splash.route
+        navController = navController,
+        startDestination = Screen.Splash.route
     ) {
         composable(route = BottomBarScreen.Home.route) {
             if (mainViewModel.userInfo.value.userType == MemberType.Member.name) {
@@ -64,7 +65,7 @@ fun BottomNavGraph(
             ShoppingScreen(mainViewModel, navController)
         }
         composable(route = Screen.AddMoney.route) {
-            AddMoney(mainViewModel, navController,firestoreViewModel)
+            AddMoney(mainViewModel, navController, firestoreViewModel)
         }
         composable(route = Screen.Splash.route) {
             SplashScreen {
@@ -78,13 +79,13 @@ fun BottomNavGraph(
             ShoppingListInformation(shoppingData)
         }
         composable(route = Screen.ShopEntry.route) {
-            NewShopEntry(mainViewModel, navController,firestoreViewModel)
+            NewShopEntry(mainViewModel, navController, firestoreViewModel)
         }
         composable(route = Screen.Balance.route) {
-            AccountBalance(mainViewModel,firestoreViewModel)
+            AccountBalance(mainViewModel, firestoreViewModel)
         }
         composable(route = Screen.ShoppingHistory.route) {
-            ShoppingHistory(mainViewModel,firestoreViewModel) {
+            ShoppingHistory(mainViewModel, firestoreViewModel) {
                 shoppingData = it
                 navController.navigate(Screen.ShoppingList.route)
             }
@@ -96,7 +97,7 @@ fun BottomNavGraph(
             if (mainViewModel.userInfo.value.userType == MemberType.Member.name) {
                 MealListScreen(mainViewModel)
             } else {
-                MealInfoScreen(mainViewModel = mainViewModel){
+                MealInfoScreen(mainViewModel = mainViewModel) {
                     //new manager assigned
                     authVM.logout()
                     mainViewModel.saveLoginStatus(false)
