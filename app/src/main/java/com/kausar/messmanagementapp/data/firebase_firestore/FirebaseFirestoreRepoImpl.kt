@@ -57,6 +57,61 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
 
     }
 
+    override fun changeManager(user: User): Flow<ResultState<String>> =
+        callbackFlow {
+            trySend(ResultState.Loading)
+
+            val currentUser = firebaseAuth.currentUser?.uid //current manager
+            var currentManager: User?
+            //user -> going to be new manager
+
+            if (Network.isNetworkAvailable(context)) {
+                currentUser?.let {
+                    //get current manager info
+                    firestore.collection(CollectionRef.userDb).document(currentUser).get()
+                        .addOnSuccessListener {
+                            it?.let {
+                                currentManager = it.toObject<User>()
+                                currentManager?.let {
+                                    //manager to member userinfo
+                                    firestore.collection(CollectionRef.userDb)
+                                        .document(currentUser)
+                                        .update("userType",MemberType.Member.name)
+                                        .addOnSuccessListener {
+                                            Log.d("TAG", "changeManager: manager change to member")
+                                            //member to manager userinfo
+                                            firestore.collection(CollectionRef.userDb)
+                                                .document(user.userId)
+                                                .update("userType",MemberType.Manager.name)
+                                                .addOnSuccessListener {
+                                                    Log.d("TAG", "changeMember: member change to manager")
+                                                    //mess manager contact no change to new manager
+                                                    firestore.collection(CollectionRef.messNameDb).document(user.messId)
+                                                        .update("managerContactNumber",user.contactNo)
+                                                        .addOnSuccessListener {
+                                                            Log.d("TAG", "change mess manager contact number")
+                                                            trySend(ResultState.Success("New manager assigned successfully!"))
+                                                        }
+                                                        .addOnFailureListener { e-> trySend(ResultState.Failure(e))}
+
+                                                }
+                                                .addOnFailureListener { e-> trySend(ResultState.Failure(e))}
+                                        }
+                                        .addOnFailureListener { e-> trySend(ResultState.Failure(e))}
+                                }
+                            }
+                        }
+                }
+            } else {
+                trySend(ResultState.Failure(Exception("Please check your internet connection!")))
+            }
+
+            awaitClose {
+                close()
+            }
+
+        }
+
     override fun entryUserInfo(user: User): Flow<ResultState<String>> = callbackFlow {
         trySend(ResultState.Loading)
 
@@ -85,33 +140,46 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
                             val currentUser = firebaseAuth.currentUser?.uid
 
                             currentUser?.let {
-                                //new userinfo entry
-                                val userInfo = user.copy(messId = currentUser, userId = currentUser)
-                                val ref =
-                                    firestore.collection(CollectionRef.userDb).document(currentUser)
+                                //new mess entry
+                                val newMess = Mess(
+                                    user.messName, "", user.contactNo, ""
+                                ).toMap()
+                                firestore.collection(CollectionRef.messNameDb).add(
+                                    newMess
+                                ).addOnSuccessListener { mess ->
+                                    firestore.collection(CollectionRef.messNameDb)
+                                        .document(mess.id)
+                                        .update("messId", mess.id)
+                                        .addOnSuccessListener {
+                                            Log.d("TAG", "entryUserInfo: new mess added")
 
-                                ref.set(userInfo).addOnSuccessListener {
-                                    val newMess = Mess(
-                                        user.messName, currentUser, user.contactNo, ""
-                                    ).toMap()
-
-                                    //new mess entry
-                                    firestore.collection(CollectionRef.messNameDb).add(
-                                        newMess
-                                    ).addOnSuccessListener {
-                                        trySend(
-                                            ResultState.Success(
-                                                "Registration completed successfully!"
-                                            )
-                                        )
-                                    }.addOnFailureListener { e ->
-                                        trySend(ResultState.Failure(e))
-                                    }
-
+                                            //new userinfo entry
+                                            val userInfo =
+                                                user.copy(messId = mess.id, userId = currentUser)
+                                            firestore.collection(CollectionRef.userDb)
+                                                .document(currentUser)
+                                                .set(userInfo)
+                                                .addOnSuccessListener {
+                                                    Log.d(
+                                                        "TAG",
+                                                        "entryUserInfo: new userinfo added"
+                                                    )
+                                                    trySend(
+                                                        ResultState.Success(
+                                                            "Registration completed successfully!"
+                                                        )
+                                                    )
+                                                }
+                                                .addOnFailureListener { e ->
+                                                    trySend(ResultState.Failure(e))
+                                                }
+                                        }
+                                        .addOnFailureListener { e ->
+                                            trySend(ResultState.Failure(e))
+                                        }
                                 }.addOnFailureListener { e ->
                                     trySend(ResultState.Failure(e))
                                 }
-
                             }
 
                         }
@@ -334,8 +402,13 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
                                         data?.let {
                                             var newData = data.copy(totalReceivingAmount = amount)
                                             val shoppingCost = data.totalShoppingCost.toDouble()
-                                            val remainingAmount = if(shoppingCost!=0.0){amount.toDouble() - shoppingCost}else{amount}
-                                            newData = newData.copy(remainingAmount = remainingAmount.toString())
+                                            val remainingAmount = if (shoppingCost != 0.0) {
+                                                amount.toDouble() - shoppingCost
+                                            } else {
+                                                amount
+                                            }
+                                            newData =
+                                                newData.copy(remainingAmount = remainingAmount.toString())
                                             ref.update(newData.toMap())
                                                 .addOnSuccessListener {
                                                     Log.d(
@@ -348,18 +421,30 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
                                                     )
                                                     trySend(ResultState.Failure(exp))
                                                 }
-                                        } ?: ref.set(Balance(totalReceivingAmount = amount, remainingAmount = amount).toMap()) //no data exist yet
+                                        } ?: ref.set(
+                                            Balance(
+                                                totalReceivingAmount = amount,
+                                                remainingAmount = amount
+                                            ).toMap()
+                                        ) //no data exist yet
                                             .addOnSuccessListener {
                                                 Log.d(
                                                     "addbalance", "success"
                                                 )
-                                                trySend(ResultState.Success(Balance(totalReceivingAmount = amount, remainingAmount = amount)))
+                                                trySend(
+                                                    ResultState.Success(
+                                                        Balance(
+                                                            totalReceivingAmount = amount,
+                                                            remainingAmount = amount
+                                                        )
+                                                    )
+                                                )
                                             }.addOnFailureListener { exp ->
-                                            Log.d(
-                                                "addbalance", "failure"
-                                            )
-                                            trySend(ResultState.Failure(exp))
-                                        }
+                                                Log.d(
+                                                    "addbalance", "failure"
+                                                )
+                                                trySend(ResultState.Failure(exp))
+                                            }
 
                                     }
                                 }.addOnFailureListener { e -> trySend(ResultState.Failure(e)) }
@@ -400,19 +485,37 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
                                 ref.get().addOnSuccessListener { b ->
                                     b?.let { obj ->
                                         val data = obj.toObject(Balance::class.java)
-                                        Log.d("TAG", "addShoppingCostBeforeUpdate: ${data.toString()}")
+                                        Log.d(
+                                            "TAG",
+                                            "addShoppingCostBeforeUpdate: ${data.toString()}"
+                                        )
                                         data?.let {
                                             val available =
                                                 data.totalReceivingAmount.ifEmpty { "0.0" }
                                                     .toDouble() - cost.toDouble()
-                                            val newMealRate = SharedShoppingInfo.getCostPerMeal(data.totalMeal,cost)
+                                            val newMealRate = SharedShoppingInfo.getCostPerMeal(
+                                                data.totalMeal,
+                                                cost
+                                            )
                                             ref.update(
-                                                data.copy(totalShoppingCost = cost, mealRate = newMealRate, remainingAmount = available.toString()).toMap()
+                                                data.copy(
+                                                    totalShoppingCost = cost,
+                                                    mealRate = newMealRate,
+                                                    remainingAmount = available.toString()
+                                                ).toMap()
                                             ).addOnSuccessListener {
                                                 Log.d(
                                                     "updateshoppingcost", "success: "
                                                 )
-                                                trySend(ResultState.Success(data.copy(totalShoppingCost = cost, mealRate=newMealRate, remainingAmount = available.toString())))
+                                                trySend(
+                                                    ResultState.Success(
+                                                        data.copy(
+                                                            totalShoppingCost = cost,
+                                                            mealRate = newMealRate,
+                                                            remainingAmount = available.toString()
+                                                        )
+                                                    )
+                                                )
                                             }.addOnFailureListener { exp ->
                                                 Log.d(
                                                     "updateshoppingcost", "failure: "
@@ -427,9 +530,13 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
                                             Log.d(
                                                 "addshoppingcost", "success: "
                                             )
-                                            trySend(ResultState.Success(Balance(
-                                                totalShoppingCost = cost
-                                            )))
+                                            trySend(
+                                                ResultState.Success(
+                                                    Balance(
+                                                        totalShoppingCost = cost
+                                                    )
+                                                )
+                                            )
                                         }.addOnFailureListener { exp ->
                                             Log.d(
                                                 "addshoppingcost", "failure: "
@@ -477,9 +584,13 @@ class FirebaseFirestoreRepoImpl @Inject constructor(
                                     b?.let { obj ->
                                         val data = obj.toObject(Balance::class.java)
                                         data?.let {
-                                            val newMealRate = SharedShoppingInfo.getCostPerMeal(unit,data.totalShoppingCost)
+                                            val newMealRate = SharedShoppingInfo.getCostPerMeal(
+                                                unit,
+                                                data.totalShoppingCost
+                                            )
                                             ref.update(
-                                                data.copy(totalMeal = unit, mealRate = newMealRate).toMap()
+                                                data.copy(totalMeal = unit, mealRate = newMealRate)
+                                                    .toMap()
                                             ).addOnSuccessListener {
                                                 Log.d(
                                                     "updateTotalMeal", "success: "

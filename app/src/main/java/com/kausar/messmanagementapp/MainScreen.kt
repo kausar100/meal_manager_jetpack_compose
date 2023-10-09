@@ -171,7 +171,8 @@ fun MainScreen(viewModel: MainViewModel) {
             BottomNavGraph(
                 navController = navController,
                 mainViewModel = viewModel,
-                firestoreViewModel = firestoreVM
+                firestoreViewModel = firestoreVM,
+                authVM = authViewModel,
             )
         }
 

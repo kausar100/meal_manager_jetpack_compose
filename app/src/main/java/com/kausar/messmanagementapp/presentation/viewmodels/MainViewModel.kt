@@ -116,6 +116,8 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    fun assignNewManager(manager: User) = firestoreRepo.changeManager(manager)
+
     private fun addMembersMealCount() {
         Log.d("now", "addMembersMealCount: true")
         viewModelScope.launch {

@@ -1,12 +1,14 @@
 package com.kausar.messmanagementapp.presentation.meal_info_list
 
 import android.util.Log
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -25,15 +27,18 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -52,30 +57,39 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.kausar.messmanagementapp.R
+import com.kausar.messmanagementapp.components.CustomDropDownMenu
 import com.kausar.messmanagementapp.components.CustomProgressBar
 import com.kausar.messmanagementapp.data.model.MealInfo
 import com.kausar.messmanagementapp.data.model.User
 import com.kausar.messmanagementapp.presentation.home_screen.MealSummary
+import com.kausar.messmanagementapp.presentation.shopping_info.shared.SharedShoppingInfo
 import com.kausar.messmanagementapp.presentation.viewmodels.FirebaseFirestoreDbViewModel
 import com.kausar.messmanagementapp.presentation.viewmodels.MainViewModel
+import com.kausar.messmanagementapp.utils.ResultState
 import com.kausar.messmanagementapp.utils.fetchCurrentMonthName
 import com.kausar.messmanagementapp.utils.network_connection.ConnectionState
 import com.kausar.messmanagementapp.utils.network_connection.connectivityState
+import com.kausar.messmanagementapp.utils.showToast
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 @Composable
 fun MealInfoScreen(
-    mainViewModel: MainViewModel, viewModel: FirebaseFirestoreDbViewModel = hiltViewModel()
+    mainViewModel: MainViewModel, viewModel: FirebaseFirestoreDbViewModel = hiltViewModel(), onChangingManager: ()->Unit
 ) {
 
     val itemState = viewModel.response.value
@@ -92,10 +106,11 @@ fun MealInfoScreen(
     val listTitle = fetchCurrentMonthName()
 
     val connection by connectivityState()
+    val context = LocalContext.current
     val isConnected = (connection === ConnectionState.Available)
 
     LaunchedEffect(key1 = isConnected) {
-        if(userInfo.userType.isEmpty()){
+        if (userInfo.userType.isEmpty()) {
             mainViewModel.getUserInfo()
         }
         if (memberState.listOfMember.isEmpty()) {
@@ -115,10 +130,35 @@ fun MealInfoScreen(
         mutableStateOf(false)
     }
 
+    var showDialog by remember {
+        mutableStateOf(false)
+    }
+
     val scope = rememberCoroutineScope()
 
     val config = LocalConfiguration.current
     val screenHeight = config.screenHeightDp.dp
+
+    var newManger by remember {
+        mutableStateOf(if (memberState.listOfMember.isNotEmpty()) memberState.listOfMember[0].userName else "")
+    }
+    var showMangerChooserDropdown by remember {
+        mutableStateOf(false)
+    }
+
+    var selectedManager by remember {
+        mutableStateOf(userInfo)
+    }
+
+
+    var progMsg by remember {
+        mutableStateOf("")
+    }
+
+    var showToast by remember {
+        mutableStateOf(false)
+    }
+
 
     Box(
         Modifier
@@ -130,6 +170,41 @@ fun MealInfoScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top
         ) {
+            AnimatedVisibility(visible = !showMangerChooserDropdown) {
+                ElevatedButton(
+                    onClick = {
+                        showMangerChooserDropdown = true
+                    },
+                    shape = RoundedCornerShape(4.dp),
+                    modifier = Modifier.fillMaxWidth(),
+                    contentPadding = PaddingValues(vertical = 16.dp)
+                ) {
+                    Text(
+                        "Assign New Manager",
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 2.sp
+                    )
+
+                }
+            }
+            AnimatedVisibility(visible = showMangerChooserDropdown) {
+                CustomDropDownMenu(
+                    title = "Select New Manager",
+                    items = SharedShoppingInfo.getNames(memberState.listOfMember),
+                    selectedItem = newManger,
+                    onSelect = {
+                        newManger = it
+                        showMangerChooserDropdown = false
+                        selectedManager =
+                            SharedShoppingInfo.getUser(memberState.listOfMember, newManger)
+                        if(selectedManager.userId == userInfo.userId){
+                            context.showToast("Please select other member not yourself!")
+                        }else{
+                            showDialog = true
+                        }
+
+                    })
+            }
             if (showList) {
                 ShowUser(userInfo = selectedMember, expand = true, onClickUser = {
                     showList = false
@@ -235,6 +310,121 @@ fun MealInfoScreen(
                     })
             }
 
+        }
+        if (showDialog) {
+            Dialog(onDismissRequest = { showDialog = false }) {
+                Card(
+                    elevation = CardDefaults.elevatedCardElevation(),
+                    shape = RoundedCornerShape(4.dp)
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                Icons.Default.Warning, contentDescription = "changing manager",
+                                tint = MaterialTheme.colorScheme.error.copy(alpha = .7f),
+                                modifier = Modifier.size(32.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "New Manager",
+                                style = MaterialTheme.typography.titleLarge
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(16.dp))
+                        val annotatedText = buildAnnotatedString {
+                            append(" You can't revert this process. Your are assigning ")
+                            withStyle(
+                                style = SpanStyle(
+                                    color = Color(0xFF15226B),
+                                    fontWeight = FontWeight.Bold
+                                )
+                            ) {
+                                append("$newManger")
+                            }
+                            append(" as a new Manager!.")
+                        }
+                        Text(
+                            text = annotatedText,
+                            textAlign = TextAlign.Center
+                        )
+                        Row(
+                            Modifier
+                                .fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceEvenly,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            OutlinedButton(
+                                onClick = {
+                                    showDialog = false
+                                }, shape = RoundedCornerShape(4.dp)
+                            ) {
+                                Text(
+                                    text = "No",
+                                    letterSpacing = 2.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(16.dp))
+                            ElevatedButton(
+                                onClick = {
+                                    scope.launch {
+                                        showDialog = false
+                                        mainViewModel.assignNewManager(selectedManager).collectLatest {
+                                                when (it) {
+                                                    is ResultState.Success -> {
+                                                        progMsg = "Signing out..."
+                                                        showToast = true
+                                                        delay(2000)
+                                                        showToast = false
+                                                        context.showToast("Please exit from app and login again to see changes!")
+                                                        //log out
+                                                        onChangingManager()
+                                                    }
+
+                                                    is ResultState.Failure -> {
+                                                        context.showToast(
+                                                            it.message.localizedMessage
+                                                                ?: "Some error occurred!"
+                                                        )
+                                                    }
+
+                                                    is ResultState.Loading -> {
+
+                                                    }
+                                                }
+                                            }
+                                    }
+                                },
+                                shape = RoundedCornerShape(4.dp),
+                            ) {
+                                Text(
+                                    text = "Yes",
+                                    letterSpacing = 2.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+
+                        }
+
+
+                    }
+                }
+            }
+        }
+        if (showToast) {
+            Box(
+                Modifier
+                    .fillMaxHeight()
+                    .fillMaxWidth(1f), contentAlignment = Alignment.Center
+            ) {
+                CustomProgressBar(msg = progMsg)
+            }
         }
     }
 

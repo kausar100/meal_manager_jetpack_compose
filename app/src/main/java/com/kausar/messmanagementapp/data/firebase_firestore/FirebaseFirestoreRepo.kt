@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.Flow
 interface FirebaseFirestoreRepo {
 
     fun entryUserInfo(user: User): Flow<ResultState<String>>
+    fun changeManager(user: User) : Flow<ResultState<String>>
 
     fun addMoneyInfo(user: User,newEntry: AddMoney): Flow<ResultState<String>>
     fun getUserMoneyInfo(user: User): Flow<ResultState<List<AddMoney>>>

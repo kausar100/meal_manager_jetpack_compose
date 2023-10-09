@@ -11,6 +11,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.kausar.messmanagementapp.data.model.MemberType
 import com.kausar.messmanagementapp.presentation.SplashScreen
+import com.kausar.messmanagementapp.presentation.auth_screen.AuthViewModel
 import com.kausar.messmanagementapp.presentation.auth_screen.LoginScreen
 import com.kausar.messmanagementapp.presentation.auth_screen.OtpVerifyScreen
 import com.kausar.messmanagementapp.presentation.auth_screen.RegistrationScreen
@@ -46,6 +47,7 @@ fun BottomNavGraph(
     navController: NavHostController,
     mainViewModel: MainViewModel,
     firestoreViewModel: FirebaseFirestoreDbViewModel,
+    authVM: AuthViewModel,
 ) {
     var shoppingData = ""
     NavHost(
@@ -94,7 +96,12 @@ fun BottomNavGraph(
             if (mainViewModel.userInfo.value.userType == MemberType.Member.name) {
                 MealListScreen(mainViewModel)
             } else {
-                MealInfoScreen(mainViewModel = mainViewModel)
+                MealInfoScreen(mainViewModel = mainViewModel){
+                    //new manager assigned
+                    authVM.logout()
+                    mainViewModel.saveLoginStatus(false)
+                    logoutAndNavigateToLoginPage(navController)
+                }
             }
         }
         composable(route = Screen.Login.route) {

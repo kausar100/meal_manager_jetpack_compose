@@ -5,6 +5,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -218,8 +219,8 @@ fun AddNewMeal(
                     ElevatedButton(
                         onClick = {
                             addMeal(breakFast, lunch, dinner, cntbreakFast, cntlunch, cntdinner)
-                        }, shape = RoundedCornerShape(4.dp),
-                        modifier = Modifier.fillMaxWidth(1f)
+                        },  shape = RoundedCornerShape(4.dp),
+                        modifier = Modifier.fillMaxWidth(), contentPadding = PaddingValues(vertical = 16.dp)
                     ) {
                         Text(
                             text = "Add Meal",
@@ -233,7 +234,7 @@ fun AddNewMeal(
                         onClick = {
                             updateMeal(breakFast, lunch, dinner, cntbreakFast, cntlunch, cntdinner)
                         }, shape = RoundedCornerShape(4.dp),
-                        modifier = Modifier.fillMaxWidth(1f)
+                        modifier = Modifier.fillMaxWidth(), contentPadding = PaddingValues(vertical = 16.dp)
                     ) {
                         Text(
                             text = "Update Meal",
@@ -246,7 +247,7 @@ fun AddNewMeal(
                 Spacer(Modifier.height(8.dp))
                 OutlinedButton(
                     onClick = onCancel, shape = RoundedCornerShape(4.dp),
-                    modifier = Modifier.fillMaxWidth(1f)
+                    modifier = Modifier.fillMaxWidth(), contentPadding = PaddingValues(vertical = 16.dp)
                 ) {
                     Text(
                         text = "Cancel",
@@ -257,8 +258,8 @@ fun AddNewMeal(
                 Spacer(Modifier.height(8.dp))
                 AnimatedVisibility(visible = !toUpdate) {
                     OutlinedButton(
-                        onClick = { toUpdate = true }, shape = RoundedCornerShape(4.dp),
-                        modifier = Modifier.fillMaxWidth(1f)
+                        onClick = { toUpdate = true },  shape = RoundedCornerShape(4.dp),
+                        modifier = Modifier.fillMaxWidth(), contentPadding = PaddingValues(vertical = 16.dp)
                     ) {
                         Text(
                             text = "Edit Meal",
