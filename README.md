@@ -18,3 +18,4 @@ Both type of members have access to following feature
 3. see shopping and accound balance information
 
 
+![406424650_1126168918365851_9086538233331243064_n](https://github.com/kausar100/meal_manager_jetpack_compose/assets/55630610/990ea34e-6941-4c9d-aa2b-e365a9e90bb8)
