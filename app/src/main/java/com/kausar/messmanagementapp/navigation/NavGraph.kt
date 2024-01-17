@@ -26,6 +26,8 @@ import com.kausar.messmanagementapp.presentation.shopping_info.NewShopEntry
 import com.kausar.messmanagementapp.presentation.shopping_info.ShoppingHistory
 import com.kausar.messmanagementapp.presentation.shopping_info.ShoppingListInformation
 import com.kausar.messmanagementapp.presentation.shopping_info.ShoppingScreen
+import com.kausar.messmanagementapp.presentation.utility_bill.BillInfoScreen
+import com.kausar.messmanagementapp.presentation.utility_bill.UtilityScreen
 import com.kausar.messmanagementapp.presentation.viewmodels.FirebaseFirestoreDbViewModel
 import com.kausar.messmanagementapp.presentation.viewmodels.MainViewModel
 
@@ -81,8 +83,17 @@ fun BottomNavGraph(
         composable(route = Screen.ShopEntry.route) {
             NewShopEntry(mainViewModel, navController, firestoreViewModel)
         }
+
+        composable(route = Screen.AddUtilityBill.route) {
+            BillInfoScreen(mainViewModel, navController, firestoreViewModel)
+        }
+
         composable(route = Screen.Balance.route) {
             AccountBalance(mainViewModel, firestoreViewModel)
+        }
+
+        composable(route = BottomBarScreen.Utility.route) {
+            UtilityScreen(navController,mainViewModel, firestoreViewModel)
         }
         composable(route = Screen.ShoppingHistory.route) {
             ShoppingHistory(mainViewModel, firestoreViewModel) {

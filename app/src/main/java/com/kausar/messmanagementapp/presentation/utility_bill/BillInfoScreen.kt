@@ -1,4 +1,4 @@
-package com.kausar.messmanagementapp.presentation.shopping_info
+package com.kausar.messmanagementapp.presentation.utility_bill
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -55,58 +56,25 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
-import com.kausar.messmanagementapp.components.CustomDropDownMenu
 import com.kausar.messmanagementapp.components.CustomProgressBar
 import com.kausar.messmanagementapp.data.model.BillInfo
-import com.kausar.messmanagementapp.data.model.Shopping
-import com.kausar.messmanagementapp.data.model.ShoppingItem
-import com.kausar.messmanagementapp.data.model.User
-import com.kausar.messmanagementapp.presentation.shopping_info.shared.ChooseDate
-import com.kausar.messmanagementapp.presentation.shopping_info.shared.DialogInformation
-import com.kausar.messmanagementapp.presentation.shopping_info.shared.SharedShoppingInfo
+import com.kausar.messmanagementapp.presentation.shopping_info.calculateBillCost
 import com.kausar.messmanagementapp.presentation.viewmodels.FirebaseFirestoreDbViewModel
 import com.kausar.messmanagementapp.presentation.viewmodels.MainViewModel
-import com.kausar.messmanagementapp.utils.ResultState
-import com.kausar.messmanagementapp.utils.getDate
-import com.kausar.messmanagementapp.utils.showToast
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import java.util.Calendar
 
 @Composable
-fun NewShopEntry(
-    mainViewModel: MainViewModel,
-    navController: NavHostController,
-    firestore: FirebaseFirestoreDbViewModel = hiltViewModel()
+fun BillInfoScreen(mainViewModel: MainViewModel,
+                   navController: NavHostController,
+                   firestore: FirebaseFirestoreDbViewModel = hiltViewModel()
 ) {
-    val memberInfo = mainViewModel.memberInfo.value
-
-    val memberNames = SharedShoppingInfo.getNames(memberInfo.listOfMember)
 
     var amount by remember {
         mutableStateOf("")
     }
 
-    var memberName by remember {
-        mutableStateOf(if (memberNames.isNotEmpty()) memberNames[0] else "")
-    }
-
-    var selectedMember by remember {
-        mutableStateOf(
-            if (memberInfo.listOfMember.isNotEmpty()) {
-                memberInfo.listOfMember[0]
-            } else {
-                User()
-            }
-        )
-    }
-
-    var selectedDate by remember {
-        mutableStateOf(getDate(Calendar.getInstance()))
-    }
-
-    var itemInformation by remember {
-        mutableStateOf(mutableListOf<ShoppingItem>())
+    var utilityBillInformation by remember {
+        mutableStateOf(mutableListOf<BillInfo>())
     }
 
     var showDialog by remember {
@@ -140,7 +108,7 @@ fun NewShopEntry(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text(text = "New Shop Entry", fontWeight = FontWeight.ExtraBold)
+                        Text(text = "New Utility Bill Entry", fontWeight = FontWeight.ExtraBold)
                         if (amount.isNotEmpty()) {
                             Text(
                                 text = "Cost : $amount Tk"
@@ -149,28 +117,10 @@ fun NewShopEntry(
 
                     }
 
-                    CustomDropDownMenu(title = "Select Member Name",
-                        items = memberNames,
-                        selectedItem = memberName,
-                        onSelect = {
-                            memberName = it
-                            selectedMember =
-                                SharedShoppingInfo.getUser(memberInfo.listOfMember, memberName)
-                        })
-                    ChooseDate(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .border(
-                                1.dp, MaterialTheme.colorScheme.secondary, RoundedCornerShape(4.dp)
-                            )
-                            .padding(16.dp), date = selectedDate
-                    ) {
-                        selectedDate = it
-                    }
                     Spacer(modifier = Modifier.height(8.dp))
-                    ShoppingItemInfo {
-                        itemInformation = it
-                        amount = calculateCost(it)
+                    BillItemInfo {
+                        utilityBillInformation = it
+                        amount = calculateBillCost(it)
                     }
                     Spacer(modifier = Modifier.height(8.dp))
                     Row(
@@ -195,7 +145,7 @@ fun NewShopEntry(
                             shape = RoundedCornerShape(4.dp),
                         ) {
                             Text(
-                                text = "Add Shop Entry",
+                                text = "Add Bill Entry",
                                 letterSpacing = 2.sp,
                                 fontWeight = FontWeight.Bold
                             )
@@ -210,7 +160,7 @@ fun NewShopEntry(
         if (showDialog) {
             Dialog(onDismissRequest = { showDialog = false }) {
                 Card(
-                    modifier = Modifier.fillMaxHeight(.8f),
+                    modifier = Modifier.fillMaxHeight(.7f),
                     elevation = CardDefaults.elevatedCardElevation(),
                     shape = RoundedCornerShape(4.dp)
                 ) {
@@ -219,7 +169,7 @@ fun NewShopEntry(
                         verticalArrangement = Arrangement.SpaceEvenly
                     ) {
                         Column(
-                            Modifier.weight(2f), verticalArrangement = Arrangement.spacedBy(4.dp)
+                            Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)
                         ) {
                             Text(
                                 text = "Review entry information",
@@ -227,14 +177,7 @@ fun NewShopEntry(
                                 style = MaterialTheme.typography.titleMedium,
                                 modifier = Modifier.padding(horizontal = 4.dp)
                             )
-                            DialogInformation(
-                                title = "Member", data = selectedMember.userName
-                            )
-                            DialogInformation(
-                                title = "Date", data = selectedDate
-                            )
-
-                            if (itemInformation.isNotEmpty()) {
+                            if (utilityBillInformation.isNotEmpty()) {
                                 Text(
                                     text = "Item Details",
                                     fontWeight = FontWeight.Bold,
@@ -250,7 +193,7 @@ fun NewShopEntry(
                                 .padding(horizontal = 4.dp),
                             verticalArrangement = Arrangement.spacedBy(4.dp)
                         ) {
-                            items(itemInformation) { info ->
+                            items(utilityBillInformation) { info ->
                                 Row(
                                     modifier = Modifier
                                         .fillMaxWidth()
@@ -263,16 +206,14 @@ fun NewShopEntry(
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.SpaceBetween
                                 ) {
-                                    Text(text = info.name)
+                                    Text(text = info.billName)
 
-                                    Text(text = info.unit)
-
-                                    Text(text = info.price)
+                                    Text(text = info.billCost)
 
                                 }
                             }
                         }
-                        AnimatedVisibility(itemInformation.isNotEmpty()) {
+                        AnimatedVisibility(utilityBillInformation.isNotEmpty()) {
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -308,36 +249,7 @@ fun NewShopEntry(
                                 onClick = {
                                     scope.launch {
                                         showDialog = false
-                                        firestore.addNewShopping(
-                                            user = selectedMember, data = Shopping(
-                                                userName = selectedMember.userName,
-                                                date = selectedDate,
-                                                itemDetails = itemInformation,
-                                                totalCost = amount
-                                            )
-                                        ).collectLatest {
-                                            when (it) {
-                                                is ResultState.Success -> {
-                                                    showProgress = false
-                                                    context.showToast(it.data)
-                                                    itemInformation.clear()
-                                                    //need to update shopping cost
-                                                    mainViewModel.addShoppingCostToBalance(amount.toDouble())
-                                                }
-
-                                                is ResultState.Failure -> {
-                                                    showProgress = false
-                                                    context.showToast(
-                                                        it.message.localizedMessage
-                                                            ?: "Some error occurred!"
-                                                    )
-                                                }
-
-                                                is ResultState.Loading -> {
-                                                    showProgress = true
-                                                }
-                                            }
-                                        }
+                                        utilityBillInformation.clear()
                                     }
 
                                 },
@@ -358,37 +270,16 @@ fun NewShopEntry(
             }
         }
         if (showProgress) {
-            CustomProgressBar("Adding shopping...")
+            CustomProgressBar("Adding Utility...")
         }
     }
-
-}
-
-fun calculateCost(itemInfo: MutableList<ShoppingItem>): String {
-    var amount = 0.0
-    for (item in itemInfo) {
-        if (item.price.isNotEmpty()) {
-            amount += item.price.toDouble()
-        }
-    }
-    return if (amount == 0.0) "" else amount.toString()
-}
-
-fun calculateBillCost(itemInfo: MutableList<BillInfo>): String {
-    var amount = 0.0
-    for (item in itemInfo) {
-        if (item.billCost.isNotEmpty()) {
-            amount += item.billCost.toDouble()
-        }
-    }
-    return if (amount == 0.0) "" else amount.toString()
 }
 
 @Composable
-fun ShoppingItemInfo(info: (MutableList<ShoppingItem>) -> Unit) {
+fun BillItemInfo(info: (MutableList<BillInfo>) -> Unit) {
 
     val rows by remember {
-        mutableStateOf(mutableListOf<ShoppingItem>())
+        mutableStateOf(mutableListOf<BillInfo>())
     }
 
     val lazyListState = rememberLazyListState()
@@ -399,7 +290,7 @@ fun ShoppingItemInfo(info: (MutableList<ShoppingItem>) -> Unit) {
     }
 
     fun addItem() {
-        rows.add(rowId, ShoppingItem())
+        rows.add(rowId, BillInfo())
         rowId++
     }
 
@@ -415,7 +306,7 @@ fun ShoppingItemInfo(info: (MutableList<ShoppingItem>) -> Unit) {
             }) {
                 Icon(imageVector = Icons.Default.AddCircle, contentDescription = "add desc")
                 Spacer(modifier = Modifier.width(16.dp))
-                Text(text = "Add Item information")
+                Text(text = "Add Bill information")
             }
             AnimatedVisibility(rowId != 0) {
                 Icon(imageVector = Icons.Default.Delete,
@@ -439,9 +330,9 @@ fun ShoppingItemInfo(info: (MutableList<ShoppingItem>) -> Unit) {
             }
             repeat(rowId) { index ->
                 item {
-                    SingleRow(rows[index]) { new ->
+                    SingleBillRow(rows[index]) { new ->
                         rows[index] = new
-                        if (rows[index].name.isNotEmpty()) {
+                        if (rows[index].billName.isNotEmpty()) {
                             info(rows)
                         }
                     }
@@ -455,7 +346,7 @@ fun ShoppingItemInfo(info: (MutableList<ShoppingItem>) -> Unit) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SingleRow(item: ShoppingItem, onChanged: (ShoppingItem) -> Unit) {
+fun SingleBillRow(item: BillInfo, onChanged: (BillInfo) -> Unit) {
     val focusManager = LocalFocusManager.current
 
     var value by remember {
@@ -463,9 +354,9 @@ fun SingleRow(item: ShoppingItem, onChanged: (ShoppingItem) -> Unit) {
     }
 
     Row(Modifier.fillMaxWidth()) {
-        OutlinedTextField(value = value.name,
+        OutlinedTextField(value = value.billName,
             onValueChange = {
-                value = value.copy(name = it)
+                value = value.copy(billName = it)
                 onChanged(value)
             },
             modifier = Modifier
@@ -475,31 +366,14 @@ fun SingleRow(item: ShoppingItem, onChanged: (ShoppingItem) -> Unit) {
                 keyboardType = KeyboardType.Text, imeAction = ImeAction.Next
             ),
             singleLine = true,
-            label = { Text(text = "Name") },
+            label = { Text(text = "Bill Name") },
             keyboardActions = KeyboardActions(onNext = {
                 focusManager.moveFocus(FocusDirection.Next)
             })
         )
-        OutlinedTextField(value = value.unit,
+        OutlinedTextField(value = value.billCost,
             onValueChange = {
-                value = value.copy(unit = it)
-                onChanged(value)
-            },
-            modifier = Modifier
-                .weight(1f)
-                .padding(4.dp),
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Text, imeAction = ImeAction.Next
-            ),
-            singleLine = true,
-            label = { Text(text = "Unit") },
-            keyboardActions = KeyboardActions(onDone = {
-                focusManager.moveFocus(FocusDirection.Next)
-            })
-        )
-        OutlinedTextField(value = value.price,
-            onValueChange = {
-                value = value.copy(price = it)
+                value = value.copy(billCost = it)
                 onChanged(value)
             },
             modifier = Modifier

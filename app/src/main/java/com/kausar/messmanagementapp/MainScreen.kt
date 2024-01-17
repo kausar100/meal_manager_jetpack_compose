@@ -56,11 +56,19 @@ fun MainScreen(viewModel: MainViewModel) {
 
     Scaffold(topBar = {
         when (currentRoute(navController)) {
-            BottomBarScreen.Home.route, BottomBarScreen.MealInfo.route, BottomBarScreen.Shopping.route, Screen.AddMoney.route, Screen.ShopEntry.route, Screen.Balance.route, Screen.Profile.route, Screen.ShoppingHistory.route, Screen.ShoppingList.route -> {
+            BottomBarScreen.Home.route, BottomBarScreen.MealInfo.route,
+            BottomBarScreen.Shopping.route, Screen.AddMoney.route,
+            Screen.ShopEntry.route, Screen.Balance.route, Screen.AddUtilityBill.route,
+            Screen.Profile.route, Screen.ShoppingHistory.route,
+            BottomBarScreen.Utility.route, Screen.ShoppingList.route -> {
                 CustomTopAppBar(title = when (currentRoute(navController)) {
 
                     Screen.AddMoney.route -> {
                         Screen.AddMoney.title
+                    }
+
+                    Screen.AddUtilityBill.route-> {
+                        Screen.AddUtilityBill.title
                     }
 
                     Screen.Profile.route -> {
@@ -100,6 +108,10 @@ fun MainScreen(viewModel: MainViewModel) {
                             true
                         }
 
+                        BottomBarScreen.Utility.route -> {
+                            true
+                        }
+
                         else -> {
                             false
                         }
@@ -131,7 +143,7 @@ fun MainScreen(viewModel: MainViewModel) {
                         }
                     },
                     canNavigateBack = when (currentRoute(navController)) {
-                        Screen.AddMoney.route, Screen.ShopEntry.route, Screen.Balance.route, Screen.ShoppingHistory.route, Screen.ShoppingList.route, Screen.Profile.route -> {
+                        Screen.AddMoney.route, Screen.ShopEntry.route, Screen.AddUtilityBill.route, Screen.Balance.route, Screen.ShoppingHistory.route, Screen.ShoppingList.route, Screen.Profile.route -> {
                             true
                         }
 
@@ -152,7 +164,7 @@ fun MainScreen(viewModel: MainViewModel) {
         }
     }, bottomBar = {
         when (currentRoute(navController)) {
-            BottomBarScreen.Home.route, BottomBarScreen.MealInfo.route, BottomBarScreen.Shopping.route -> {
+            BottomBarScreen.Home.route, BottomBarScreen.MealInfo.route, BottomBarScreen.Shopping.route, BottomBarScreen.Utility.route  -> {
                 BottomBar(navController = navController)
             }
         }
@@ -191,6 +203,7 @@ fun BottomBar(navController: NavHostController) {
     val screens = listOf(
         BottomBarScreen.Home,
         BottomBarScreen.MealInfo,
+        BottomBarScreen.Utility,
         BottomBarScreen.Shopping,
     )
 

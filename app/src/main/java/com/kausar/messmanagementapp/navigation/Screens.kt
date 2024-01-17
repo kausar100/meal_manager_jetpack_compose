@@ -20,6 +20,7 @@ sealed class Screen(
     }
 
     object AddMoney : Screen(route = "add_money_screen", title = "Add Money")
+    object AddUtilityBill : Screen(route = "add_bill_screen", title = "Add Utility Bill")
     object ShopEntry : Screen(route = "shop_entry_screen", title = "Shop Entry")
     object Balance : Screen(route = "balance_screen", title = "Account Balance")
     object ShoppingHistory : Screen(route = "shopping_history_screen", title = "Shopping History")
@@ -42,6 +43,10 @@ sealed class BottomBarScreen(
 
     object Shopping : BottomBarScreen(
         route = "shop_info", title = "Shopping", icon = R.drawable.ic_shopping
+    )
+
+    object Utility : BottomBarScreen(
+        route = "utility", title = "Utility", icon = R.drawable.ic_utility
     )
 
 }
