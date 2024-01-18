@@ -17,6 +17,9 @@ android {
         versionCode 1
         versionName "1.0"
 
+        // Enabling multidex support.
+        multiDexEnabled=true
+
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary true
@@ -107,6 +110,9 @@ dependencies {
     def accompanist_version = "0.28.0"
     implementation "com.google.accompanist:accompanist-pager:$accompanist_version"
     implementation "com.google.accompanist:accompanist-pager-indicators:$accompanist_version"
+
+    def multidex_version = "2.0.1"
+    implementation "androidx.multidex:multidex:$multidex_version"
 
 
 }
