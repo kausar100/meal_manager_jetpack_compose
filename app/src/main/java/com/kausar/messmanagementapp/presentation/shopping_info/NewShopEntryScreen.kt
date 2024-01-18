@@ -113,6 +113,10 @@ fun NewShopEntry(
         mutableStateOf(false)
     }
 
+    var shopEntrySubmitted by remember {
+        mutableStateOf(false)
+    }
+
     var showProgress by remember {
         mutableStateOf(false)
     }
@@ -168,7 +172,7 @@ fun NewShopEntry(
                         selectedDate = it
                     }
                     Spacer(modifier = Modifier.height(8.dp))
-                    ShoppingItemInfo {
+                    ShoppingItemInfo(clear = shopEntrySubmitted) {
                         itemInformation = it
                         amount = calculateCost(it)
                     }
@@ -321,8 +325,10 @@ fun NewShopEntry(
                                                     showProgress = false
                                                     context.showToast(it.data)
                                                     itemInformation.clear()
+                                                    shopEntrySubmitted = true
                                                     //need to update shopping cost
                                                     mainViewModel.addShoppingCostToBalance(amount.toDouble())
+                                                    amount = ""
                                                 }
 
                                                 is ResultState.Failure -> {
@@ -385,7 +391,7 @@ fun calculateBillCost(itemInfo: MutableList<BillInfo>): String {
 }
 
 @Composable
-fun ShoppingItemInfo(info: (MutableList<ShoppingItem>) -> Unit) {
+fun ShoppingItemInfo(clear: Boolean = false,info: (MutableList<ShoppingItem>) -> Unit) {
 
     val rows by remember {
         mutableStateOf(mutableListOf<ShoppingItem>())
@@ -396,6 +402,11 @@ fun ShoppingItemInfo(info: (MutableList<ShoppingItem>) -> Unit) {
 
     var rowId by remember {
         mutableIntStateOf(0)
+    }
+
+    if(clear){
+        rows.clear()
+        rowId=0
     }
 
     fun addItem() {

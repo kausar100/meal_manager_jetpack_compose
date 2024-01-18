@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -85,6 +86,10 @@ fun BillInfoScreen(mainViewModel: MainViewModel,
         mutableStateOf(false)
     }
 
+    var billInfoSubmitted by remember {
+        mutableStateOf(false)
+    }
+
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
@@ -94,14 +99,14 @@ fun BillInfoScreen(mainViewModel: MainViewModel,
             .padding(16.dp), contentAlignment = Alignment.Center
     ) {
         Column(
-            Modifier.fillMaxSize()
+            Modifier.wrapContentSize()
         ) {
             Card(
                 elevation = CardDefaults.elevatedCardElevation(),
                 shape = RoundedCornerShape(4.dp)
             ) {
                 Column(
-                    Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)
+                    Modifier.padding(16.dp).wrapContentSize(), verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -118,7 +123,7 @@ fun BillInfoScreen(mainViewModel: MainViewModel,
                     }
 
                     Spacer(modifier = Modifier.height(8.dp))
-                    BillItemInfo {
+                    BillItemInfo(clear = billInfoSubmitted) {
                         utilityBillInformation = it
                         amount = calculateBillCost(it)
                     }
@@ -250,6 +255,8 @@ fun BillInfoScreen(mainViewModel: MainViewModel,
                                     scope.launch {
                                         showDialog = false
                                         utilityBillInformation.clear()
+                                        billInfoSubmitted = true
+                                        amount = ""
                                     }
 
                                 },
@@ -276,7 +283,7 @@ fun BillInfoScreen(mainViewModel: MainViewModel,
 }
 
 @Composable
-fun BillItemInfo(info: (MutableList<BillInfo>) -> Unit) {
+fun BillItemInfo(clear: Boolean = false,info: (MutableList<BillInfo>) -> Unit) {
 
     val rows by remember {
         mutableStateOf(mutableListOf<BillInfo>())
@@ -289,6 +296,11 @@ fun BillItemInfo(info: (MutableList<BillInfo>) -> Unit) {
         mutableIntStateOf(0)
     }
 
+    if(clear){
+        rows.clear()
+        rowId=0
+    }
+
     fun addItem() {
         rows.add(rowId, BillInfo())
         rowId++
@@ -299,6 +311,7 @@ fun BillItemInfo(info: (MutableList<BillInfo>) -> Unit) {
         rowId--
         info(rows)
     }
+
     Column(Modifier.fillMaxHeight(.7f)) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable {
